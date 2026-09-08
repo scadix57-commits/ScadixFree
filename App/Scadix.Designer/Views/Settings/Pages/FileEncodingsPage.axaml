@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.FileEncodingsPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Editor › File Encodings"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="GLOBAL ENCODING"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Global encoding"/>
+                <ComboBox Name="CmbGlobalEncoding" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="UTF-8"/>
+                    <ComboBoxItem Content="UTF-16"/>
+                    <ComboBoxItem Content="UTF-32"/>
+                    <ComboBoxItem Content="Windows-1252"/>
+                    <ComboBoxItem Content="ISO-8859-1"/>
+                    <ComboBoxItem Content="ASCII"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="PROJECT ENCODING"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Project encoding"/>
+                <ComboBox Name="CmbProjectEncoding" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="UTF-8"/>
+                    <ComboBoxItem Content="UTF-16"/>
+                    <ComboBoxItem Content="UTF-32"/>
+                    <ComboBoxItem Content="Windows-1252"/>
+                    <ComboBoxItem Content="ISO-8859-1"/>
+                    <ComboBoxItem Content="ASCII"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="UTF-8 FILES"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Create UTF-8 files"/>
+                <ComboBox Name="CmbUtf8BomMode" Classes="setting-ctrl" SelectedIndex="1">
+                    <ComboBoxItem Content="with BOM"/>
+                    <ComboBoxItem Content="without BOM"/>
+                    <ComboBoxItem Content="with BOM on Windows"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="CONVERSION"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkTransparentNativeToAscii"
+                      Content="Transparent native-to-ascii conversion"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="AUTO-DETECTION"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkAutoDetectEncoding"
+                      Content="Auto-detect file encoding on open" IsChecked="True"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

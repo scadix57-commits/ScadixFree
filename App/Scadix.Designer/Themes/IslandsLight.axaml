@@ -1,0 +1,72 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         XAML Studio — Islands Light Theme
+         JetBrains Rider Islands Light palette
+         ──────────────────────────────────────────────────────────────
+         Canvas  (between islands)  #EBECF0
+         Panel   (tool windows)     #F7F8FA
+         Editor                     #FFFFFF
+         Accent                     #4D78CC
+         Text primary               #1F1F1F
+         Text secondary             #6B6D70
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Core palette colors ── -->
+    <Color x:Key="IslandsLightBg">#EBECF0</Color>
+    <Color x:Key="IslandsLightPanelBg">#F7F8FA</Color>
+    <Color x:Key="IslandsLightEditorBg">#FFFFFF</Color>
+    <Color x:Key="IslandsLightBorder">#C9CACE</Color>
+    <Color x:Key="IslandsLightHover">#D8D9DC</Color>
+    <Color x:Key="IslandsLightAccent">#4D78CC</Color>
+    <Color x:Key="IslandsLightTextPrimary">#1F1F1F</Color>
+    <Color x:Key="IslandsLightTextSecondary">#5A5D63</Color>
+    <Color x:Key="IslandsLightTextMuted">#9DA0A8</Color>
+    <Color x:Key="IslandsLightSplitter">#C9CACE</Color>
+
+    <!-- ── Brushes ── -->
+    <SolidColorBrush x:Key="IslandsLightBgBrush"           Color="{StaticResource IslandsLightBg}" />
+    <SolidColorBrush x:Key="IslandsLightPanelBgBrush"      Color="{StaticResource IslandsLightPanelBg}" />
+    <SolidColorBrush x:Key="IslandsLightEditorBgBrush"     Color="{StaticResource IslandsLightEditorBg}" />
+    <SolidColorBrush x:Key="IslandsLightBorderBrush"       Color="{StaticResource IslandsLightBorder}" />
+    <SolidColorBrush x:Key="IslandsLightHoverBrush"        Color="{StaticResource IslandsLightHover}" />
+    <SolidColorBrush x:Key="IslandsLightAccentBrush"       Color="{StaticResource IslandsLightAccent}" />
+    <SolidColorBrush x:Key="IslandsLightTextPrimaryBrush"  Color="{StaticResource IslandsLightTextPrimary}" />
+    <SolidColorBrush x:Key="IslandsLightTextSecondaryBrush" Color="{StaticResource IslandsLightTextSecondary}" />
+    <SolidColorBrush x:Key="IslandsLightTextMutedBrush"    Color="{StaticResource IslandsLightTextMuted}" />
+    <SolidColorBrush x:Key="IslandsLightSplitterBrush"     Color="{StaticResource IslandsLightSplitter}" />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         DOCK CONTROL OVERRIDES — Light
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <SolidColorBrush x:Key="DockApplicationAccentBrushLow"   Color="#EBECF0" />
+    <SolidColorBrush x:Key="DockApplicationAccentBrushMid"   Color="#F7F8FA" />
+    <SolidColorBrush x:Key="DockApplicationAccentBrushHigh"  Color="#4D78CC" />
+
+    <SolidColorBrush x:Key="DockThemeBackgroundBrush"        Color="#F7F8FA" />
+    <SolidColorBrush x:Key="DockThemeBorderLowBrush"         Color="#C9CACE" />
+    <SolidColorBrush x:Key="DockThemeBorderMidBrush"         Color="#B0B2B8" />
+    <SolidColorBrush x:Key="DockThemeBorderHighBrush"        Color="#4D78CC" />
+    <SolidColorBrush x:Key="DockThemeForegroundBrush"        Color="#1F1F1F" />
+    <SolidColorBrush x:Key="DockThemeAccentBrush"            Color="#4D78CC" />
+
+    <!-- Tab strip -->
+    <SolidColorBrush x:Key="DockThemeTabStripBackgroundBrush"        Color="#EBECF0" />
+    <SolidColorBrush x:Key="DockThemeTabStripBorderBrush"            Color="#C9CACE" />
+    <SolidColorBrush x:Key="DockThemeTabItemBackgroundBrush"         Color="Transparent" />
+    <SolidColorBrush x:Key="DockThemeTabItemBackgroundSelectedBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="DockThemeTabItemForegroundBrush"         Color="#5A5D63" />
+    <SolidColorBrush x:Key="DockThemeTabItemForegroundSelectedBrush" Color="#1F1F1F" />
+    <SolidColorBrush x:Key="DockThemeTabItemBorderSelectedBrush"     Color="#4D78CC" />
+
+    <!-- Splitter -->
+    <SolidColorBrush x:Key="DockThemeSplitterBrush"          Color="#C9CACE" />
+
+    <!-- ScrollBar -->
+    <SolidColorBrush x:Key="ScrollBarThumbBackground"             Color="#C0C1C5" />
+    <SolidColorBrush x:Key="ScrollBarThumbBackgroundPointerOver"  Color="#9DA0A8" />
+
+</ResourceDictionary>

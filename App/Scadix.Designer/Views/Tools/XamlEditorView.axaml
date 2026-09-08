@@ -1,0 +1,25 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Scadix.Designer.Controls.Completion"
+             x:Class="Scadix.Designer.XamlEditorView">
+    <!--
+        The TextEditor is created and configured entirely in code-behind
+        (XamlEditorView.axaml.cs) to enable:
+          - XML syntax folding
+          - Current-line highlight
+          - Indentation guides
+          - Custom XSHD highlighting
+        This mirrors the pattern used in AvaloniaStudio.
+    -->
+    <Grid>
+        <ContentControl x:Name="EditorHost" />
+        
+        <!-- XamlCompletionWindow - same approach as CSharpEditor -->
+        <local:XamlCompletionWindow 
+            HorizontalAlignment="Left" 
+            VerticalAlignment="Top" 
+            IsVisible="False" 
+            Name="CompletionWindow" 
+            ZIndex="100" />
+    </Grid>
+</UserControl>

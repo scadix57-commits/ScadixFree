@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<SyntaxDefinition name="XAML" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+
+  <!-- Visual Studio Classic XML/XAML Colors -->
+  <Color name="Comment"        foreground="#008000"/>
+  <Color name="XmlTag"         foreground="#800000"/>
+  <Color name="AttributeName"  foreground="#FF0000"/>
+  <Color name="AttributeValue" foreground="#0000FF"/>
+  <Color name="Entity"         foreground="#800000"/>
+
+  <RuleSet name="TagContent" ignoreCase="false">
+    <!-- Attribute value in quotes -->
+    <Span color="AttributeValue" begin="&quot;" end="&quot;" multiline="false"/>
+    <!-- Attribute name before = -->
+    <Rule color="AttributeName">[\w\.\:\-]+(?=\s*=)</Rule>
+    <!-- Standalone word (tag name continuation, etc.) -->
+    <Rule color="AttributeName">[\w\.\:\-]+</Rule>
+  </RuleSet>
+
+  <RuleSet ignoreCase="false">
+    <!-- XML Comment -->
+    <Span color="Comment" multiline="true" begin="&lt;!--" end="--&gt;"/>
+
+    <!-- Processing instruction -->
+    <Span color="XmlTag" multiline="false" begin="&lt;\?" end="\?&gt;">
+      <RuleSet><Import ruleSet="TagContent"/></RuleSet>
+    </Span>
+
+    <!-- Closing tag -->
+    <Span color="XmlTag" multiline="false" begin="&lt;/" end="&gt;">
+      <RuleSet>
+        <Rule color="XmlTag">[\w\.\:\-]+</Rule>
+      </RuleSet>
+    </Span>
+
+    <!-- Opening / self-closing tag -->
+    <Span color="XmlTag" multiline="true" begin="&lt;[\w\.\:\-]+" end="/?&gt;">
+      <RuleSet>
+        <Import ruleSet="TagContent"/>
+      </RuleSet>
+    </Span>
+
+    <!-- Entity reference -->
+    <Rule color="Entity">&amp;\w+;</Rule>
+  </RuleSet>
+</SyntaxDefinition>

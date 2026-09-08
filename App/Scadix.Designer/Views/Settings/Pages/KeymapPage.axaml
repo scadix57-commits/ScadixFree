@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.KeymapPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Keymap"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="KEYMAP SCHEME"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Keymap"/>
+                <ComboBox Name="CmbKeymapScheme" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="Scadix Default"/>
+                    <ComboBoxItem Content="Visual Studio"/>
+                    <ComboBoxItem Content="JetBrains Rider"/>
+                    <ComboBoxItem Content="VS Code"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Search shortcuts -->
+        <TextBlock Classes="group-header" Text="SHORTCUTS"/>
+        <Border Background="#F5F5F5" CornerRadius="4" Margin="0,4,0,8" Padding="8,6">
+            <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0" Text="🔍" FontSize="11"
+                           Foreground="#666666" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <TextBox Grid.Column="1" Watermark="Search actions..."
+                         Background="Transparent" BorderThickness="0"
+                         FontSize="12" Foreground="#1E1E1E"/>
+            </Grid>
+        </Border>
+
+        <!-- Shortcuts table -->
+        <Border Background="#F7F7F7" CornerRadius="4" Padding="0">
+            <StackPanel>
+                <!-- Header -->
+                <Grid ColumnDefinitions="*,200" Background="#F5F5F5">
+                    <TextBlock Grid.Column="0" Text="Action"
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="#0078D4" Margin="12,6"/>
+                    <TextBlock Grid.Column="1" Text="Shortcut"
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="#0078D4" Margin="12,6"/>
+                </Grid>
+                <!-- Rows -->
+                <Grid ColumnDefinitions="*,200" Background="Transparent">
+                    <TextBlock Grid.Column="0" Text="Save" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+S" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="#FAFAFA">
+                    <TextBlock Grid.Column="0" Text="Save All" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+Shift+S" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="Transparent">
+                    <TextBlock Grid.Column="0" Text="Open File" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+O" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="#FAFAFA">
+                    <TextBlock Grid.Column="0" Text="New File" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+N" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="Transparent">
+                    <TextBlock Grid.Column="0" Text="Build Solution" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+Shift+B" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="#FAFAFA">
+                    <TextBlock Grid.Column="0" Text="Run" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Shift+F5" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="Transparent">
+                    <TextBlock Grid.Column="0" Text="Settings" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+Alt+S" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,200" Background="#FAFAFA">
+                    <TextBlock Grid.Column="0" Text="Find in Files" Foreground="#1E1E1E" FontSize="12" Margin="12,7"/>
+                    <TextBlock Grid.Column="1" Text="Ctrl+Shift+F" Foreground="#0078D4" FontSize="12" Margin="12,7"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

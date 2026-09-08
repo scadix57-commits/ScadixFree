@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.AdvancedPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Advanced Settings"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- Warning -->
+        <Border Background="#FFF4E5"
+                BorderBrush="#FFD700"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,16">
+            <StackPanel Spacing="6">
+                <TextBlock Text="⚠️ Warning"
+                           FontSize="13"
+                           FontWeight="Medium"
+                           Foreground="#8B6914"/>
+                <TextBlock Text="These settings are for advanced users only. Changing them may affect application stability and performance."
+                           FontSize="12"
+                           Foreground="#1E1E1E"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ── Performance ── -->
+        <TextBlock Classes="group-header" Text="PERFORMANCE"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ShowMemoryIndicatorCheckBox"
+                      Content="Show memory indicator in status bar"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Maximum Memory (MB)"/>
+                <NumericUpDown Classes="setting-ctrl"
+                               x:Name="MaxMemoryNumeric"
+                               Minimum="512"
+                               Maximum="16384"
+                               Increment="256"
+                               MinWidth="150"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="Requires restart to take effect"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="200,0,0,0"/>
+        </Border>
+
+        <!-- ── Experimental ── -->
+        <TextBlock Classes="group-header" Text="EXPERIMENTAL"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ExperimentalFeaturesCheckBox"
+                      Content="Enable experimental features"/>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="May include unstable or incomplete functionality"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="20,0,0,0"/>
+        </Border>
+
+        <!-- ── Logging ── -->
+        <TextBlock Classes="group-header" Text="LOGGING"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="EnableLoggingCheckBox"
+                      Content="Enable diagnostic logging"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Log Level"/>
+                <ComboBox Classes="setting-ctrl"
+                          x:Name="LogLevelComboBox"
+                          MinWidth="150">
+                    <ComboBoxItem Content="Trace"/>
+                    <ComboBoxItem Content="Debug"/>
+                    <ComboBoxItem Content="Info"/>
+                    <ComboBoxItem Content="Warning"/>
+                    <ComboBoxItem Content="Error"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

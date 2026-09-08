@@ -1,0 +1,247 @@
+﻿<UserControl
+    x:Class="Scadix.AxamlDesigner.Controls.ColorPicker"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+    xmlns:root="clr-namespace:Scadix.AxamlDesigner.Controls"
+    x:Name="Root"
+    Width="373"
+    Padding="5"
+    x:DataType="root:ColorPicker">
+
+    <UserControl.Resources>
+
+        <DrawingBrush
+            x:Key="ChessBrush"
+            DestinationRect="0,0,9,9"
+            TileMode="Tile">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="White">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,2,2" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="Gray">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup>
+                                <RectangleGeometry Rect="0,0,1,1" />
+                                <RectangleGeometry Rect="1,1,1,1" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+
+    </UserControl.Resources>
+
+    <DockPanel>
+
+        <StackPanel
+            Margin="10,0,0,0"
+            VerticalAlignment="Top"
+            DockPanel.Dock="Right">
+
+            <Border
+                Width="70"
+                Height="50"
+                HorizontalAlignment="Right"
+                Background="{StaticResource ChessBrush}"
+                BorderBrush="Black"
+                BorderThickness="1">
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="{Binding Color, ElementName=Root}" />
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Border>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:HexTextBox
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Text="{Binding Hex, ElementName=Root, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="#" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Maximum="360"
+                    Value="{Binding H, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="H" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Value="{Binding S, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="S" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Value="{Binding V, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="V" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Maximum="255"
+                    Value="{Binding R, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="R" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Maximum="255"
+                    Value="{Binding G, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="G" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Maximum="255"
+                    Value="{Binding B, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="B" />
+            </DockPanel>
+
+            <DockPanel Margin="0,3,0,0">
+                <controls:NumericUpDown
+                    Width="70"
+                    Margin="5,0,0,0"
+                    DockPanel.Dock="Right"
+                    Maximum="255"
+                    Value="{Binding A, ElementName=Root}" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Text="A" />
+            </DockPanel>
+
+        </StackPanel>
+
+        <Border Margin="10,0,0,0" DockPanel.Dock="Right">
+            <controls:Picker
+                Width="20"
+                Marker="{Binding ElementName=arrows}"
+                Maximum="0"
+                Minimum="360"
+                Orientation="Vertical"
+                Value="{Binding H, ElementName=Root}">
+                <Border Margin="0,-1">
+                    <Border.Background>
+                        <LinearGradientBrush EndPoint="0% 100%">
+                            <GradientStop Offset="0" Color="#F00" />
+                            <GradientStop Offset="0.16" Color="#F0F" />
+                            <GradientStop Offset="0.33" Color="#00F" />
+                            <GradientStop Offset="0.5" Color="#0FF" />
+                            <GradientStop Offset="0.76" Color="#0F0" />
+                            <GradientStop Offset="0.85" Color="#FF0" />
+                            <GradientStop Offset="1" Color="#F00" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <Grid
+                    x:Name="arrows"
+                    Margin="-5"
+                    VerticalAlignment="Top"
+                    IsHitTestVisible="False">
+                    <Path
+                        HorizontalAlignment="Left"
+                        Data="M 0 0 L 5 5 L 0 10 Z"
+                        Fill="Black" />
+                    <Path
+                        HorizontalAlignment="Right"
+                        Data="M 0 0 L -5 5 L 0 10 Z"
+                        Fill="Black" />
+                </Grid>
+            </controls:Picker>
+        </Border>
+
+        <Border BorderBrush="Black" BorderThickness="1">
+            <controls:Picker
+                ClipToBounds="True"
+                Marker="{Binding ElementName=point}"
+                Value="{Binding S, ElementName=Root}">
+                <controls:Picker
+                    Marker="{Binding ElementName=point}"
+                    Maximum="0"
+                    Minimum="100"
+                    Orientation="Vertical"
+                    Value="{Binding V, ElementName=Root}">
+                    <Rectangle>
+                        <Rectangle.Fill>
+                            <LinearGradientBrush EndPoint="100% 0%">
+                                <GradientStop Offset="0" Color="White" />
+                                <GradientStop Offset="1" Color="{Binding HueColor, ElementName=Root}" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Rectangle>
+                        <Rectangle.Fill>
+                            <LinearGradientBrush EndPoint="0% 100%">
+                                <GradientStop Offset="0" Color="#0000" />
+                                <GradientStop Offset="1" Color="#F000" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Grid
+                        x:Name="point"
+                        Width="12"
+                        Height="12"
+                        Margin="-6,-6,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top">
+                        <Ellipse IsHitTestVisible="False" Stroke="Black" />
+                        <Ellipse
+                            Margin="1"
+                            IsHitTestVisible="False"
+                            Stroke="White" />
+                    </Grid>
+                </controls:Picker>
+            </controls:Picker>
+        </Border>
+
+    </DockPanel>
+
+</UserControl>

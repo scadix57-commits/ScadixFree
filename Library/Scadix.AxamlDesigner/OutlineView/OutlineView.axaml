@@ -1,0 +1,215 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Default="clr-namespace:Scadix.AxamlDesigner.OutlineView"
+    xmlns:designer="clr-namespace:Scadix.AxamlDesigner"
+    >
+    <designer:LevelConverter x:Key="LevelConverter" />
+
+	<!--  IconItem Template  -->
+	<ControlTheme TargetType="Default:IconItem" x:Key="{x:Type Default:IconItem}">
+		<Setter Property="Template">
+			<ControlTemplate TargetType="Default:IconItem">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="{TemplateBinding Icon}" Stretch="None" />
+					<TextBlock
+					Margin="5,0,0,0"
+					Text="{TemplateBinding Text}"
+					VerticalAlignment="Center" />
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</ControlTheme>
+	<ControlTheme TargetType="ToggleButton" x:Key="ExpandButtonStyle">
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="Template">
+			<ControlTemplate TargetType="ToggleButton">
+				<Border Background="Transparent">
+					<Border
+					BorderBrush="#FF7898B5"
+					BorderThickness="1"
+					CornerRadius="1"
+					Height="9"
+					Width="9">
+						<Border.Background>
+							<LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
+								<GradientStop Color="White" Offset=".2" />
+								<GradientStop Color="#FFC0B7A6" Offset="1" />
+							</LinearGradientBrush>
+						</Border.Background>
+						<Path
+						Data="M 0 2 L 0 3 L 2 3 L 2 5 L 3 5 L 3 3 L 5 3 L 5 2 L 3 2 L 3 0 L 2 0 L 2 2 Z"
+						Fill="Black"
+						Margin="1,1,1,1"
+						x:Name="ExpandPath" />
+					</Border>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:checked /template/ Path#ExpandPath">
+			<Setter Property="Data" Value="M 0 2 L 0 3 L 5 3 L 5 2 Z" />
+		</Style>
+	</ControlTheme>
+
+	<SolidColorBrush Color="#FFC73C" x:Key="InsertBrush" />
+
+	<ControlTheme TargetType="Default:DragTreeView" x:Key="{x:Type Default:DragTreeView}">
+		<Setter Property="Template">
+			<ControlTemplate TargetType="Default:DragTreeView">
+				<Grid Background="White">
+					<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+						<ItemsPresenter />
+					</ScrollViewer>
+					<Border
+					Background="{StaticResource InsertBrush}"
+					Height="2"
+					HorizontalAlignment="Left"
+					IsHitTestVisible="False"
+					IsVisible="False"
+					VerticalAlignment="Top"
+					Width="50"
+					x:Name="PART_InsertLine" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+	</ControlTheme>
+
+	<ControlTheme TargetType="Default:OutlineTreeView" x:Key="{x:Type Default:OutlineTreeView}" BasedOn="{StaticResource {x:Type Default:DragTreeView}}" />
+
+	<ControlTheme TargetType="Default:DragTreeViewItem" x:Key="{x:Type Default:DragTreeViewItem}">
+		<Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+		<Setter Property="Template">
+			<ControlTemplate TargetType="Default:DragTreeViewItem">
+				<DockPanel Background="White" ContextMenu="{Binding DesignItem.Services.DesignPanel.ContextMenu}" >
+					 
+					<Grid
+					Background="{TemplateBinding Background}"
+					DockPanel.Dock="Top"
+					Margin="{Binding Level, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource LevelConverter}}"
+					x:DataType="Default:DragTreeViewItem"
+					x:Name="bg">
+						<ToggleButton
+						HorizontalAlignment="Left"
+						IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+						Theme="{StaticResource ExpandButtonStyle}"
+						x:Name="expandButton" />
+						<Border
+						HorizontalAlignment="Stretch"
+						Margin="11,0,0,0"
+						x:Name="contentBorder">
+							<ContentPresenter Content="{TemplateBinding Header}" x:Name="PART_Header" />
+						</Border>
+					</Grid>
+					<ItemsPresenter x:Name="itemsHost" IsVisible="{TemplateBinding IsExpanded}" />
+					<ToolTip.Tip>
+						<Border Background="White" Padding="5">
+							<Rectangle Height="50" Width="50">
+								<Rectangle.Fill>
+									<VisualBrush Stretch="Uniform" Visual="{Binding DesignItem.View}" />
+								</Rectangle.Fill>
+							</Rectangle>
+						</Border>
+					</ToolTip.Tip>
+				</DockPanel>
+			</ControlTemplate>
+		</Setter>
+		<Setter Property="ItemsPanel">
+			<ItemsPanelTemplate>
+				<StackPanel />
+			</ItemsPanelTemplate>
+		</Setter>
+		<Style Selector="^[ItemCount=0] /template/ ToggleButton#expandButton">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+		<Style Selector="^:selected /template/ Grid#bg">
+			<Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+		</Style>
+		<Style Selector="^:selected">
+			<Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+		</Style>
+		<Style Selector="^[IsDragHover=true] /template/ Border#contentBorder">
+			<Setter Property="Background" Value="{StaticResource InsertBrush}" />
+		</Style>
+	</ControlTheme>
+
+	<ControlTheme TargetType="ToggleButton" x:Key="eyeStyle">
+		<Setter Property="Template">
+			<ControlTemplate TargetType="ToggleButton">
+				<Grid Background="Transparent" IsHitTestVisible="True">
+					<Image
+
+					Source="avares://Scadix.AxamlDesigner/Images/Icons.16x16.WpfOutline.Eye.png"
+					Stretch="None"
+					x:Name="eye" />
+					<Image
+					Source="avares://Scadix.AxamlDesigner/Images/Icons.16x16.WpfOutline.EyeClose.png"
+					Stretch="None"
+					x:Name="closed_eye" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:checked /template/ Image#eye">
+			<Setter Property="IsVisible" Value="True" />
+		</Style>
+		<Style Selector="^:checked /template/ Image#closed_eye">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+	</ControlTheme>
+
+	<ControlTheme TargetType="ToggleButton" x:Key="lockedStyle">
+		<Setter Property="Template">
+			<ControlTemplate TargetType="ToggleButton">
+				<Grid Background="Transparent" IsHitTestVisible="True">
+					<Image
+					Height="16"
+					IsVisible="False"
+					Source="avares://Scadix.AxamlDesigner/Images/lock.png"
+					Stretch="Uniform"
+					Width="16"
+					x:Name="locked" />
+					<Ellipse
+					Height="6"
+					Stroke="Black"
+					StrokeThickness="1"
+					Width="6"
+					x:Name="unlocked" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:checked /template/ Image#locked">
+			<Setter Property="IsVisible" Value="True" />
+		</Style>
+		<Style Selector="^:checked /template/ Ellipse#unlocked">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+	</ControlTheme>
+
+	<TreeDataTemplate DataType="Default:PropertyOutlineNode" ItemsSource="{Binding Children}" x:Key="PropertyOutlineNodeTemplate">
+		<DockPanel>
+			<TextBlock
+			FontStyle="Italic"
+			Margin="5,0,0,0"
+			Text="{Binding Name}" />
+		</DockPanel>
+	</TreeDataTemplate>
+
+	<TreeDataTemplate DataType="Default:OutlineNode" ItemsSource="{Binding Children}" x:Key="OutlineNodeTemplate">
+		<DockPanel>
+			<ToggleButton
+			DockPanel.Dock="Right"
+			IsChecked="{Binding IsDesignTimeLocked}"
+			IsVisible="{Binding IsVisualNode}"
+			Margin="0,0,5,0"
+			Theme="{StaticResource lockedStyle}"
+			Width="20" />
+			<ToggleButton
+			DockPanel.Dock="Right"
+			IsChecked="{Binding IsDesignTimeVisible, Mode=TwoWay}"
+			IsVisible="{Binding IsVisualNode}"
+			Margin="0,0,5,0"
+			Theme="{StaticResource eyeStyle}"
+			Width="20" />
+			<Default:IconItem Icon="avares://Scadix.AxamlDesigner/Images/Tag.png" Text="{Binding Name}" />
+		</DockPanel>
+	</TreeDataTemplate>
+</ResourceDictionary>

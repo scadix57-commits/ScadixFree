@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/App/">
+    <Project Path="App/Scadix.Designer/Scadix.Designer.csproj" />
+    <Project Path="App/Scadix.IconGenerator/Scadix.IconGenerator.csproj" />
+  </Folder>
+  <Folder Name="/Library/">
+    <Project Path="Library/Scadix.AxamlDesign/Scadix.AxamlDesign.csproj" />
+    <Project Path="Library/Scadix.AxamlDesigner/Scadix.AxamlDesigner.csproj" />
+    <Project Path="Library/Scadix.AxamlDom/Scadix.AxamlDom.csproj" />
+    <Project Path="Library/Scadix.AxamlExpressionBlendInteractionAddon/Scadix.AxamlExpressionBlendInteractionAddon.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.EditorFontPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Editor › Font"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="EDITOR FONT"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Font family"/>
+                <ComboBox x:Name="CmbFontFamily" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="JetBrains Mono"/>
+                    <ComboBoxItem Content="Cascadia Code"/>
+                    <ComboBoxItem Content="Consolas"/>
+                    <ComboBoxItem Content="Fira Code"/>
+                    <ComboBoxItem Content="Source Code Pro"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Size"/>
+                <ComboBox x:Name="CmbFontSize" Classes="setting-ctrl" SelectedIndex="2">
+                    <ComboBoxItem Content="10"/>
+                    <ComboBoxItem Content="11"/>
+                    <ComboBoxItem Content="12"/>
+                    <ComboBoxItem Content="13"/>
+                    <ComboBoxItem Content="14"/>
+                    <ComboBoxItem Content="16"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Line height"/>
+                <ComboBox x:Name="CmbLineHeight" Classes="setting-ctrl" SelectedIndex="1">
+                    <ComboBoxItem Content="1.0"/>
+                    <ComboBoxItem Content="1.2"/>
+                    <ComboBoxItem Content="1.4"/>
+                    <ComboBoxItem Content="1.6"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkLigatures"
+                      Content="Enable font ligatures"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkAntiAlias"
+                      Content="Use anti-aliasing"
+                      IsChecked="True"/>
+        </Border>
+
+        <!-- Preview -->
+        <TextBlock Classes="group-header" Text="PREVIEW"/>
+        <Border Background="#F5F5F5" CornerRadius="6" Padding="16" Margin="0,4,0,0"
+                BorderBrush="#E0E0E0" BorderThickness="1">
+            <TextBlock x:Name="PreviewText"
+                       FontFamily="Consolas"
+                       FontSize="13"
+                       Foreground="#1E1E1E"
+                       Text="public class HelloWorld&#10;{&#10;    public static void Main()&#10;    {&#10;        // Hello, Scadix!&#10;        var msg = &quot;Hello World&quot;;&#10;    }&#10;}"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

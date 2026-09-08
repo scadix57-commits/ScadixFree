@@ -1,0 +1,56 @@
+﻿<UserControl
+	x:Class="Scadix.AxamlDesigner.Controls.GridUnitSelector" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns="https://github.com/avaloniaui"
+	x:Name="control"
+	HorizontalContentAlignment="Left" Padding="6"
+	VerticalContentAlignment="Top" Background="Transparent" IsHitTestVisible="True">
+	<UserControl.Styles>
+		<Style Selector="RadioButton">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<ToggleButton
+						IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+						Content="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}"
+						Padding="{Binding Path=Padding, RelativeSource={RelativeSource TemplatedParent}}"
+						Name="toggleButton" />
+				</ControlTemplate>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+	<Border
+		CornerRadius="3"
+		BorderBrush="CornflowerBlue"
+		Background="LightBlue"
+		BorderThickness="1">
+		<StackPanel
+			Orientation="{Binding Orientation, ElementName=control}">
+			<RadioButton
+				x:Name="fixed1"
+				Content="Fixed"
+				Margin="1"
+				FontSize="8"
+				ToolTip.Tip="Fixed - Column size is fixed width"
+				GroupName="group"
+				IsCheckedChanged="FixedChecked" />
+			<RadioButton
+				x:Name="star"
+				Margin="1"
+				FontSize="16"
+				ToolTip.Tip="Star - Column size is weighted proportion"
+				GroupName="group"
+				IsCheckedChanged="StarChecked">
+				<TextBlock
+					Text="*"
+					Margin="3,-4,3,-8" />
+			</RadioButton>
+			<RadioButton
+				x:Name="auto"
+				Content="Auto"
+				Margin="1"
+				FontSize="8"
+				ToolTip.Tip="Auto - Column size is determined by the Content(s)"
+				GroupName="group"
+				IsCheckedChanged="AutoChecked" />
+		</StackPanel>
+	</Border>
+</UserControl>

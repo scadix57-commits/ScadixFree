@@ -1,0 +1,239 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Scadix.Designer"
+             x:Class="Scadix.Designer.SolutionExplorerView"
+             x:DataType="local:MainWindowViewModel"
+             Background="#F5F5F5">
+
+    <UserControl.Resources>
+        <local:SolutionNodeIconConverter x:Key="NodeIconConverter"/>
+        <local:MissingBrushConverter x:Key="MissingBrushConverter"/>
+    </UserControl.Resources>
+    <UserControl.Styles>
+          <Style Selector="Button.tool-btn">
+            <Setter Property="Background"   Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"      Value="4,2"/>
+            <Setter Property="Cursor"       Value="Hand"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+        <Style Selector="Button.tool-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D0D0D0"/>
+        </Style>
+
+        <!-- ── TreeView base ── -->
+        <Style Selector="TreeView">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding"    Value="2"/>
+        </Style>
+        <Style Selector="TreeViewItem">
+            <Setter Property="Padding"  Value="2,1"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="#CCE8FF"/>
+        </Style>
+        <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="#E8F4FF"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <DockPanel>
+
+        <!-- ── Header ── -->
+        <Border DockPanel.Dock="Top"
+                Background="#F5F5F5"
+                Height="26"
+                BorderBrush="#D0D0D0"
+                BorderThickness="0,0,0,1">
+            <DockPanel Margin="8,0">
+                <!-- Toolbar buttons -->
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Spacing="6">
+                    <Button Classes="tool-btn"
+                            ToolTip.Tip="Open Solution / Project"
+                            Click="OpenSolution_Click">
+                        <TextBlock Text="📂" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                    <Button Classes="tool-btn"
+                            ToolTip.Tip="Open Folder"
+                            Click="OpenFolder_Click">
+                        <TextBlock Text="📁" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                    <Button Classes="tool-btn"
+                            ToolTip.Tip="Refresh"
+                            Click="Refresh_Click">
+                        <TextBlock Text="🔄" FontSize="11" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                </StackPanel>
+                <TextBlock Text="Solution Explorer"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="#1E1E1E"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Content Area ── -->
+        <Panel>
+            <!-- Empty state: no project and not loading -->
+            <StackPanel IsVisible="{Binding !HasProject}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="12"
+                        Margin="20">
+                <StackPanel.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!HasProject"/>
+                        <Binding Path="!IsLoading"/>
+                    </MultiBinding>
+                </StackPanel.IsVisible>
+                <TextBlock Text="📂" FontSize="48" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" Opacity="0.5"/>
+                <TextBlock Text="No project open"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="#888888"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Open a solution, project, or folder to start working."
+                           FontSize="11"
+                           Foreground="#AAAAAA"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                
+                <Button Content="Open Project..." 
+                        Click="OpenSolution_Click"
+                        Margin="0,10,0,0"
+                        Padding="15,6"
+                        Background="#0E639C"
+                        Foreground="White"
+                        FontSize="12"
+                        HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Loading state -->
+            <StackPanel IsVisible="{Binding IsLoading}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="12"
+                        Margin="20">
+                <ProgressBar IsIndeterminate="True"
+                             Width="180"
+                             Height="6"
+                             CornerRadius="3"
+                             Foreground="#0E639C"
+                             Background="#D0D0D0"/>
+                <TextBlock Text="Loading solution, please wait..."
+                           FontSize="12"
+                           Foreground="#888888"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Tree -->
+            <ScrollViewer IsVisible="{Binding HasProject}"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+                <TreeView x:Name="SolutionTree"
+                          ItemsSource="{Binding SolutionTree}"
+                          Background="Transparent"
+                          Margin="2"
+                          SelectionChanged="OnTreeSelectionChanged"
+                          DoubleTapped="OnTreeDoubleTapped"
+                          PointerReleased="OnTreePointerReleased">
+
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        Margin="0,2"
+                                        ToolTip.Tip="{Binding Tooltip}"
+                                        IsVisible="{Binding Name, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+
+                                <!-- Icon — reacts to IsStartup/IsMissing changes via MultiBinding -->
+                                <Panel>
+                                    <Image Width="16" Height="16"
+                                           VerticalAlignment="Center">
+                                        <Image.Source>
+                                            <MultiBinding Converter="{StaticResource NodeIconConverter}">
+                                                <Binding Path="."/>
+                                                <Binding Path="IsStartup"/>
+                                                <Binding Path="IsMissing"/>
+                                            </MultiBinding>
+                                        </Image.Source>
+                                    </Image>
+                                    
+                                    <!-- Missing Indicator (Red circle with X) -->
+                                    <Border IsVisible="{Binding IsMissing}"
+                                            Width="8" Height="8"
+                                            Background="#FFE81123"
+                                            CornerRadius="4"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Bottom"
+                                            Margin="0,0,-2,-2"
+                                            BorderBrush="White"
+                                            BorderThickness="1">
+                                        <Path Data="M0,0 L4,4 M4,0 L0,4"
+                                              Stroke="White"
+                                              StrokeThickness="1"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Stretch="Uniform"
+                                              Width="4" Height="4"/>
+                                    </Border>
+
+                                    <!-- Warning Indicator (yellow triangle) -->
+                                    <Border IsVisible="{Binding HasWarning}"
+                                            Width="8" Height="8"
+                                            Background="#FFFFB900"
+                                            CornerRadius="1"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Bottom"
+                                            Margin="0,0,-2,-2"
+                                            BorderBrush="White"
+                                            BorderThickness="1"
+                                            ToolTip.Tip="{Binding Tooltip}">
+                                        <TextBlock Text="!" FontSize="6" FontWeight="Bold"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                </Panel>
+
+                                <!-- Name -->
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="12"
+                                           Foreground="{Binding IsMissing, Converter={StaticResource MissingBrushConverter}}"
+                                           VerticalAlignment="Center"/>
+
+                                <!-- Badge (version / TFM / project count) -->
+                                <TextBlock Text="{Binding Badge}"
+                                           FontSize="11"
+                                           Foreground="#888888"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding HasBadge}"/>
+
+                            </StackPanel>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+
+                    <TreeView.Styles>
+                        <Style Selector="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="{Binding ((local:SolutionNode)DataContext).IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource Self}}"/>
+                        </Style>
+                    </TreeView.Styles>
+
+                </TreeView>
+            </ScrollViewer>
+
+          
+
+        </Panel>
+
+    </DockPanel>
+
+   
+
+</UserControl>

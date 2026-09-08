@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.AppearancePage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Appearance"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── UI Theme ── -->
+        <TextBlock Classes="group-header" Text="UI THEME"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Theme"/>
+                <ComboBox Classes="setting-ctrl"
+                          x:Name="ThemeCombo"
+                          SelectedIndex="0">
+                    <ComboBoxItem Content="Dark (Default)"/>
+                    <ComboBoxItem Content="Light"/>
+                    <ComboBoxItem Content="High Contrast"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Sync with OS"/>
+                <CheckBox x:Name="SyncOsTheme" Content="Use system theme"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Fonts ── -->
+        <TextBlock Classes="group-header" Text="FONTS"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="UI Font"/>
+                <ComboBox Name="UiFontCombo" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="Segoe UI"/>
+                    <ComboBoxItem Content="Consolas"/>
+                    <ComboBoxItem Content="JetBrains Mono"/>
+                    <ComboBoxItem Content="Cascadia Code"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="UI Font Size"/>
+                <ComboBox Name="UiFontSizeCombo" Classes="setting-ctrl" SelectedIndex="1">
+                    <ComboBoxItem Content="11"/>
+                    <ComboBoxItem Content="12"/>
+                    <ComboBoxItem Content="13"/>
+                    <ComboBoxItem Content="14"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Window ── -->
+        <TextBlock Classes="group-header" Text="WINDOW"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkToolWindowBars" Content="Show tool window bars"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkStatusBar" Content="Show status bar" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkMainToolbar" Content="Show main toolbar" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Tab placement"/>
+                <ComboBox Name="TabPlacementCombo" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="Top"/>
+                    <ComboBoxItem Content="Bottom"/>
+                    <ComboBoxItem Content="Left"/>
+                    <ComboBoxItem Content="Right"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Accessibility ── -->
+        <TextBlock Classes="group-header" Text="ACCESSIBILITY"/>
+        <Border Classes="setting-row">
+            <CheckBox Content="Support screen readers"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Content="Use contrast scrollbars"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

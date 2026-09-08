@@ -1,0 +1,108 @@
+
+
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Scadix.AxamlDesign.Adorners;
+using Scadix.AxamlDesign.Extensions;
+
+namespace Scadix.AxamlDesigner.Extensions
+{
+	[ExtensionFor(typeof(Panel))]
+	[ExtensionFor(typeof(Border))]
+	[ExtensionFor(typeof(ContentControl))]
+	[ExtensionFor(typeof(Viewbox))]
+	public class BorderForInvisibleControl : PermanentAdornerProvider
+	{
+		AdornerPanel adornerPanel;
+		AdornerPanel cachedAdornerPanel;
+        
+        protected override void OnInitialized()
+		{
+			base.OnInitialized();
+
+			if (ExtendedItem.Component is Border)
+			{
+				ExtendedItem.PropertyChanged += (s, e) => UpdateAdorner();
+			}
+			
+			// If component is a ContentControl it must be of type ContentControl specifically, and not derived types like Label and Button.
+			if (!(ExtendedItem.Component is ContentControl) || ExtendedItem.Component.GetType() == typeof(ContentControl)) {
+				UpdateAdorner();
+				
+				var element = ExtendedItem.Component as Control;
+				if (element != null) {
+                    element.PropertyChanged += (s, e) =>
+                    {
+                        if (e.Property == Visual.IsVisibleProperty)
+                            UpdateAdorner();
+                    };
+                }
+			}
+        }
+
+        void UpdateAdorner()
+		{
+			var element = ExtendedItem.Component as Control;
+			if (element != null) {
+				var border = element as Border;
+				if (element.IsVisible && (border == null || IsAnyBorderEdgeInvisible(border))) {
+					CreateAdorner();
+					
+					if (border != null) {
+						var adornerBorder = (Border)adornerPanel.Children[0];
+						
+						if (IsBorderBrushInvisible(border))
+							adornerBorder.BorderThickness = new Thickness(1);
+						else
+							adornerBorder.BorderThickness = new Thickness(border.BorderThickness.Left   > 0 ? 0 : 1,
+							                                              border.BorderThickness.Top    > 0 ? 0 : 1,
+							                                              border.BorderThickness.Right  > 0 ? 0 : 1,
+							                                              border.BorderThickness.Bottom > 0 ? 0 : 1);
+					}
+				}
+				else {
+					RemoveAdorner();
+				}
+			}
+		}
+		
+		bool IsAnyBorderEdgeInvisible(Border border)
+		{
+			return IsBorderBrushInvisible(border) || border.BorderThickness.Left == 0 || border.BorderThickness.Top == 0 || border.BorderThickness.Right == 0 || border.BorderThickness.Bottom == 0;
+		}
+		
+		bool IsBorderBrushInvisible(Border border)
+		{
+			return border.BorderBrush == null || border.BorderBrush == Brushes.Transparent;
+		}
+		
+		private void CreateAdorner()
+		{
+			if (adornerPanel == null) {
+				
+				if (cachedAdornerPanel == null) {
+					cachedAdornerPanel = new AdornerPanel();
+					cachedAdornerPanel.Order = AdornerOrder.Background;
+					var border = new Border();
+					border.BorderThickness = new Thickness(1);
+					border.BorderBrush = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
+					border.IsHitTestVisible = false;
+					AdornerPanel.SetPlacement(border, AdornerPlacement.FillContent);
+					cachedAdornerPanel.Children.Add(border);
+				}
+				
+				adornerPanel = cachedAdornerPanel;
+				Adorners.Add(adornerPanel);
+			}
+		}
+		
+		private void RemoveAdorner()
+		{
+			if (adornerPanel != null) {
+				Adorners.Remove(adornerPanel);
+				adornerPanel = null;
+			}
+		}
+	}
+}

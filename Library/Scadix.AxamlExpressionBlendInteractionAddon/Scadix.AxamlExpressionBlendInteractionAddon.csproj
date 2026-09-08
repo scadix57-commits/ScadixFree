@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="11.3.13" />
+		<PackageReference Include="Xaml.Behaviors" Version="11.3.9.5" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Scadix.AxamlDesigner\Scadix.AxamlDesigner.csproj" />
+	  <ProjectReference Include="..\Scadix.AxamlDesign\Scadix.AxamlDesign.csproj" />
+	</ItemGroup>
+
+</Project>

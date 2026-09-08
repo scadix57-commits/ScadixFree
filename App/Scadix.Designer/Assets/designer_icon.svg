@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background gradient -->
+    <radialGradient id="bg" cx="38%" cy="32%" r="70%">
+      <stop offset="0%" stop-color="#1e2d6b"/>
+      <stop offset="60%" stop-color="#0d1535"/>
+      <stop offset="100%" stop-color="#060b1a"/>
+    </radialGradient>
+
+    <!-- Artboard fill -->
+    <linearGradient id="boardFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#162040"/>
+      <stop offset="100%" stop-color="#0c1628"/>
+    </linearGradient>
+
+    <!-- Cyan glow -->
+    <filter id="cyanGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Violet glow -->
+    <filter id="violetGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Soft drop shadow -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#00d4ff" flood-opacity="0.25"/>
+    </filter>
+
+    <!-- Inner shadow for depth -->
+    <filter id="innerGlow">
+      <feGaussianBlur stdDeviation="15" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <clipPath id="circleClip">
+      <circle cx="256" cy="256" r="252"/>
+    </clipPath>
+
+    <!-- Header gradient -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+
+    <!-- Cyan block gradient -->
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#0090c0"/>
+    </linearGradient>
+
+    <!-- Purple block -->
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── Circle background ── -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+
+  <!-- Subtle light orb top-left -->
+  <ellipse cx="160" cy="140" rx="120" ry="100" fill="#2a3d8f" opacity="0.18"/>
+
+  <!-- Grid dots -->
+  <g clip-path="url(#circleClip)" fill="#4a6fa5" opacity="0.13">
+    <g id="dotRow">
+      <circle cx="80"  cy="80"  r="2.5"/><circle cx="140" cy="80"  r="2.5"/>
+      <circle cx="200" cy="80"  r="2.5"/><circle cx="260" cy="80"  r="2.5"/>
+      <circle cx="320" cy="80"  r="2.5"/><circle cx="380" cy="80"  r="2.5"/>
+      <circle cx="440" cy="80"  r="2.5"/>
+      <circle cx="80"  cy="140" r="2.5"/><circle cx="140" cy="140" r="2.5"/>
+      <circle cx="200" cy="140" r="2.5"/><circle cx="260" cy="140" r="2.5"/>
+      <circle cx="320" cy="140" r="2.5"/><circle cx="380" cy="140" r="2.5"/>
+      <circle cx="440" cy="140" r="2.5"/>
+      <circle cx="80"  cy="200" r="2.5"/><circle cx="140" cy="200" r="2.5"/>
+      <circle cx="200" cy="200" r="2.5"/><circle cx="260" cy="200" r="2.5"/>
+      <circle cx="320" cy="200" r="2.5"/><circle cx="380" cy="200" r="2.5"/>
+      <circle cx="440" cy="200" r="2.5"/>
+      <circle cx="80"  cy="260" r="2.5"/><circle cx="140" cy="260" r="2.5"/>
+      <circle cx="200" cy="260" r="2.5"/><circle cx="260" cy="260" r="2.5"/>
+      <circle cx="320" cy="260" r="2.5"/><circle cx="380" cy="260" r="2.5"/>
+      <circle cx="440" cy="260" r="2.5"/>
+      <circle cx="80"  cy="320" r="2.5"/><circle cx="140" cy="320" r="2.5"/>
+      <circle cx="200" cy="320" r="2.5"/><circle cx="260" cy="320" r="2.5"/>
+      <circle cx="320" cy="320" r="2.5"/><circle cx="380" cy="320" r="2.5"/>
+      <circle cx="440" cy="320" r="2.5"/>
+      <circle cx="80"  cy="380" r="2.5"/><circle cx="140" cy="380" r="2.5"/>
+      <circle cx="200" cy="380" r="2.5"/><circle cx="260" cy="380" r="2.5"/>
+      <circle cx="320" cy="380" r="2.5"/><circle cx="380" cy="380" r="2.5"/>
+      <circle cx="440" cy="380" r="2.5"/>
+      <circle cx="80"  cy="440" r="2.5"/><circle cx="140" cy="440" r="2.5"/>
+      <circle cx="200" cy="440" r="2.5"/><circle cx="260" cy="440" r="2.5"/>
+      <circle cx="320" cy="440" r="2.5"/><circle cx="380" cy="440" r="2.5"/>
+      <circle cx="440" cy="440" r="2.5"/>
+    </g>
+  </g>
+
+  <!-- ── Main Artboard / Canvas window ── -->
+  <!-- Outer frame with shadow -->
+  <rect x="96" y="120" width="320" height="260" rx="16" ry="16"
+        fill="url(#boardFill)" stroke="#1e3a7a" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Title bar -->
+  <rect x="96" y="120" width="320" height="40" rx="16" ry="16" fill="#111d3e"/>
+  <rect x="96" y="144" width="320" height="16" fill="#111d3e"/>
+
+  <!-- Traffic light buttons -->
+  <circle cx="128" cy="140" r="7" fill="#ff5f57"/>
+  <circle cx="152" cy="140" r="7" fill="#febc2e"/>
+  <circle cx="176" cy="140" r="7" fill="#28c840"/>
+
+  <!-- Title bar text dots (simulate tab) -->
+  <rect x="220" y="133" width="80" height="14" rx="7" fill="#1e3060" opacity="0.8"/>
+  <circle cx="300" cy="140" r="5" fill="#2a4a90" opacity="0.6"/>
+
+  <!-- ── Toolbar (below title bar) ── -->
+  <rect x="96" y="160" width="320" height="28" fill="#0f1a36"/>
+  <!-- Toolbar icons (simplified) -->
+  <rect x="110" y="168" width="16" height="12" rx="2" fill="#2a4080"/>
+  <rect x="132" y="168" width="16" height="12" rx="2" fill="#2a4080"/>
+  <rect x="154" y="168" width="16" height="12" rx="2" fill="#2a4080"/>
+  <!-- Active tool highlight -->
+  <rect x="176" y="168" width="16" height="12" rx="2" fill="#4f46e5"/>
+  <rect x="198" y="168" width="16" height="12" rx="2" fill="#2a4080"/>
+
+  <!-- ── Left Sidebar ── -->
+  <rect x="96" y="188" width="52" height="192" fill="#0d1630"/>
+  <rect x="96" y="188" width="52" height="192" fill="none" stroke="#1a3060" stroke-width="1"/>
+
+  <!-- Sidebar layer items -->
+  <g fill="#253a6e">
+    <rect x="104" y="198" width="36" height="10" rx="2"/>
+    <rect x="104" y="214" width="36" height="10" rx="2"/>
+    <rect x="104" y="230" width="36" height="10" rx="2"/>
+  </g>
+  <!-- Active layer -->
+  <rect x="102" y="246" width="40" height="12" rx="2" fill="#4f46e5" opacity="0.7"/>
+  <g fill="#253a6e">
+    <rect x="104" y="264" width="36" height="10" rx="2"/>
+    <rect x="104" y="280" width="36" height="10" rx="2"/>
+    <rect x="104" y="296" width="36" height="10" rx="2"/>
+    <rect x="104" y="312" width="36" height="10" rx="2"/>
+  </g>
+
+  <!-- ── Main canvas area ── -->
+  <rect x="148" y="188" width="196" height="192" fill="#080f22"/>
+
+  <!-- Canvas element: Header block -->
+  <rect x="162" y="200" width="168" height="28" rx="5" ry="5"
+        fill="url(#headerGrad)" filter="url(#violetGlow)"/>
+
+  <!-- Canvas element: Sidebar mini -->
+  <rect x="162" y="236" width="40" height="100" rx="4" ry="4" fill="#12213f" stroke="#1e3a6e" stroke-width="1"/>
+  <rect x="168" y="244" width="28" height="6" rx="2" fill="#2a4080"/>
+  <rect x="168" y="256" width="28" height="6" rx="2" fill="#2a4080"/>
+  <rect x="168" y="268" width="28" height="6" rx="2" fill="#2a4080"/>
+  <rect x="168" y="280" width="28" height="6" rx="2" fill="#8b5cf6" opacity="0.7"/>
+  <rect x="168" y="292" width="28" height="6" rx="2" fill="#2a4080"/>
+  <rect x="168" y="304" width="28" height="6" rx="2" fill="#2a4080"/>
+  <rect x="168" y="316" width="28" height="6" rx="2" fill="#2a4080"/>
+
+  <!-- Canvas element: Main content block (cyan) -->
+  <rect x="210" y="236" width="72" height="52" rx="5" ry="5"
+        fill="url(#cyanGrad)" opacity="0.85" filter="url(#cyanGlow)"/>
+
+  <!-- Canvas element: Purple block -->
+  <rect x="290" y="236" width="56" height="52" rx="5" ry="5"
+        fill="url(#purpleGrad)" opacity="0.85"/>
+
+  <!-- Canvas element: Bottom row cards -->
+  <rect x="210" y="296" width="52" height="32" rx="4" fill="#162040" stroke="#1e3a6e" stroke-width="1"/>
+  <rect x="270" y="296" width="36" height="32" rx="4" fill="#162040" stroke="#1e3a6e" stroke-width="1"/>
+  <rect x="314" y="296" width="32" height="32" rx="4" fill="#162040" stroke="#1e3a6e" stroke-width="1"/>
+
+  <!-- Small icons inside cards -->
+  <rect x="218" y="304" width="18" height="16" rx="2" fill="#00d4ff" opacity="0.6"/>
+  <rect x="278" y="304" width="20" height="10" rx="2" fill="#8b5cf6" opacity="0.6"/>
+  <rect x="320" y="304" width="18" height="10" rx="2" fill="#4f46e5" opacity="0.6"/>
+
+  <!-- ── Selection handles (around cyan block) ── -->
+  <rect x="207" y="233" width="78" height="58" rx="6" ry="6"
+        fill="none" stroke="#00d4ff" stroke-width="2" stroke-dasharray="5,3"
+        filter="url(#cyanGlow)"/>
+  <!-- Corner handles -->
+  <rect x="204" y="230" width="9" height="9" rx="2" fill="#00d4ff" filter="url(#cyanGlow)"/>
+  <rect x="280" y="230" width="9" height="9" rx="2" fill="#00d4ff" filter="url(#cyanGlow)"/>
+  <rect x="204" y="283" width="9" height="9" rx="2" fill="#00d4ff" filter="url(#cyanGlow)"/>
+  <rect x="280" y="283" width="9" height="9" rx="2" fill="#00d4ff" filter="url(#cyanGlow)"/>
+  <!-- Mid handles -->
+  <rect x="241" y="230" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.7"/>
+  <rect x="241" y="283" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.7"/>
+  <rect x="204" y="255" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.7"/>
+  <rect x="280" y="255" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.7"/>
+
+  <!-- ── Mouse cursor ── -->
+  <g transform="translate(278, 280)" filter="url(#violetGlow)">
+    <polygon points="0,0 0,32 8,24 15,40 20,38 13,22 24,22"
+             fill="white" stroke="#6d28d9" stroke-width="2"
+             stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+
+  <!-- ── Right Properties panel ── -->
+  <rect x="344" y="188" width="72" height="192" fill="#0d1630" stroke="#1a3060" stroke-width="1"/>
+  <rect x="350" y="196" width="60" height="8" rx="2" fill="#1e3060"/>
+  <rect x="350" y="210" width="60" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="222" width="60" height="6" rx="2" fill="#0f1e40"/>
+  <!-- Color swatch -->
+  <rect x="350" y="234" width="16" height="16" rx="3" fill="#00d4ff"/>
+  <rect x="372" y="234" width="16" height="16" rx="3" fill="#8b5cf6"/>
+  <rect x="394" y="234" width="16" height="16" rx="3" fill="#4f46e5"/>
+  <rect x="350" y="256" width="60" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="268" width="40" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="282" width="60" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="294" width="50" height="6" rx="2" fill="#0f1e40"/>
+  <!-- Active property highlight -->
+  <rect x="348" y="306" width="64" height="10" rx="3" fill="#1e2d6b"/>
+  <rect x="350" y="322" width="60" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="334" width="45" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="346" width="60" height="6" rx="2" fill="#0f1e40"/>
+  <rect x="350" y="358" width="30" height="6" rx="2" fill="#0f1e40"/>
+
+  <!-- ── Outer ring decorations ── -->
+  <circle cx="256" cy="256" r="248" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.2"/>
+  <circle cx="256" cy="256" r="252" fill="none" stroke="#4f46e5" stroke-width="1.5" opacity="0.15"/>
+
+  <!-- Subtle light leak top-right -->
+  <ellipse cx="380" cy="120" rx="80" ry="60" fill="#3b28d8" opacity="0.07"/>
+</svg>

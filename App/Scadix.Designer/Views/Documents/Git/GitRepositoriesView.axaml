@@ -1,0 +1,405 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:designer="using:Scadix.Designer"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Scadix.Designer.ViewModels"
+             xmlns:views="clr-namespace:Scadix.Designer.Views"
+             xmlns:docs="clr-namespace:Scadix.Designer.Views.Documents"
+             x:Class="Scadix.Designer.Views.Tools.GitRepositoriesView"
+             x:DataType="vm:GitRepositoriesViewModel">
+
+    <UserControl.Resources>
+        <designer:BoolToExpandArrowConverter x:Key="BoolToExpandArrowConverter"/>
+        <designer:BranchColorConverter       x:Key="BranchColorConverter"/>
+        <designer:BoldIfTrueConverter        x:Key="BoldIfTrueConverter"/>
+        <designer:AuthorColorConverter       x:Key="AuthorColorConverter"/>
+        <designer:AuthorInitialConverter     x:Key="AuthorInitialConverter"/>
+        <designer:AuthorShortNameConverter   x:Key="AuthorShortNameConverter"/>
+    </UserControl.Resources>
+
+    <!-- Outer: top=Log, bottom=CommitDetails (shown when commit selected) -->
+    <Grid x:Name="PART_OuterGrid" RowDefinitions="*,Auto,0">
+
+        <!-- ══════════════ TOP: Branches + Log ══════════════ -->
+        <Grid Grid.Row="0" ColumnDefinitions="220,1,*">
+
+            <!-- ── LEFT: Branches / Tags ── -->
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
+
+                <!-- Repo selector -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource ThemeControlLowBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                        BorderThickness="0,0,0,1" Padding="8,5">
+                    <DockPanel>
+                        <ComboBox DockPanel.Dock="Left"
+                                  HorizontalAlignment="Stretch"
+                                  FontSize="12" Height="26"
+                                  SelectedIndex="0">
+                            <ComboBoxItem Content="{Binding CurrentBranch}"/>
+                        </ComboBox>
+                    </DockPanel>
+                </Border>
+
+                <!-- Filter -->
+                <Border Grid.Row="1"
+                        BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                        BorderThickness="0,0,0,1" Padding="6,4">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding BranchSearchText}"
+                                 Watermark="Filter" Height="24" FontSize="11"
+                                 BorderThickness="0" Background="Transparent"/>
+                        <Button Grid.Column="1" Background="Transparent" BorderThickness="0"
+                                Padding="4">
+                            <Path Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+                                  Fill="Gray" Width="13" Height="13" Stretch="Uniform"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Branches tree -->
+                <ScrollViewer Grid.Row="2">
+                    <StackPanel>
+                        <Border Background="{DynamicResource ThemeControlLowBrush}"
+                                Padding="8,4"
+                                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                                BorderThickness="0,0,0,1">
+                            <TextBlock Text="Branches / Tags" FontSize="10" FontWeight="Bold" Foreground="Gray"/>
+                        </Border>
+
+                        <!-- Local -->
+                        <Border Background="{DynamicResource ThemeControlLowBrush}"
+                                Padding="8,3"
+                                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                                BorderThickness="0,0,0,1">
+                            <Button Background="Transparent" BorderThickness="0" Padding="0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                    Command="{Binding ToggleLocalExpanded}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Path Data="{Binding LocalExpanded, Converter={StaticResource BoolToExpandArrowConverter}}"
+                                          Fill="Gray" Width="9" Height="9" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Local" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <TreeView ItemsSource="{Binding LocalBranchNodes}"
+                                  SelectedItem="{Binding SelectedBranchNode}"
+                                  IsVisible="{Binding LocalExpanded}"
+                                  Background="Transparent" BorderThickness="0"
+                                  ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                            <TreeView.Styles>
+                                <Style Selector="TreeViewItem" x:DataType="vm:GitBranchNode">
+                                    <Setter Property="MinHeight" Value="22"/>
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                </Style>
+                            </TreeView.Styles>
+                            <TreeView.ItemTemplate>
+                                <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:GitBranchNode">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                        <StackPanel.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Checkout"
+                                                          Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).CheckoutBranchAsync}"
+                                                          CommandParameter="{Binding Branch}"
+                                                          IsVisible="{Binding !IsFolder}"/>
+                                                <MenuItem Header="New Branch from Here..."
+                                                          Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).NewBranchFromSelectedAsync}"
+                                                          CommandParameter="{Binding Branch}"
+                                                          IsVisible="{Binding !IsFolder}"/>
+                                                <Separator IsVisible="{Binding !IsFolder}"/>
+                                                <MenuItem Header="Merge into Current"
+                                                          Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).MergeBranchAsync}"
+                                                          CommandParameter="{Binding Branch}"
+                                                          IsVisible="{Binding !IsFolder}"/>
+                                                <Separator IsVisible="{Binding !IsFolder}"/>
+                                                <MenuItem Header="Delete"
+                                                          Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).DeleteBranchAsync}"
+                                                          CommandParameter="{Binding Branch}"
+                                                          IsVisible="{Binding !IsFolder}"/>
+                                            </ContextMenu>
+                                        </StackPanel.ContextMenu>
+                                        <Path Data="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+                                              Fill="#E5C07B" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"
+                                              IsVisible="{Binding IsFolder}"/>
+                                        <Path Data="M13,8.5C13,9.7 12.3,10.8 11.3,11.3V12.7C12.3,13.2 13,14.3 13,15.5C13,17.4 11.4,19 9.5,19C7.6,19 6,17.4 6,15.5C6,14.3 6.7,13.2 7.7,12.7V11.3C6.7,10.8 6,9.7 6,8.5C6,6.6 7.6,5 9.5,5C11.4,5 13,6.6 13,8.5Z"
+                                              Fill="{Binding IsCurrent, Converter={StaticResource BranchColorConverter}}"
+                                              Width="9" Height="12" Stretch="Uniform" VerticalAlignment="Center"
+                                              IsVisible="{Binding !IsFolder}"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="12"
+                                                   FontWeight="{Binding IsCurrent, Converter={StaticResource BoldIfTrueConverter}}"
+                                                   Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </TreeDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+
+                        <!-- Remote -->
+                        <Border Background="{DynamicResource ThemeControlLowBrush}"
+                                Padding="8,3" Margin="0,6,0,0"
+                                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                                BorderThickness="0,1,0,1">
+                            <Button Background="Transparent" BorderThickness="0" Padding="0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                    Command="{Binding ToggleRemoteExpanded}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Path Data="{Binding RemoteExpanded, Converter={StaticResource BoolToExpandArrowConverter}}"
+                                          Fill="Gray" Width="9" Height="9" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Remote" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <TreeView ItemsSource="{Binding RemoteBranchNodes}"
+                                  SelectedItem="{Binding SelectedBranchNode}"
+                                  IsVisible="{Binding RemoteExpanded}"
+                                  Background="Transparent" BorderThickness="0"
+                                  ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                            <TreeView.Styles>
+                                <Style Selector="TreeViewItem" x:DataType="vm:GitBranchNode">
+                                    <Setter Property="MinHeight" Value="22"/>
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                </Style>
+                            </TreeView.Styles>
+                            <TreeView.ItemTemplate>
+                                <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:GitBranchNode">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,2">
+                                        <Path Data="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+                                              Fill="#E5C07B" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"
+                                              IsVisible="{Binding IsFolder}"/>
+                                        <Path Data="M13,8.5C13,9.7 12.3,10.8 11.3,11.3V12.7C12.3,13.2 13,14.3 13,15.5C13,17.4 11.4,19 9.5,19C7.6,19 6,17.4 6,15.5C6,14.3 6.7,13.2 7.7,12.7V11.3C6.7,10.8 6,9.7 6,8.5C6,6.6 7.6,5 9.5,5C11.4,5 13,6.6 13,8.5Z"
+                                              Fill="Gray" Width="9" Height="12" Stretch="Uniform" VerticalAlignment="Center"
+                                              IsVisible="{Binding !IsFolder}"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="12"
+                                                   Foreground="Gray" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </TreeDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+
+                        <!-- Tags -->
+                        <Border Padding="8,3" Margin="0,6,0,0"
+                                Background="{DynamicResource ThemeControlLowBrush}"
+                                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                                BorderThickness="0,1,0,1">
+                            <Button Background="Transparent" BorderThickness="0" Padding="0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                    Command="{Binding ToggleTagsExpanded}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Path Data="{Binding TagsExpanded, Converter={StaticResource BoolToExpandArrowConverter}}"
+                                          Fill="Gray" Width="9" Height="9" Stretch="Uniform" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Tags" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ThemeForegroundBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Tags}"
+                                      IsVisible="{Binding TagsExpanded}"
+                                      Background="Transparent">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:GitTag">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="12,2,4,2">
+                                        <!-- Tag icon -->
+                                        <Path Data="M5.5,2H9A1,1 0 0,1 9.71,2.29L17.71,10.29C18.1,10.68 18.1,11.31 17.71,11.7L11.7,17.71C11.31,18.1 10.68,18.1 10.29,17.71L2.29,9.71A1,1 0 0,1 2,9V5.5A3.5,3.5 0 0,1 5.5,2M5.5,4A1.5,1.5 0 0,0 4,5.5A1.5,1.5 0 0,0 5.5,7A1.5,1.5 0 0,0 7,5.5A1.5,1.5 0 0,0 5.5,4Z"
+                                              Fill="#E5C07B" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="12"
+                                                   Foreground="{DynamicResource ThemeForegroundBrush}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Splitter -->
+            <Rectangle Grid.Column="1" Fill="{DynamicResource ThemeBorderLowBrush}"/>
+
+            <!-- ── RIGHT: Commit Log ── -->
+            <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*">
+
+                <!-- Toolbar -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource ThemeControlLowBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                        BorderThickness="0,0,0,1" Padding="6,4">
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="2" DockPanel.Dock="Left">
+                            <Button Command="{Binding RefreshAsync}" Background="Transparent" Padding="5"
+                                    ToolTip.Tip="Refresh" BorderThickness="0">
+                                <Path Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                      Fill="{DynamicResource ThemeForegroundLowBrush}" Width="13" Height="13" Stretch="Uniform"/>
+                            </Button>
+                            <Rectangle Width="1" Height="16" Fill="{DynamicResource ThemeBorderLowBrush}" Margin="2,0"/>
+                            <Button Command="{Binding FetchAsync}" Background="Transparent" Padding="5"
+                                    ToolTip.Tip="Fetch" BorderThickness="0">
+                                <Path Data="M20,12V20H4V12H9L12,15L15,12H20M20,10H15L12,13L9,10H4V8H20V10Z"
+                                      Fill="#61AFEF" Width="13" Height="13" Stretch="Uniform"/>
+                            </Button>
+                            <Button Command="{Binding PullAsync}" Background="Transparent" Padding="5"
+                                    ToolTip.Tip="Pull" BorderThickness="0">
+                                <Path Data="M20,12V20H4V12H9L12,15L15,12H20M20,10H15L12,13L9,10H4V8H20V10Z"
+                                      Fill="#5DA656" Width="13" Height="13" Stretch="Uniform"/>
+                            </Button>
+                            <Button Command="{Binding PreparePushAsync}" Background="Transparent" Padding="5"
+                                    ToolTip.Tip="Push" BorderThickness="0">
+                                <Path Data="M4,12V4H20V12H15L12,9L9,12H4M4,14H9L12,11L15,14H20V16H4V14Z"
+                                      Fill="#E06C75" Width="13" Height="13" Stretch="Uniform"/>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right"
+                                    VerticalAlignment="Center">
+                            <TextBox Text="{Binding FilterText}"
+                                     Watermark="Filter History" Width="160" Height="24" FontSize="11"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Branch label -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource ThemeControlLowBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                        BorderThickness="0,0,0,1" Padding="8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Branch / Tag:" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+                        <Path Data="M13,8.5C13,9.7 12.3,10.8 11.3,11.3V12.7C12.3,13.2 13,14.3 13,15.5C13,17.4 11.4,19 9.5,19C7.6,19 6,17.4 6,15.5C6,14.3 6.7,13.2 7.7,12.7V11.3C6.7,10.8 6,9.7 6,8.5C6,6.6 7.6,5 9.5,5C11.4,5 13,6.6 13,8.5Z"
+                              Fill="#61AFEF" Width="9" Height="12" Stretch="Uniform" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentBranch}" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#61AFEF" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Commit list -->
+                <Grid Grid.Row="2" RowDefinitions="Auto,*">
+                    <!-- Column headers -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource ThemeControlLowBrush}"
+                            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                            BorderThickness="0,0,0,1" Padding="4,3">
+                        <Grid ColumnDefinitions="Auto,*,120,90,80">
+                            <TextBlock Grid.Column="0" Text="Graph"   FontSize="10" FontWeight="Bold" Foreground="Gray" MinWidth="60"/>
+                            <TextBlock Grid.Column="1" Text="Message" FontSize="10" FontWeight="Bold" Foreground="Gray" Margin="4,0"/>
+                            <TextBlock Grid.Column="2" Text="Author"  FontSize="10" FontWeight="Bold" Foreground="Gray"/>
+                            <TextBlock Grid.Column="3" Text="Date"    FontSize="10" FontWeight="Bold" Foreground="Gray"/>
+                            <TextBlock Grid.Column="4" Text="ID"      FontSize="10" FontWeight="Bold" Foreground="Gray"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Commits -->
+                    <ListBox Grid.Row="1"
+                             x:Name="CommitList"
+                             ItemsSource="{Binding FilteredCommits}"
+                             SelectedItem="{Binding SelectedCommit}"
+                             Background="Transparent" BorderThickness="0"
+                             SelectionChanged="OnCommitSelected">
+                        <ListBox.ItemContainerTheme>
+                            <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </ControlTheme>
+                        </ListBox.ItemContainerTheme>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GitCommit">
+                                <Grid ColumnDefinitions="Auto,*,120,90,80" Height="26">
+                                    <Grid.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy Revision Number"
+                                                      Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).CopyHashAsync}"
+                                                      CommandParameter="{Binding}"/>
+                                            <Separator/>
+                                            <MenuItem Header="New Branch..."
+                                                      Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).NewBranchFromCommitAsync}"
+                                                      CommandParameter="{Binding}"/>
+                                            <MenuItem Header="Cherry-Pick"
+                                                      Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).CherryPickAsync}"
+                                                      CommandParameter="{Binding}"/>
+                                            <Separator/>
+                                            <MenuItem Header="Revert Commit"
+                                                      Command="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).RevertCommitAsync}"
+                                                      CommandParameter="{Binding}"/>
+                                        </ContextMenu>
+                                    </Grid.ContextMenu>
+                                    <views:CommitGraphControl Grid.Column="0"
+                                                              Commit="{Binding}"
+                                                              RowHeight="26"
+                                                              MaxColumns="{Binding $parent[UserControl].((vm:GitRepositoriesViewModel)DataContext).MaxGraphColumns}"
+                                                              MinWidth="60"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Message}"
+                                               FontSize="12" TextWrapping="NoWrap"
+                                               VerticalAlignment="Center" Margin="4,0"
+                                               Foreground="{DynamicResource ThemeForegroundBrush}"/>
+                                    <!-- Author: real Gravatar avatar with initials fallback -->
+                                    <Grid Grid.Column="2" ColumnDefinitions="22,*" VerticalAlignment="Center">
+                                        <Panel Grid.Column="0" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0">
+                                            <!-- Fallback: colored circle with initial (always present underneath) -->
+                                            <Border Width="18" Height="18" CornerRadius="9"
+                                                    Background="{Binding Author, Converter={StaticResource AuthorColorConverter}}">
+                                                <TextBlock FontSize="9" FontWeight="Bold" Foreground="White"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           Text="{Binding Author, Converter={StaticResource AuthorInitialConverter}}"/>
+                                            </Border>
+                                            <!-- Real avatar: shown on top when loaded -->
+                                            <Border Width="18" Height="18" CornerRadius="9"
+                                                    ClipToBounds="True"
+                                                    IsVisible="{Binding Avatar, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                <Image Source="{Binding Avatar}" Stretch="UniformToFill"/>
+                                            </Border>
+                                        </Panel>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Author, Converter={StaticResource AuthorShortNameConverter}}"
+                                                   FontSize="11" Foreground="Gray" VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </Grid>
+                                    <TextBlock Grid.Column="3" Text="{Binding Date, StringFormat={}{0:dd/MM/yyyy}}"
+                                               FontSize="11" Foreground="Silver" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding ShortHash}"
+                                               FontSize="11" Foreground="#0078D4"
+                                               FontFamily="Consolas" VerticalAlignment="Center"/>
+
+                                    <!-- Row Separator -->
+                                    <Rectangle Grid.Column="0" Grid.ColumnSpan="5" 
+                                               Height="1" Fill="{DynamicResource ThemeBorderLowBrush}" 
+                                               VerticalAlignment="Bottom" Opacity="0.5"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- ══ Splitter between Log and Details ══ -->
+        <GridSplitter Grid.Row="1"
+                      x:Name="DetailsSplitter"
+                      Height="4"
+                      HorizontalAlignment="Stretch"
+                      Background="{DynamicResource ThemeBorderLowBrush}"
+                      IsVisible="{Binding !!SelectedCommit}"/>
+
+        <!-- ══ BOTTOM: Commit Details (shown when commit selected) ══ -->
+        <Border Grid.Row="2"
+                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                BorderThickness="1"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                Margin="0,0,0,0"
+                IsVisible="{Binding !!SelectedCommit}">
+            <docs:CommitDetailsView x:Name="DetailsPanel"
+                                    DataContext="{Binding}"
+                                    MinHeight="200"/>
+        </Border>
+
+        <!-- Busy overlay -->
+        <Border Grid.Row="0" Grid.RowSpan="3"
+                Background="#15000000"
+                IsVisible="{Binding IsBusy}"
+                IsHitTestVisible="False">
+            <ProgressBar IsIndeterminate="True" VerticalAlignment="Top" Height="2"/>
+        </Border>
+    </Grid>
+</UserControl>

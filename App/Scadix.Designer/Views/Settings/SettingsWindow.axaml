@@ -1,0 +1,209 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Scadix.Designer"
+        xmlns:vm="clr-namespace:Scadix.Designer.ViewModels"
+        x:Class="Scadix.Designer.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="Settings"
+        Width="960" Height="660"
+        MinWidth="760" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="#FFFFFF"
+        CanResize="True">
+
+    <Window.Resources>
+        <local:SolutionNodeIconConverter x:Key="IconConverter"/>
+    </Window.Resources>
+
+    <Window.Styles>
+
+        <!-- ── Nav tree item ── -->
+        <Style Selector="TreeViewItem">
+            <Setter Property="Padding"  Value="0"/>
+            <Setter Property="Margin"   Value="0"/>
+        </Style>
+        <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background"   Value="#0078D4"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot TextBlock">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background"   Value="#E5F3FB"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+
+        <!-- ── Settings group header ── -->
+        <Style Selector="TextBlock.group-header">
+            <Setter Property="FontSize"   Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="Margin"     Value="0,16,0,4"/>
+        </Style>
+
+        <!-- ── Settings label ── -->
+        <Style Selector="TextBlock.setting-label">
+            <Setter Property="FontSize"          Value="12"/>
+            <Setter Property="Foreground"        Value="#1E1E1E"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="MinWidth"          Value="200"/>
+        </Style>
+
+        <!-- ── Settings control row ── -->
+        <Style Selector="Border.setting-row">
+            <Setter Property="Padding"         Value="0,6"/>
+            <Setter Property="BorderBrush"     Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+
+        <!-- ── ComboBox / TextBox in settings ── -->
+        <Style Selector="ComboBox.setting-ctrl">
+            <Setter Property="MinWidth"   Value="180"/>
+            <Setter Property="FontSize"   Value="12"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="#1E1E1E"/>
+        </Style>
+        <Style Selector="TextBox.setting-ctrl">
+            <Setter Property="MinWidth"   Value="180"/>
+            <Setter Property="FontSize"   Value="12"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="#1E1E1E"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="FontSize"   Value="12"/>
+            <Setter Property="Foreground" Value="#1E1E1E"/>
+        </Style>
+
+        <!-- ── Section divider ── -->
+        <Style Selector="Separator.section">
+            <Setter Property="Background" Value="#E0E0E0"/>
+            <Setter Property="Height"     Value="1"/>
+            <Setter Property="Margin"     Value="0,12,0,12"/>
+        </Style>
+
+    </Window.Styles>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ── Title bar ── -->
+        <Border Grid.Row="0" Background="#F3F3F3" Height="40"
+                BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <DockPanel Margin="16,0">
+                <TextBlock Text="Settings"
+                           FontSize="14" FontWeight="SemiBold"
+                           Foreground="#1E1E1E"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Body: left nav + right content ── -->
+        <Grid Grid.Row="1" ColumnDefinitions="260,Auto,*">
+
+            <!-- ── LEFT: Navigation panel ── -->
+            <Border Grid.Column="0" Background="#F7F7F7"
+                    BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
+                <DockPanel>
+
+                    <!-- Search box -->
+                    <Border DockPanel.Dock="Top"
+                            Background="#FFFFFF"
+                            Margin="8,8,8,4"
+                            CornerRadius="4"
+                            BorderBrush="#CCCCCC" BorderThickness="1">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0"
+                                       Text="🔍" FontSize="11"
+                                       Foreground="#888888"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,4,0"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding SearchText}"
+                                     Watermark="Search settings..."
+                                     FontSize="12"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="#1E1E1E"
+                                     Padding="4,6"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tree -->
+                    <ScrollViewer DockPanel.Dock="Top"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Margin="4,4,4,4">
+                        <TreeView ItemsSource="{Binding Pages}"
+                                  Background="Transparent"
+                                  SelectionChanged="NavTree_SelectionChanged">
+                            <TreeView.ItemTemplate>
+                                <TreeDataTemplate ItemsSource="{Binding Children}">
+                                    <Border Classes="setting-row"
+                                            BorderThickness="0"
+                                            Padding="4,3"
+                                            IsVisible="{Binding IsVisible}"
+                                            CornerRadius="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="7">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="12"
+                                                       Foreground="#1E1E1E"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </TreeDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </ScrollViewer>
+
+                </DockPanel>
+            </Border>
+
+            <!-- ── Splitter ── -->
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          Background="#E0E0E0"
+                          ResizeDirection="Columns"/>
+
+            <!-- ── RIGHT: Content panel ── -->
+            <ScrollViewer Grid.Column="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Background="#FFFFFF">
+                <ContentControl x:Name="ContentArea"
+                                Margin="28,20,28,20"/>
+            </ScrollViewer>
+
+        </Grid>
+
+        <!-- ── Footer: OK / Cancel / Apply ── -->
+        <Border Grid.Row="2" Background="#F3F3F3"
+                BorderBrush="#E0E0E0" BorderThickness="0,1,0,0"
+                Height="48">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Spacing="8" Margin="16,0">
+                <Button Content="Apply"
+                        Width="80" Height="28"
+                        FontSize="12"
+                        Background="#E8E8E8"
+                        Foreground="#1E1E1E"
+                        Click="Apply_Click"/>
+                <Button Content="Cancel"
+                        Width="80" Height="28"
+                        FontSize="12"
+                        Background="#E8E8E8"
+                        Foreground="#1E1E1E"
+                        Click="Cancel_Click"/>
+                <Button Content="OK"
+                        Width="80" Height="28"
+                        FontSize="12"
+                        Background="#0078D4"
+                        Foreground="White"
+                        Click="OK_Click"/>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</Window>

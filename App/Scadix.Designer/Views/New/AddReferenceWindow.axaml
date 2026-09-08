@@ -1,0 +1,108 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Scadix.Designer"
+        x:Class="Scadix.Designer.AddReferenceWindow"
+        Title="Reference Manager"
+        Width="500" Height="400"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
+
+    <Window.Styles>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBox.sidebar ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E2E2E2"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="ListBox.sidebar ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F0F0F0"/>
+        </Style>
+        <Style Selector="Button.btn-footer">
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Button.btn-primary">
+            <Setter Property="Background" Value="#3574F0"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header / Search -->
+        <Border Grid.Row="0" Background="#F2F2F2" BorderBrush="#D1D1D1" BorderThickness="0,0,0,1" Padding="8,4">
+            <Grid ColumnDefinitions="*,250">
+                <TextBlock Text="Reference Manager" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12" Margin="8,0"/>
+                <TextBox Grid.Column="1" x:Name="SearchBox" 
+                         Watermark="Search..." 
+                         Height="24" 
+                         Padding="5,0"
+                         FontSize="12"
+                         Background="White"
+                         TextChanged="SearchBox_TextChanged"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="160,1,*">
+            <!-- Sidebar -->
+            <ListBox Grid.Column="0" Classes="sidebar" Background="#F2F2F2" BorderThickness="0,0,1,0" BorderBrush="#D1D1D1" SelectedIndex="0">
+                <ListBoxItem Padding="12,6">Projects</ListBoxItem>
+                <ListBoxItem Padding="12,6" IsEnabled="False">Packages</ListBoxItem>
+                <ListBoxItem Padding="12,6" IsEnabled="False">Assemblies</ListBoxItem>
+                <ListBoxItem Padding="12,6" IsEnabled="False">COM</ListBoxItem>
+            </ListBox>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Background="#D1D1D1"/>
+
+            <!-- Right Side: Content Area -->
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <!-- List Header -->
+                <Border Grid.Row="0" Background="#F2F2F2" BorderBrush="#D1D1D1" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="40,*,2*">
+                        <TextBlock Grid.Column="1" Text="Name" FontSize="11" FontWeight="SemiBold" Margin="8,4"/>
+                        <TextBlock Grid.Column="2" Text="Path" FontSize="11" FontWeight="SemiBold" Margin="8,4"/>
+                    </Grid>
+                </Border>
+
+                <!-- Project List -->
+                <ListBox Grid.Row="1" x:Name="ProjectListBox" 
+                         Background="White" BorderThickness="0"
+                         SelectionMode="Multiple">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="local:SolutionNode">
+                            <Grid ColumnDefinitions="40,*,2*" Margin="0,2">
+                                <CheckBox IsChecked="{Binding $parent[ListBoxItem].IsSelected}" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <TextBlock Text="🔷" FontSize="12" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="12"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding FilePath}" 
+                                           FontSize="11" Foreground="#888888" 
+                                           VerticalAlignment="Center" 
+                                           Margin="8,0"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#F2F2F2" BorderBrush="#D1D1D1" BorderThickness="0,1,0,0" Padding="12,8">
+            <DockPanel>
+                <Button Content="Add from..." Classes="btn-footer" Click="AddFrom_Click"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button x:Name="OkBtn" Content="OK" Classes="btn-footer btn-primary" Click="Add_Click"/>
+                    <Button Content="Cancel" Classes="btn-footer" Click="Cancel_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

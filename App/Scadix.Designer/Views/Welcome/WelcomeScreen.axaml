@@ -1,0 +1,411 @@
+<Window
+    x:Class="Scadix.Designer.WelcomeScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Scadix.Designer"
+    Title="Welcome to XAML Studio"
+    Width="900"
+    Height="620"
+    MinWidth="760"
+    MinHeight="500"
+    WindowStartupLocation="CenterScreen"
+    Background="#EBECF0"
+    CanResize="True"
+    ExtendClientAreaToDecorationsHint="True"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1">
+
+    <Window.Styles>
+
+        <!-- â”€â”€ Sidebar button (New / Open / Get from VCS) â”€â”€ -->
+        <Style Selector="Button.sidebar-action">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#BABABA" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="14,9" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.sidebar-action:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E0E1E4" />
+            <Setter Property="TextElement.Foreground" Value="#1F1F1F" />
+        </Style>
+        <Style Selector="Button.sidebar-action:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D8D9DC" />
+        </Style>
+
+        <!-- â”€â”€ Recent project row â”€â”€ -->
+        <Style Selector="Button.project-row">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.project-row:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E0E1E4" />
+        </Style>
+        <Style Selector="Button.project-row:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D8D9DC" />
+        </Style>
+
+        <!-- â”€â”€ Search box â”€â”€ -->
+        <Style Selector="TextBox.search-box">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#BABABA" />
+            <Setter Property="BorderBrush" Value="#D8D9DC" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="CaretBrush" Value="#6B9FD4" />
+        </Style>
+        <Style Selector="TextBox.search-box:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#4D78CC" />
+        </Style>
+
+        <!-- â”€â”€ Window chrome button â”€â”€ -->
+        <Style Selector="Button.chrome-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#888888" />
+        </Style>
+        <Style Selector="Button.chrome-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D8D9DC" />
+            <Setter Property="TextElement.Foreground" Value="#1F1F1F" />
+        </Style>
+        <Style Selector="Button.chrome-btn.close:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C0392B" />
+            <Setter Property="TextElement.Foreground" Value="#1F1F1F" />
+        </Style>
+
+    </Window.Styles>
+
+          <!--Root: title-bar drag area + content-->
+     <Grid RowDefinitions="36,*">
+
+        <!-- â”€â”€ Custom title bar â”€â”€ -->
+        <Grid Grid.Row="0"
+              Background="#EBECF0"
+              ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0"
+                       Text="XAML Studio"
+                       Foreground="#5A5D63"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       Margin="16,0,0,0" />
+            <!-- Window controls -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="2"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center">
+                <Button Classes="chrome-btn"
+                        Click="MinimizeWindow">
+                    <TextBlock Text="&#x2212;" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+                <Button Classes="chrome-btn"
+                        Click="MaximizeWindow">
+                    <TextBlock Text="&#x25A1;" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+                <Button Classes="chrome-btn close"
+                        Click="CloseWindow">
+                    <TextBlock Text="&#x2715;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+              <!--Main body: left sidebar + right content-->
+         <Grid Grid.Row="1"
+              ColumnDefinitions="220,*"
+              Background="#EBECF0">
+
+            <!-- â”€â”€ LEFT SIDEBAR (Island) â”€â”€ -->
+            <Border Grid.Column="0"
+                    Background="#F7F8FA"
+                    CornerRadius="10,0,0,10"
+                    Margin="8,0,4,8"
+                    Padding="10,16,10,16">
+                <DockPanel>
+
+                    <!-- Logo + product name -->
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                Spacing="10"
+                                Margin="4,0,0,20">
+                        <!-- Rider-style logo placeholder -->
+                        <Border Width="36" Height="36"
+                                CornerRadius="8"
+                                 >
+                            <Image
+							 
+							Source="avares://Scadix.Designer/Assets/ScadixDesigner.png"
+							  />
+                           
+                             
+                        </Border>
+                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                            <TextBlock Text="XAML Studio"
+                                       Foreground="#1F1F1F"
+                                       FontWeight="SemiBold"
+                                       FontSize="13" />
+                            <TextBlock Text="2026.1"
+                                       Foreground="#9DA0A8"
+                                       FontSize="11" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Action buttons -->
+                    <StackPanel DockPanel.Dock="Top" Spacing="2">
+                        <Button Classes="sidebar-action" x:Name="ProjectsBtn" Click="Projects_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18" CornerRadius="4" Background="#D8D9DC" VerticalAlignment="Center">
+                                    <TextBlock Text="☰" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Projects" VerticalAlignment="Center" FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="sidebar-action"
+                                x:Name="NewProjectBtn"
+                                Click="NewProject_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18"
+                                        CornerRadius="4"
+                                        Background="#4D78CC"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="+"
+                                               Foreground="#1F1F1F"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="New Project"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="sidebar-action"
+                                x:Name="OpenBtn"
+                                Click="Open_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18"
+                                        CornerRadius="4"
+                                        Background="#D8D9DC"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="&#x1F4C2;"
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Open File"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- ── Open Project / Solution ── -->
+                        <Button Classes="sidebar-action"
+                                x:Name="OpenProjectBtn"
+                                Click="OpenProject_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18"
+                                        CornerRadius="4"
+                                        Background="#4D78CC"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="⊞"
+                                               Foreground="#FFFFFF"
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Open Project"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- ── Open Folder ── -->
+                        <Button Classes="sidebar-action"
+                                x:Name="OpenFolderBtn"
+                                Click="OpenFolder_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18"
+                                        CornerRadius="4"
+                                        Background="#D8D9DC"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="📁"
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Open Folder"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- ── Open Designer (no project) ── -->
+                        <Button Classes="sidebar-action"
+                                x:Name="OpenDesignerBtn"
+                                Click="OpenDesigner_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18"
+                                        CornerRadius="4"
+                                        Background="#C21460"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="✏"
+                                               Foreground="#FFFFFF"
+                                               FontSize="10"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Open Designer"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="sidebar-action" Click="GetFromVCS_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Border Width="18" Height="18"
+                                        CornerRadius="4"
+                                        Background="#D8D9DC"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="&#x2193;"
+                                               Foreground="#5A5D63"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="Get from VCS"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Separator -->
+                    <Border DockPanel.Dock="Top"
+                            Height="1"
+                            Background="#D8D9DC"
+                            Margin="4,16,4,16" />
+
+                    <!-- Bottom: Settings + Help -->
+                    <StackPanel DockPanel.Dock="Bottom" Spacing="2">
+                        <Border Height="1"
+                                Background="#D8D9DC"
+                                Margin="4,8,4,8" />
+                        <Button Classes="sidebar-action" x:Name="SettingsBtn" Click="Settings_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="&#x2699;"
+                                           Foreground="#9DA0A8"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Settings"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="sidebar-action" x:Name="HelpBtn">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="&#x2753;"
+                                           Foreground="#9DA0A8"
+                                           FontSize="13"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Help"
+                                           VerticalAlignment="Center"
+                                           FontSize="13" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Spacer -->
+                    <Grid />
+
+                </DockPanel>
+            </Border>
+
+            <!-- ── RIGHT CONTENT (Main Area) ── -->
+            <Border Grid.Column="1"
+                    Background="#FFFFFF"
+                    CornerRadius="0,10,10,0"
+                    Margin="4,0,8,8"
+                    Padding="20,20,20,16">
+                <DockPanel>
+                    <!-- Version Info Footer -->
+                    <Border DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="XAML Studio 2026.1  ·  .NET 10  ·  Avalonia UI"
+                                       Foreground="#4A4C50"
+                                       FontSize="11"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       Text="What's New"
+                                       Foreground="#4D78CC"
+                                       FontSize="11"
+                                       VerticalAlignment="Center"
+                                       Cursor="Hand" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Dynamic Content -->
+                    <Grid>
+                        <ContentControl x:Name="MainContent" />
+
+                        <!-- Template Warning Banner -->
+                        <Border x:Name="TemplateWarningBanner" 
+                                IsVisible="False"
+                                VerticalAlignment="Bottom"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,10"
+                                Padding="12,8"
+                                Background="#FFF8E1"
+                                BorderBrush="#FFE082"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚠" Foreground="#F57C00" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Essential project templates are missing (Uno, Avalonia)." 
+                                               FontSize="12" Foreground="#5D4037" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" 
+                                        Content="Install Now" 
+                                        Classes="btn-link"
+                                        FontSize="12"
+                                        Foreground="#4D78CC"
+                                        Cursor="Hand"
+                                        Margin="10,0"
+                                        Click="InstallTemplates_Click"/>
+                                <Button Grid.Column="2" 
+                                        Content="✕" 
+                                        Background="Transparent" 
+                                        BorderThickness="0"
+                                        Padding="4"
+                                        FontSize="10"
+                                        Click="CloseBanner_Click"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+            </Border>
+
+        </Grid>
+    </Grid>
+</Window>
+

@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Project Path="TemplateProjectName.Android/TemplateProjectName.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="TemplateProjectName.Browser/TemplateProjectName.Browser.csproj" />
+  <Project Path="TemplateProjectName.Desktop/TemplateProjectName.Desktop.csproj" />
+  <Project Path="TemplateProjectName.iOS/TemplateProjectName.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="TemplateProjectName/TemplateProjectName.csproj" />
+</Solution>

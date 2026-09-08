@@ -1,0 +1,642 @@
+﻿<Window
+    x:Class="Scadix.Designer.MainScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="XAML Studio - Islands Light"
+    Width="1200"
+    Height="800"
+    MinWidth="900"
+    MinHeight="600"
+    WindowStartupLocation="CenterScreen"
+    Background="#EBECF0"
+    CanResize="True"
+    ExtendClientAreaToDecorationsHint="True"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1">
+
+    <Window.Styles>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             Islands Light Theme Styles
+        ══════════════════════════════════════════════════════════════ -->
+
+        <!-- ── Main action button (New Project, Open) ── -->
+        <Style Selector="Button.main-action">
+            <Setter Property="Background" Value="#4D78CC" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.main-action:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#5A86D6" />
+        </Style>
+        <Style Selector="Button.main-action:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3D68BC" />
+        </Style>
+
+        <!-- ── Secondary action button ── -->
+        <Style Selector="Button.secondary-action">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#1F1F1F" />
+            <Setter Property="BorderBrush" Value="#C9CACE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.secondary-action:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D8D9DC" />
+        </Style>
+        <Style Selector="Button.secondary-action:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#C9CACE" />
+        </Style>
+
+        <!-- ── Quick action card button ── -->
+        <Style Selector="Button.quick-action-card">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#C9CACE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="20,16" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Button.quick-action-card:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F7F8FA" />
+            <Setter Property="BorderBrush" Value="#4D78CC" />
+        </Style>
+        <Style Selector="Button.quick-action-card:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#EBECF0" />
+        </Style>
+
+        <!-- ── Recent project card ── -->
+        <Style Selector="Button.project-card">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#C9CACE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Button.project-card:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F7F8FA" />
+            <Setter Property="BorderBrush" Value="#4D78CC" />
+        </Style>
+        <Style Selector="Button.project-card:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#EBECF0" />
+        </Style>
+
+        <!-- ── Search box ── -->
+        <Style Selector="TextBox.search-box">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#1F1F1F" />
+            <Setter Property="BorderBrush" Value="#C9CACE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="CaretBrush" Value="#4D78CC" />
+        </Style>
+        <Style Selector="TextBox.search-box:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#4D78CC" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <!-- ── Window chrome buttons ── -->
+        <Style Selector="Button.chrome-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#5A5D63" />
+        </Style>
+        <Style Selector="Button.chrome-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D8D9DC" />
+            <Setter Property="TextElement.Foreground" Value="#1F1F1F" />
+        </Style>
+        <Style Selector="Button.chrome-btn.close:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E81123" />
+            <Setter Property="TextElement.Foreground" Value="#FFFFFF" />
+        </Style>
+
+        <!-- ── Link button ── -->
+        <Style Selector="Button.link-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#4D78CC" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Button.link-btn:pointerover">
+            <Setter Property="Foreground" Value="#5A86D6" />
+        </Style>
+
+    </Window.Styles>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         Root Layout
+    ══════════════════════════════════════════════════════════════ -->
+    <Grid RowDefinitions="40,*">
+
+        <!-- ── Custom Title Bar ── -->
+        <Grid Grid.Row="0"
+              Background="#F7F8FA"
+              ColumnDefinitions="Auto,*,Auto">
+            
+            <!-- Logo + Title -->
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="10"
+                        VerticalAlignment="Center"
+                        Margin="12,0,0,0">
+                <Border Width="24" Height="24"
+                        CornerRadius="6"
+                        Background="#C21460">
+                    <TextBlock Text="X"
+                               Foreground="#FFFFFF"
+                               FontWeight="Bold"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="XAML Studio"
+                           Foreground="#1F1F1F"
+                           FontSize="13"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Window Controls -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="4"
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0">
+                <Button Classes="chrome-btn"
+                        Click="MinimizeWindow">
+                    <TextBlock Text="&#x2212;" FontSize="14" />
+                </Button>
+                <Button Classes="chrome-btn"
+                        Click="MaximizeWindow">
+                    <TextBlock Text="&#x25A1;" FontSize="12" />
+                </Button>
+                <Button Classes="chrome-btn close"
+                        Click="CloseWindow">
+                    <TextBlock Text="&#x2715;" FontSize="13" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- ══════════════════════════════════════════════════════════
+             Main Content Area
+        ══════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="1"
+              ColumnDefinitions="280,*"
+              Margin="12,12,12,12">
+
+            <!-- ── LEFT PANEL (Island) ── -->
+            <Border Grid.Column="0"
+                    Background="#F7F8FA"
+                    CornerRadius="12"
+                    Padding="20,24"
+                    Margin="0,0,6,0">
+                <DockPanel>
+
+                    <!-- Header -->
+                    <StackPanel DockPanel.Dock="Top" Spacing="20">
+                        <TextBlock Text="Get Started"
+                                   Foreground="#1F1F1F"
+                                   FontSize="20"
+                                   FontWeight="SemiBold" />
+
+                        <!-- Main Actions -->
+                        <StackPanel Spacing="10">
+                            <Button Classes="main-action"
+                                    x:Name="NewProjectBtn"
+                                    Click="NewProject_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="+" FontSize="16" FontWeight="Bold" />
+                                    <TextBlock Text="New Project" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="secondary-action"
+                                    x:Name="OpenBtn"
+                                    Click="Open_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="&#x1F4C2;" FontSize="12" />
+                                    <TextBlock Text="Open" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="secondary-action">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="&#x2193;" FontSize="13" FontWeight="Bold" />
+                                    <TextBlock Text="Get from VCS" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Separator -->
+                    <Border DockPanel.Dock="Top"
+                            Height="1"
+                            Background="#C9CACE"
+                            Margin="0,24,0,20" />
+
+                    <!-- Quick Actions -->
+                    <StackPanel DockPanel.Dock="Top" Spacing="12">
+                        <TextBlock Text="Quick Actions"
+                                   Foreground="#5A5D63"
+                                   FontSize="11"
+                                   FontWeight="Medium"
+                                   LetterSpacing="0.5" />
+
+                        <Button Classes="quick-action-card">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="&#x1F4DA; Learn"
+                                           Foreground="#1F1F1F"
+                                           FontSize="13"
+                                           FontWeight="Medium" />
+                                <TextBlock Text="Tutorials and guides"
+                                           Foreground="#5A5D63"
+                                           FontSize="11"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="quick-action-card">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="&#x2699; Settings"
+                                           Foreground="#1F1F1F"
+                                           FontSize="13"
+                                           FontWeight="Medium" />
+                                <TextBlock Text="Configure your IDE"
+                                           Foreground="#5A5D63"
+                                           FontSize="11"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Classes="quick-action-card">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="&#x1F4E6; Plugins"
+                                           Foreground="#1F1F1F"
+                                           FontSize="13"
+                                           FontWeight="Medium" />
+                                <TextBlock Text="Extend functionality"
+                                           Foreground="#5A5D63"
+                                           FontSize="11"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Spacer -->
+                    <Grid />
+
+                    <!-- Bottom Links -->
+                    <StackPanel DockPanel.Dock="Bottom" Spacing="8">
+                        <Border Height="1"
+                                Background="#C9CACE"
+                                Margin="0,0,0,12" />
+                        <Button Classes="link-btn"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="&#x2753; Help &amp; Support" />
+                        </Button>
+                        <Button Classes="link-btn"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="&#x2139; About XAML Studio" />
+                        </Button>
+                    </StackPanel>
+
+                </DockPanel>
+            </Border>
+
+            <!-- ── RIGHT PANEL (Island) ── -->
+            <Border Grid.Column="1"
+                    Background="#F7F8FA"
+                    CornerRadius="12"
+                    Margin="6,0,0,0">
+                <DockPanel Margin="24,24">
+
+                    <!-- Header with Search -->
+                    <Grid DockPanel.Dock="Top"
+                          ColumnDefinitions="*,Auto"
+                          Margin="0,0,0,20">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Recent Projects"
+                                       Foreground="#1F1F1F"
+                                       FontSize="20"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="Pick up where you left off"
+                                       Foreground="#5A5D63"
+                                       FontSize="12" />
+                        </StackPanel>
+                        <TextBox Grid.Column="1"
+                                 Classes="search-box"
+                                 Watermark="&#x1F50D;  Search..."
+                                 Width="220"
+                                 VerticalAlignment="Center"
+                                 x:Name="SearchBox"
+                                 TextChanged="SearchBox_TextChanged" />
+                    </Grid>
+
+                    <!-- Projects List -->
+                    <ScrollViewer DockPanel.Dock="Top"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="ProjectsList" Spacing="10">
+
+                            <!-- Project Card 1 -->
+                            <Button Classes="project-card"
+                                    Click="OpenRecentProject_Click"
+                                    Tag="XAMLStudio">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <!-- Icon -->
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            CornerRadius="10"
+                                            Background="#C21460"
+                                            Margin="0,0,16,0">
+                                        <TextBlock Text="X"
+                                                   Foreground="#FFFFFF"
+                                                   FontWeight="Bold"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <!-- Info -->
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="4">
+                                        <TextBlock Text="XAMLStudio"
+                                                   Foreground="#1F1F1F"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="C:\Projects\XAMLStudio"
+                                                   Foreground="#5A5D63"
+                                                   FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text=".NET 10"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text="Avalonia"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <!-- Date -->
+                                    <TextBlock Grid.Column="2"
+                                               Text="Today"
+                                               Foreground="#9DA0A8"
+                                               FontSize="11"
+                                               VerticalAlignment="Top"
+                                               Margin="12,0,0,0" />
+                                </Grid>
+                            </Button>
+
+                            <!-- Project Card 2 -->
+                            <Button Classes="project-card">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            CornerRadius="10"
+                                            Background="#2E7D32"
+                                            Margin="0,0,16,0">
+                                        <TextBlock Text="M"
+                                                   Foreground="#FFFFFF"
+                                                   FontWeight="Bold"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="4">
+                                        <TextBlock Text="MyAvaloniaApp"
+                                                   Foreground="#1F1F1F"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="C:\Projects\MyAvaloniaApp"
+                                                   Foreground="#5A5D63"
+                                                   FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text=".NET 9"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text="Avalonia"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2"
+                                               Text="Yesterday"
+                                               Foreground="#9DA0A8"
+                                               FontSize="11"
+                                               VerticalAlignment="Top"
+                                               Margin="12,0,0,0" />
+                                </Grid>
+                            </Button>
+
+                            <!-- Project Card 3 -->
+                            <Button Classes="project-card">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            CornerRadius="10"
+                                            Background="#1565C0"
+                                            Margin="0,0,16,0">
+                                        <TextBlock Text="B"
+                                                   Foreground="#FFFFFF"
+                                                   FontWeight="Bold"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="4">
+                                        <TextBlock Text="BlazorDashboard"
+                                                   Foreground="#1F1F1F"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="C:\Dev\BlazorDashboard"
+                                                   Foreground="#5A5D63"
+                                                   FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text=".NET 8"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text="Blazor"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2"
+                                               Text="3 days ago"
+                                               Foreground="#9DA0A8"
+                                               FontSize="11"
+                                               VerticalAlignment="Top"
+                                               Margin="12,0,0,0" />
+                                </Grid>
+                            </Button>
+
+                            <!-- Project Card 4 -->
+                            <Button Classes="project-card">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            CornerRadius="10"
+                                            Background="#6A1B9A"
+                                            Margin="0,0,16,0">
+                                        <TextBlock Text="W"
+                                                   Foreground="#FFFFFF"
+                                                   FontWeight="Bold"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="4">
+                                        <TextBlock Text="WpfMigration"
+                                                   Foreground="#1F1F1F"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="D:\Work\WpfMigration"
+                                                   Foreground="#5A5D63"
+                                                   FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text=".NET 8"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text="WPF"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2"
+                                               Text="Last week"
+                                               Foreground="#9DA0A8"
+                                               FontSize="11"
+                                               VerticalAlignment="Top"
+                                               Margin="12,0,0,0" />
+                                </Grid>
+                            </Button>
+
+                            <!-- Project Card 5 -->
+                            <Button Classes="project-card">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0"
+                                            Width="48" Height="48"
+                                            CornerRadius="10"
+                                            Background="#E65100"
+                                            Margin="0,0,16,0">
+                                        <TextBlock Text="A"
+                                                   Foreground="#FFFFFF"
+                                                   FontWeight="Bold"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="4">
+                                        <TextBlock Text="ApiGateway"
+                                                   Foreground="#1F1F1F"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="C:\Dev\ApiGateway"
+                                                   Foreground="#5A5D63"
+                                                   FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text=".NET 9"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                            <Border Background="#EBECF0"
+                                                    CornerRadius="4"
+                                                    Padding="6,2">
+                                                <TextBlock Text="ASP.NET Core"
+                                                           Foreground="#5A5D63"
+                                                           FontSize="10" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2"
+                                               Text="2 weeks ago"
+                                               Foreground="#9DA0A8"
+                                               FontSize="11"
+                                               VerticalAlignment="Top"
+                                               Margin="12,0,0,0" />
+                                </Grid>
+                            </Button>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                </DockPanel>
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</Window>

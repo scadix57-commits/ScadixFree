@@ -1,0 +1,178 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Scadix.Designer.ViewModels.Tools"
+             x:Class="Scadix.Designer.Views.Tools.LogicalTreeView"
+             x:DataType="vm:LogicalTreeViewModel"
+             Background="{DynamicResource ThemeBackgroundBrush}">
+
+  <UserControl.Resources>
+    <!-- Recursive node template -->
+    <TreeDataTemplate x:Key="NodeTemplate"
+                      x:DataType="vm:LogicalNode"
+                      ItemsSource="{Binding Children}">
+      <Border IsVisible="{Binding IsVisible}" Background="Transparent">
+        <Border.Styles>
+          <Style Selector="Border:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}"/>
+          </Style>
+        </Border.Styles>
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,1">
+
+          <!-- Type icon -->
+          <Border Grid.Column="0" Width="18" Height="18"
+                  Background="{DynamicResource ThemeControlMidBrush}"
+                  CornerRadius="3" Margin="0,0,5,0">
+            <PathIcon Data="{Binding Icon}" Width="10" Height="10"
+                      Foreground="{DynamicResource ThemeForegroundBrush}"/>
+          </Border>
+
+          <!-- Name badge (if named) -->
+          <Border Grid.Column="1"
+                  IsVisible="{Binding DesignItem.Name, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  Background="#1A0E639C" CornerRadius="3"
+                  Padding="4,1" Margin="0,0,4,0">
+            <TextBlock Text="{Binding DesignItem.Name}"
+                       FontSize="10" Foreground="#0E639C" FontWeight="SemiBold"/>
+          </Border>
+
+          <!-- Type name -->
+          <TextBlock Grid.Column="2"
+                     Text="{Binding TypeName}"
+                     FontSize="11.5"
+                     Foreground="{DynamicResource ThemeForegroundBrush}"
+                     VerticalAlignment="Center"/>
+
+          <!-- Child count chip -->
+          <Border Grid.Column="3"
+                  IsVisible="{Binding Children.Count}"
+                  Background="{DynamicResource ThemeControlMidBrush}"
+                  CornerRadius="8" Padding="5,1" Margin="4,0,2,0">
+            <TextBlock Text="{Binding Children.Count}"
+                       FontSize="9" Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+          </Border>
+        </Grid>
+      </Border>
+    </TreeDataTemplate>
+  </UserControl.Resources>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- ══ Toolbar ════════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource ThemeControlLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="4,3">
+      <StackPanel Orientation="Horizontal" Spacing="4">
+
+        <Button Background="Transparent" BorderThickness="0" Padding="4,2"
+                Command="{Binding ExpandAllCommand}"
+                ToolTip.Tip="Expand All">
+          <PathIcon Data="M3 12l9-9 9 9M5 10v10h6v-6h2v6h6V10"
+                    Width="14" Height="14" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+        </Button>
+
+        <Button Background="Transparent" BorderThickness="0" Padding="4,2"
+                Command="{Binding CollapseAllCommand}"
+                ToolTip.Tip="Collapse All">
+          <PathIcon Data="M3 9l9 9 9-9"
+                    Width="14" Height="14" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+        </Button>
+
+        <Border Width="1" Background="{DynamicResource ThemeBorderLowBrush}" Margin="2,0"/>
+
+        <!-- Stats badge -->
+        <TextBlock VerticalAlignment="Center" FontSize="10"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}">
+          <Run Text="{Binding VisibleNodes}"/>
+          <Run Text="/ "/>
+          <Run Text="{Binding TotalNodes}"/>
+          <Run Text=" elements"/>
+        </TextBlock>
+      </StackPanel>
+    </Border>
+
+    <!-- ══ Search Bar ═════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource ThemeBackgroundBrush}"
+            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="6,4">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <PathIcon Grid.Column="0" Data="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                  Width="12" Height="12"
+                  Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                  Margin="0,0,6,0"/>
+        <TextBox Grid.Column="1"
+                 Text="{Binding SearchQuery}"
+                 Watermark="Filter elements..."
+                 FontSize="11"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0,1"
+                 VerticalAlignment="Center"/>
+        <Button Grid.Column="2"
+                IsVisible="{Binding IsFiltering}"
+                Command="{Binding ClearSearchCommand}"
+                Background="Transparent" BorderThickness="0" Padding="2">
+          <TextBlock Text="✕" FontSize="9" Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- ══ Tree View ══════════════════════════════════════════════════════════ -->
+    <Panel Grid.Row="2">
+
+      <!-- Empty state -->
+      <StackPanel IsVisible="{Binding !HasContent}"
+                  VerticalAlignment="Center" HorizontalAlignment="Center"
+                  Spacing="8">
+        <PathIcon Data="M12 2L2 7l10 5 10-5zm0 7L2 14l10 5 10-5zm0 7L2 19l10 5 10-5z"
+                  Width="32" Height="32"
+                  Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+        <TextBlock Text="No designer active"
+                   FontSize="12" Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   HorizontalAlignment="Center"/>
+        <TextBlock Text="Open a XAML file to inspect its tree"
+                   FontSize="10" Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   HorizontalAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Tree -->
+      <TreeView IsVisible="{Binding HasContent}"
+                ItemsSource="{Binding RootNodes}"
+                SelectedItem="{Binding SelectedNode}"
+                ItemTemplate="{StaticResource NodeTemplate}"
+                Background="Transparent"
+                BorderThickness="0">
+        <TreeView.Styles>
+          <Style Selector="TreeViewItem">
+            <Setter Property="Padding" Value="2,1"/>
+            <Setter Property="MinHeight" Value="0"/>
+          </Style>
+        </TreeView.Styles>
+      </TreeView>
+    </Panel>
+
+    <!-- ══ Status Bar ═════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="3"
+            Background="{DynamicResource ThemeControlLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="6,2"
+            IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Grid ColumnDefinitions="*,Auto" DataContext="{Binding SelectedNode}" x:DataType="vm:LogicalNode">
+        <TextBlock Grid.Column="0"
+                   Text="{Binding DisplayName}"
+                   FontSize="10" FontWeight="SemiBold"
+                   Foreground="{DynamicResource ThemeForegroundBrush}"
+                   VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="1"
+                   Text="{Binding TypeName}"
+                   FontSize="10" Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   VerticalAlignment="Center" Margin="8,0,0,0"/>
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="400"
+             x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.ImagePickerControl"
+             Background="White"
+             Width="300" MaxHeight="450">
+
+    <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Background="White">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="12">
+            
+            <!-- Row 0: Path bar -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,8">
+                <TextBox Grid.Column="0" x:Name="uxFolderPath"
+                         IsReadOnly="True" Background="#F9FAFB"
+                         Foreground="#111827" BorderBrush="#D1D5DB"
+                         FontSize="11" CornerRadius="4" Padding="6,4" Watermark="مسار المجلد"
+                         VerticalAlignment="Center"/>
+                <Button Grid.Column="1" x:Name="uxBrowseFolder"
+                        Content="📂" Margin="4,0,0,0" ToolTip.Tip="تصفح مجلد آخر"
+                        Padding="6,4" CornerRadius="4" VerticalAlignment="Center"
+                        Click="OnBrowseFolderClick"/>
+                <Button Grid.Column="2" x:Name="uxBrowseFile"
+                        Content="🖼️" Margin="4,0,0,0" ToolTip.Tip="اختر ملف من الخارج"
+                        Padding="6,4" CornerRadius="4" VerticalAlignment="Center"
+                        Click="OnBrowseFileClick"/>
+            </Grid>
+
+            <TextBlock Grid.Row="1" Text="الصور المتاحة في المجلد:" Foreground="#6B7280" FontSize="11" Margin="2,0,0,6" FontWeight="Medium"/>
+
+            <!-- Row 2: Image List -->
+            <ListBox Grid.Row="2" x:Name="uxImageList"
+                     Background="White"
+                     BorderBrush="#E5E7EB"
+                     BorderThickness="1"
+                     CornerRadius="4"
+                     MinHeight="120"
+                     SelectionChanged="OnImageSelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                            <Border CornerRadius="2" ClipToBounds="True" BorderBrush="#F3F4F6" BorderThickness="1">
+                                <Image Source="{Binding Thumbnail}"
+                                       Width="24" Height="24"
+                                       Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="{Binding FileName}"
+                                       Foreground="#111827"
+                                       VerticalAlignment="Center"
+                                       FontSize="11" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Row 3: Preview -->
+            <Border Grid.Row="3" Background="#F9FAFB" CornerRadius="4" Padding="6" BorderBrush="#F3F4F6" BorderThickness="1" Margin="0,8,0,0" Height="64">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0" Background="White" CornerRadius="2" BorderBrush="#E5E7EB" BorderThickness="1" Width="50" Height="50">
+                        <Image x:Name="uxPreview" Stretch="Uniform" Margin="2"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="uxFileName" Foreground="#111827" FontSize="11" TextWrapping="Wrap" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxLines="2"/>
+                        <TextBlock x:Name="uxFileSize" Foreground="#6B7280" FontSize="10" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Row 4: Copy Checkbox -->
+            <CheckBox Grid.Row="4" x:Name="uxCopyToAssets" IsChecked="True"
+                      Foreground="#374151" FontSize="11" Margin="0,8,0,0"
+                      Content="نسخ الصورة لمجلد Assets/"/>
+
+            <!-- Row 5: Buttons -->
+            <Grid Grid.Row="5" ColumnDefinitions="*,Auto,Auto" Margin="0,12,0,0">
+                <TextBlock Grid.Column="0" x:Name="uxSelectedPath"
+                           Foreground="#9CA3AF" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" FontSize="10" Margin="0,0,8,0"/>
+                <Button Grid.Column="1" Content="✅" ToolTip.Tip="موافق"
+                        x:Name="uxOk" Margin="0,0,6,0"
+                        Background="#10B981" Foreground="White"
+                        Padding="14,6" CornerRadius="4" FontSize="12"
+                        Click="OnOkClick"/>
+                <Button Grid.Column="2" Content="❌" ToolTip.Tip="إلغاء"
+                        x:Name="uxCancel"
+                        Padding="14,6" CornerRadius="4" FontSize="12"
+                        Background="#EF4444" Foreground="White"
+                        Click="OnCancelClick"/>
+            </Grid>
+
+        </Grid>
+    </Border>
+</UserControl>

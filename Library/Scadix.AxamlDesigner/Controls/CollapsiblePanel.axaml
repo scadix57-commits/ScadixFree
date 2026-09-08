@@ -1,0 +1,33 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Controls="clr-namespace:Scadix.AxamlDesigner.Controls">
+
+    <ControlTheme x:Key="{x:Type Controls:CollapsiblePanel}" TargetType="Controls:CollapsiblePanel">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Controls:CollapsiblePanel">
+                <Border
+                    Name="PART_Border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    IsVisible="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=AnimationProgress, Converter={x:Static Controls:CollapsiblePanelProgressToVisibilityConverter.Instance}}">
+                    <LayoutTransformControl Name="layoutTransform">
+                        <LayoutTransformControl.LayoutTransform>
+                            <ScaleTransform ScaleX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=AnimationProgressX}" ScaleY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=AnimationProgressY}" />
+                        </LayoutTransformControl.LayoutTransform>
+                        <ContentPresenter
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </LayoutTransformControl>
+
+
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

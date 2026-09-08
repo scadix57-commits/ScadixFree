@@ -1,0 +1,17 @@
+﻿<controls:NullableComboBox
+	x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.ComboBoxEditor"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+	
+	BorderThickness="0"
+	SelectedValue="{Binding DesignerValue}"
+	Background="Transparent"
+	Focusable="False"
+	IsNullable="False">
+	<controls:NullableComboBox.ItemsPanel>
+		<ItemsPanelTemplate>
+			<VirtualizingStackPanel />
+		</ItemsPanelTemplate>
+	</controls:NullableComboBox.ItemsPanel>
+</controls:NullableComboBox>

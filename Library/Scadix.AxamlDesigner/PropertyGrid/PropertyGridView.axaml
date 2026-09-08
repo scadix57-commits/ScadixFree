@@ -1,0 +1,482 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Converters="clr-namespace:Scadix.AxamlDesigner"
+    xmlns:PropertyGrid="clr-namespace:Scadix.AxamlDesigner.PropertyGrid"
+    xmlns:PropertyGridBase="clr-namespace:Scadix.AxamlDesign.PropertyGrid;assembly=Scadix.AxamlDesign"
+    xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+    >
+    <ControlTheme x:Key="ExpandButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="ToggleButton">
+                <Border Background="Transparent">
+                    <Border
+                        Width="9"
+                        Height="9"
+                        BorderBrush="#FF7898B5"
+                        BorderThickness="1"
+                        CornerRadius="1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset=".2" Color="White" />
+                                <GradientStop Offset="1" Color="#FFC0B7A6" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Path
+                            x:Name="ExpandPath"
+                            Margin="1,1,1,1"
+                            Data="M 0 2 L 0 3 L 2 3 L 2 5 L 3 5 L 3 3 L 5 3 L 5 2 L 3 2 L 3 0 L 2 0 L 2 2 Z"
+                            Fill="Black" />
+                    </Border>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:checked /template/ Path#ExpandPath">
+            <Setter Property="Data" Value="M 0 2 L 0 3 L 5 3 L 5 2 Z" />
+        </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="MoreButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="ToggleButton">
+                <Border
+                    Background="#F9F9F4"
+                    BorderBrush="#FFF0F0F0"
+                    BorderThickness="0,0,0,1">
+                    <Path
+                        x:Name="arrow"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="M 0 0 L 5 5 L 10 0"
+                        Fill="#FFA0A0A0" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:checked /template/ Path#arrow">
+            <Setter Property="Data" Value="M 0 5 L 5 0 L 10 5" />
+        </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="CategoryToggleStyle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="ToggleButton">
+                <Border Background="#FFE8E8E8" BorderBrush="#FFDADADA" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" Margin="2,1">
+                        <ToggleButton
+                            Margin="2,0,5,0"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
+                            Theme="{StaticResource ExpandButtonStyle}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="Bold"
+                            FontSize="11"
+                            Foreground="#FF444444"
+                            Text="{Binding Name}" />
+                    </StackPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+    <ControlTheme x:Key="CategoryExpanderStyle" TargetType="Expander">
+       <Setter Property="Template">
+            <ControlTemplate TargetType="Expander">
+                <DockPanel>
+                    <ToggleButton
+                        DockPanel.Dock="Top"
+                        Height="17"
+                        IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                        Theme="{StaticResource CategoryToggleStyle}" />
+                    <ContentPresenter
+                        Content="{TemplateBinding Content}"
+                        IsVisible="False"
+                        x:Name="ExpandSite" />
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="MoreExpanderStyle" TargetType="Expander">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Expander">
+                <DockPanel>
+                    <ToggleButton
+                        Height="12"
+                        DockPanel.Dock="Top"
+                        IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                        Theme="{StaticResource MoreButtonStyle}" />
+                    <ContentPresenter x:Name="ExpandSite" IsVisible="False" />
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+    </ControlTheme>
+    <ControlTheme TargetType="RadioButton" x:Key="SelectedImageButton">
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="3">
+                    <ContentPresenter
+                        Content="{TemplateBinding Content}"
+                        HorizontalAlignment="Center"
+                        Margin="{TemplateBinding Padding}"
+                        VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:checked">
+            <Setter Property="BorderBrush" Value="#0078D7" />
+            <Setter Property="Background" Value="#CCE4F7" />
+        </Style>
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="#E5F3FF" />
+            <Setter Property="BorderBrush" Value="#A6D8FF" />
+        </Style>
+    </ControlTheme>
+    <ControlTheme TargetType="PropertyGrid:PropertyGridView" x:Key="{x:Type PropertyGrid:PropertyGridView}">
+        <Setter Property="Background" Value="#FFF0F0F0" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="PropertyGrid:PropertyGridView">
+                    <DockPanel Background="{TemplateBinding Background}" LastChildFill="True">
+                        <DockPanel.DataTemplates>
+                            <DataTemplate  DataType="PropertyGridBase:Category">
+                                <StackPanel IsVisible="{Binding IsVisible}">
+                                    <Border Background="#FFE8E8E8" BorderBrush="#FFDADADA" BorderThickness="0,0,0,1">
+                                        <StackPanel Orientation="Horizontal" Margin="2,1">
+                                            <ToggleButton
+                                                Margin="2,0,5,0"
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding IsExpanded}"
+                                                Theme="{StaticResource ExpandButtonStyle}" />
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontWeight="Bold"
+                                                FontSize="11"
+                                                Foreground="#FF444444"
+                                                Text="{Binding Name}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <ItemsControl
+                                        IsVisible="{Binding IsExpanded}"
+                                        ItemsSource="{Binding Properties}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <VirtualizingStackPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.Template>
+                                            <ControlTemplate>
+                                                <Border
+                                                    Padding="{TemplateBinding Padding}"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                                    <ItemsPresenter />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ItemsControl.Template>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate  DataType="PropertyGridBase:PropertyNode">
+                                <StackPanel IsVisible="{Binding IsVisible}">
+                                    <Border
+                                        x:Name="uxPropertyNodeRow"
+                                        MinHeight="20"
+                                        BorderBrush="#FFF0F0F0"
+                                        BorderThickness="0,0,0,1"
+                                        DockPanel.Dock="Top">
+                                        <DockPanel>
+                                            <DockPanel Width="{Binding FirstColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type PropertyGrid:PropertyGridView}}}" DockPanel.Dock="Left">
+                                                <ToggleButton
+                                                    x:Name="expandButton"
+                                                    Margin="{Binding Level, Converter={x:Static Converters:LevelConverter.Instance}}"
+                                                    DockPanel.Dock="Left"
+                                                    IsChecked="{Binding IsExpanded}"
+                                                    Theme="{StaticResource ExpandButtonStyle}"
+                                                    IsVisible="{Binding HasChildren}" />
+                                                <Rectangle
+                                                    Width="8"
+                                                    Height="8"
+                                                    Margin="4,0,4,0"
+                                                    VerticalAlignment="Center"
+                                                    DockPanel.Dock="Right"
+                                                    Fill="{Binding IsSet, Converter={x:Static Converters:BlackWhenTrue.Instance}}"
+                                                    Stroke="Black"
+                                                    StrokeThickness="1" />
+                                                <TextBlock
+                                                    Margin="7,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    FontWeight="{Binding IsSet, Converter={x:Static Converters:BoldWhenTrue.Instance}}"
+                                                    Foreground="{Binding NameForeground}"
+                                                    Text="{Binding Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip.Tip="{Binding Description}" />
+                                            </DockPanel>
+                                            <Border BorderBrush="#FFF0F0F0" BorderThickness="1,0,0,0">
+                                                <ContentPresenter
+                                                    x:Name="editorContainer"
+                                                    Margin="3,0"
+                                                    VerticalAlignment="Center"
+                                                    Content="{Binding Editor}" />
+                                            </Border>
+                                        </DockPanel>
+                                    </Border>
+                                    <StackPanel IsVisible="{Binding IsExpanded}">
+                                        <ItemsControl
+                                            Background="#F9F9F4"
+                                            ItemsSource="{Binding Children}"
+                                            IsVisible="{Binding Children.Count, Converter={x:Static Converters:CollapsedWhenZero.Instance}}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <VirtualizingStackPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.Template>
+                                                <ControlTemplate>
+                                                    <Border
+                                                        Padding="{TemplateBinding Padding}"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                        <ItemsPresenter />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </ItemsControl.Template>
+                                        </ItemsControl>
+                                        <Expander Theme="{StaticResource MoreExpanderStyle}" IsVisible="{Binding MoreChildren.Count, Converter={x:Static Converters:CollapsedWhenZero.Instance}}">
+                                            <ItemsControl
+                                                Background="#F9F9F4"
+                                                ItemsSource="{Binding MoreChildren}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.Template>
+                                                    <ControlTemplate>
+                                                        <Border
+                                                            Padding="{TemplateBinding Padding}"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                                            <ScrollViewer Padding="{TemplateBinding Padding}" Focusable="False">
+                                                                <ItemsPresenter />
+                                                            </ScrollViewer>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </ItemsControl.Template>
+                                            </ItemsControl>
+                                        </Expander>
+                                    </StackPanel>
+                                </StackPanel>
+                                <!-- DataTemplate.Triggers removed - not supported in Avalonia -->
+                            </DataTemplate>
+                            <DataTemplate  DataType="FontFamily">
+                                <TextBlock
+                                    Height="15"
+                                    FontFamily="{Binding}"
+                                    FontSize="12"
+                                    Text="{Binding}" />
+                            </DataTemplate>
+                        </DockPanel.DataTemplates>
+                        <Grid DockPanel.Dock="Top" Margin="4,4,4,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50" />
+                                <ColumnDefinition Width="Auto" MinWidth="40" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Preview image -->
+                            <Border
+                                Grid.Column="0"
+                                Grid.Row="0"
+                                Grid.RowSpan="3"
+                                Width="44"
+                                Height="44"
+                                Margin="0,0,8,0"
+                                Padding="2"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="White"
+                                BorderBrush="#CCCCCC"
+                                BorderThickness="1"
+                                CornerRadius="2">
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <VisualBrush Stretch="Uniform" Visual="{Binding SingleItem.Component}" />
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                            </Border>
+
+                            <!-- Type -->
+                            <TextBlock Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" Margin="0,2,6,2"
+                                       FontSize="11" Foreground="#555555" Text="Type:" />
+                            <TextBlock Grid.Column="2" Grid.Row="0" VerticalAlignment="Center" Margin="0,2,0,2"
+                                       FontSize="11"
+                                       Text="{Binding SingleItem.ComponentType.Name}"
+                                       ToolTip.Tip="{Binding SingleItem.ComponentType}"
+                                       TextTrimming="CharacterEllipsis" />
+
+                            <!-- Name -->
+                            <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,2,6,2"
+                                       FontSize="11" Foreground="#555555" Text="Name:" />
+                            <controls:ClearableTextBox
+                                x:Name="NameTextBox"
+                                Grid.Column="2" Grid.Row="1"
+                                Margin="0,2,0,2"
+                                Height="22"
+                                FontSize="11"
+                                Padding="2,0"
+                                BorderThickness="1"
+                                IsEnabled="{Binding IsNameEnabled}"
+                                Text="{Binding Name}" />
+
+                            <!-- Filter -->
+                            <TextBlock Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Margin="0,2,6,2"
+                                       FontSize="11" Foreground="#555555" Text="Filter:" />
+                            <controls:ClearableTextBox
+                                Grid.Column="2" Grid.Row="2"
+                                Margin="0,2,0,2"
+                                Height="22"
+                                FontSize="11"
+                                Padding="2,0"
+                                BorderThickness="1"
+                                Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                        <Grid Height="34" DockPanel.Dock="Top">
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel
+                                    Margin="4,4"
+                                    HorizontalAlignment="Left"
+                                    Orientation="Horizontal">
+                                    <RadioButton
+                                        Width="26"
+                                        Height="26"
+                                        Margin="3,0,0,0"
+                                        GroupName="SortMode"
+                                        IsChecked="{Binding GroupMode, Converter={x:Static Converters:EnumBoolean.Instance}, ConverterParameter=GroupByPopularCategorys}"
+                                        Theme="{StaticResource SelectedImageButton}">
+                                        <Image Source="avares://Scadix.AxamlDesigner/Images/Icons.16x16.Properties.Categorized.png" Stretch="None" />
+                                    </RadioButton>
+                                    <!--<RadioButton Theme="{StaticResource SelectedImageButton}" GroupName="SortMode" IsChecked="{Binding GroupMode, Converter={x:Static Converters:EnumBoolean.Instance}, ConverterParameter=GroupByCategorys}" Margin="3,0,0,0" Width="20" Height="20">
+										<Image Source="avares://Scadix.AxamlDesigner/Images/group2.png" Stretch="None" />
+									</RadioButton>
+									<RadioButton Theme="{StaticResource SelectedImageButton}" GroupName="SortMode" IsChecked="{Binding GroupMode, Converter={x:Static Converters:EnumBoolean.Instance}, ConverterParameter=Ungrouped}" Margin="3,0,0,0" Width="20" Height="20">
+										<Image Source="avares://Scadix.AxamlDesigner/Images/Icons.16x16.Properties.SortAlphabet.png" Stretch="None" />
+									</RadioButton>-->
+                                </StackPanel>
+                                <StackPanel
+                                    Margin="3"
+                                    HorizontalAlignment="Left"
+                                    Orientation="Horizontal"
+                                    IsVisible="{Binding ShowPropertiesEventsSelector, ElementName=root}">
+                                    <RadioButton
+                                        Width="20"
+                                        Height="20"
+                                        Margin="3,0,0,0"
+                                        GroupName="ShowType"
+                                        IsChecked="{Binding CurrentTab, Converter={x:Static Converters:EnumBoolean.Instance}, ConverterParameter=Properties}"
+                                        Theme="{StaticResource SelectedImageButton}">
+                                        <Image Source="avares://Scadix.AxamlDesigner/Images/Icons.16x16.Properties.Properties.png" Stretch="None" />
+                                    </RadioButton>
+                                    <RadioButton
+                                        Width="20"
+                                        Height="20"
+                                        Margin="3,0,0,0"
+                                        GroupName="ShowType"
+                                        IsChecked="{Binding CurrentTab, Converter={x:Static Converters:EnumBoolean.Instance}, ConverterParameter=Events}"
+                                        Theme="{StaticResource SelectedImageButton}">
+                                        <Image Source="avares://Scadix.AxamlDesigner/Images/Icons.16x16.Properties.Events.png" Stretch="None" />
+                                    </RadioButton>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                        <Grid x:Name="c1" Background="White">
+                            <!--<ScrollViewer HorizontalScrollBarVisibility="Disabled" Visibility="{Binding CurrentTab, Converter={x:Static Converters:EnumVisibility.Instance}, ConverterParameter=Properties}">
+								<ItemsControl ItemsSource="{Binding Categories}" />
+							</ScrollViewer>-->
+                            <!--<ScrollViewer HorizontalScrollBarVisibility="Disabled" Visibility="{Binding CurrentTab, Converter={x:Static Converters:EnumVisibility.Instance}, ConverterParameter=Events}">
+								<ItemsControl ItemsSource="{Binding Events}" />
+							</ScrollViewer>-->
+                            <ItemsControl
+                                ItemsSource="{Binding Categories}"
+                                IsVisible="{Binding CurrentTab, Converter={x:Static Converters:EnumVisibility.Instance}, ConverterParameter=Properties}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.Template>
+                                    <ControlTemplate>
+                                        <Border
+                                            Padding="{TemplateBinding Padding}"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                            <ScrollViewer Padding="{TemplateBinding Padding}" Focusable="False">
+                                                <ItemsPresenter Margin="0,0,15,0" />
+                                            </ScrollViewer>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ItemsControl.Template>
+                            </ItemsControl>
+                            <ItemsControl
+                                ItemsSource="{Binding Events}"
+                                IsVisible="{Binding CurrentTab, Converter={x:Static Converters:EnumVisibility.Instance}, ConverterParameter=Events}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.Template>
+                                    <ControlTemplate>
+                                        <Border
+                                            Padding="{TemplateBinding Padding}"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                            <ScrollViewer Padding="{TemplateBinding Padding}" Focusable="False">
+                                                <ItemsPresenter Margin="0,0,15,0" />
+                                            </ScrollViewer>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ItemsControl.Template>
+                            </ItemsControl>
+                            <Thumb
+                                x:Name="PART_Thumb"
+                                Width="4"
+                                Margin="-2,0,0,0"
+                                HorizontalAlignment="Left"
+                                Cursor="SizeAll">
+                                <Thumb.RenderTransform>
+                                    <TranslateTransform X="{Binding FirstColumnWidth, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                </Thumb.RenderTransform>
+                                <Thumb.Template>
+                                    <ControlTemplate>
+                                        <Border Background="Transparent" />
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                        </Grid>
+                    </DockPanel>
+                </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

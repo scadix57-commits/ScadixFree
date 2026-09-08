@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Scadix.Designer.ViewModels"
+        x:Class="Scadix.Designer.Views.Tools.Git.SelectGitHubAccountWindow"
+        x:DataType="vm:SelectGitHubAccountViewModel"
+        Title="Select an account"
+        Width="450" Height="480"
+        WindowStartupLocation="CenterOwner"
+        Background="White"
+        CanResize="False">
+
+    <Window.Styles>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,5"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#F5F5F5"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E0E0E0"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto, Auto" Margin="40">
+        <!-- Close Button (Top Right) -->
+        <Button Grid.Row="0" HorizontalAlignment="Right" Background="Transparent" Command="{Binding CancelCommand}" Padding="5" Margin="0,-30,-30,0">
+            <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" 
+                  Fill="#333" Width="12" Height="12" Stretch="Uniform"/>
+        </Button>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="1" Spacing="5" HorizontalAlignment="Center" Margin="0,0,0,30">
+            <TextBlock Text="GitHub" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
+            <TextBlock Text="Select an account" FontSize="22" FontWeight="Light" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Help Link -->
+        <Button Grid.Row="2" Background="Transparent" HorizontalAlignment="Center" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Path Data="M11,18H13V16H11V18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,6A4,4 0 0,0 8,10H10A2,2 0 0,1 12,8A2,2 0 0,1 14,10C14,12 11,11.75 11,15H13C13,12.75 16,12.5 16,10A4,4 0 0,0 12,6Z" 
+                      Fill="#333" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+                <TextBlock Text="Why am I being asked to select an account?" Foreground="#005A9E" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+
+        <!-- Account List -->
+        <ListBox Grid.Row="3" ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" BorderThickness="0" Background="Transparent">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:GitHubAccountInfo">
+                    <Grid ColumnDefinitions="40, *" Margin="10">
+                        <Path Grid.Column="0" Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" 
+                              Fill="#333" Width="24" Height="24" Stretch="Uniform" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="16" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Continue Button -->
+        <Button Grid.Row="4" 
+                Content="Continue" 
+                Command="{Binding ContinueCommand}"
+                Width="150" Height="40"
+                HorizontalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Background="#D0D0D0"
+                Foreground="#333"
+                FontSize="14"
+                Margin="0,20,0,10"/>
+
+        <!-- Add account link -->
+        <Button Grid.Row="5" Content="Add a new account" 
+                Background="Transparent" 
+                Foreground="#005A9E" 
+                FontSize="14" 
+                HorizontalAlignment="Center"
+                Command="{Binding AddAccountCommand}"/>
+    </Grid>
+</Window>

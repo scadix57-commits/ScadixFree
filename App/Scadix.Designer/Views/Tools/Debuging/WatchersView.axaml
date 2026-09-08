@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Scadix.Designer.ViewModels.Tools"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Scadix.Designer.Views.Tools.WatchersView"
+             x:DataType="vm:WatchersViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0" Background="#F3F3F3" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Watch" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBox Watermark="Add expression..." Width="150" VerticalAlignment="Center" Height="24" Padding="4,0"/>
+            </StackPanel>
+        </Border>
+        <TreeDataGrid Grid.Row="1" Background="Transparent"/>
+    </Grid>
+</UserControl>

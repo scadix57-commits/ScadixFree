@@ -1,0 +1,147 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.DebuggerPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Build, Execution, Deployment › Debugger"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="GENERAL"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkShowDebugWindow"
+                      Content="Show debug window on breakpoint" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkFocusApplicationOnBreakpoint"
+                      Content="Focus application on breakpoint"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="EVALUATION"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkEnablePropertyEvaluation"
+                      Content="Enable property evaluation in variables window" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkEnableToStringCalls"
+                      Content="Enable ToString() calls in variables window" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkEnableImplicitFunctionEvaluation"
+                      Content="Enable implicit function evaluation"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="STEPPING"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkStepOverPropertiesAndOperators"
+                      Content="Step over properties and operators" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkStepOverSystemCode"
+                      Content="Step over system code (Just My Code)" IsChecked="True"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="SYMBOLS"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkLoadSymbolsAutomatically"
+                      Content="Load symbols automatically" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Symbol cache directory"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtSymbolCache" Text="" Watermark="(default)" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            Name="BtnBrowseSymbolCache"
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="NETCOREDBG DEBUGGER"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkUseNetCoreDbg"
+                      Content="Use netcoredbg as the default debugger for .NET Core applications"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="netcoredbg executable path"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtNetCoreDbgPath" 
+                             Text="" 
+                             Watermark="netcoredbg (or full path)" 
+                             Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            Name="BtnBrowseNetCoreDbg"
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Debug server port"/>
+                <NumericUpDown Classes="setting-ctrl"
+                               Name="NumNetCoreDbgPort"
+                               Minimum="1024"
+                               Maximum="65535"
+                               Increment="1"
+                               Value="4711"
+                               MinWidth="100"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkNetCoreDbgAutoStart"
+                      Content="Automatically start debug server when debugging" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkNetCoreDbgEnableLogging"
+                      Content="Enable netcoredbg logging for troubleshooting"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Log output directory"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtNetCoreDbgLogPath" 
+                             Text="" 
+                             Watermark="(default: temp directory)" 
+                             Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            Name="BtnBrowseLogPath"
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Additional arguments"/>
+                <TextBox Classes="setting-ctrl"
+                         Name="TxtNetCoreDbgArgs" 
+                         Text="" 
+                         Watermark="--option=value"
+                         MinWidth="280"/>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="XAML DEBUGGING"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkEnableXamlDebugging"
+                      Content="Enable XAML debugging in editor (experimental)"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkXamlBreakOnErrors"
+                      Content="Break on XAML parsing errors"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkXamlShowBindingErrors"
+                      Content="Show data binding errors in debug output" IsChecked="True"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

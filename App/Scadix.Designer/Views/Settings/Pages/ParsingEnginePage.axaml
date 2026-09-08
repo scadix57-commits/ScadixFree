@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.ParsingEnginePage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Parsing Engine"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- XAML Parsing Mode -->
+        <TextBlock Classes="group-header" Text="XAML PARSING MODE"/>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Active engine"/>
+                <ComboBox Classes="setting-ctrl"
+                          x:Name="EngineCombo"
+                          SelectedIndex="0">
+                    <ComboBoxItem Content="Automatic (Hybrid)"/>
+                    <ComboBoxItem Content="Avalonia Runtime"/>
+                    <ComboBoxItem Content="Manual Engine"/>
+                    <ComboBoxItem Content="AXSG Generator (Experimental)"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Automatic (Hybrid)"/>
+                <TextBlock FontSize="12" Foreground="#666666"
+                           TextWrapping="Wrap" MaxWidth="340"
+                           Text="Tries Avalonia loader first, falls back to Manual on errors. Recommended for most projects."/>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Avalonia Runtime"/>
+                <TextBlock FontSize="12" Foreground="#666666"
+                           TextWrapping="Wrap" MaxWidth="340"
+                           Text="Uses the official Avalonia runtime loader. Full accuracy for complex assets and resources."/>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Manual Engine"/>
+                <TextBlock FontSize="12" Foreground="#666666"
+                           TextWrapping="Wrap" MaxWidth="340"
+                           Text="Custom reflection-based parsing. Ultra stable — never crashes on invalid XAML."/>
+            </DockPanel>
+        </Border>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="AXSG Generator"/>
+                <TextBlock FontSize="12" Foreground="#666666"
+                           TextWrapping="Wrap" MaxWidth="340"
+                           Text="Experimental source-generator backend for high performance and live compilation."/>
+            </DockPanel>
+        </Border>
+
+        <!-- Optimizations -->
+        <TextBlock Classes="group-header" Text="OPTIMIZATIONS"/>
+
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkDeepResolution"
+                      Content="Deep Project Resource Resolution"
+                      IsChecked="True"/>
+        </Border>
+
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkBackgroundPreload"
+                      Content="Background Assembly Pre-loading"
+                      IsChecked="True"/>
+        </Border>
+
+        <!-- Reload Behavior -->
+        <TextBlock Classes="group-header" Text="RELOAD BEHAVIOR"/>
+
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkReloadAfterChange"
+                      Content="Reload designer automatically after engine change"
+                      IsChecked="True"/>
+        </Border>
+
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Reload shortcut"/>
+                <TextBlock FontSize="12" Foreground="#666666"
+                           VerticalAlignment="Center"
+                           Text="Ctrl+Shift+R"/>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

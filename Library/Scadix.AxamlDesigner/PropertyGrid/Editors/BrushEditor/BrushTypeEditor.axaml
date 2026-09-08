@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.BrushEditor.BrushTypeEditor"
+			 xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 >
+	 <Button Background="Transparent" Padding="0" BorderThickness="0"
+            HorizontalAlignment="Left" VerticalAlignment="Center"
+            Width="30" Height="16" Cursor="Hand">
+        <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedLeft" ShowMode="Transient">
+              <ColorView Name="BackgroundColorView"
+						   SelectedIndex="2"
+						   ColorChanged="BackgroundColorView_OnColorChanged"   />
+            </Flyout>
+        </Button.Flyout>
+        <Border BorderBrush="Black" BorderThickness="1" Background="Transparent">
+            <Border Background="{Binding Value}" />
+        </Border>
+    </Button>
+</UserControl>

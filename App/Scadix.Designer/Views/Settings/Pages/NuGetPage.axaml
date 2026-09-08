@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.NuGetPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="NuGet Package Manager"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── Search ── -->
+        <TextBlock Classes="group-header" Text="SEARCH"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="IncludePrereleaseCheckBox"
+                      Content="Include prerelease packages (alpha, beta, rc)"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="IncludeUnlistedCheckBox"
+                      Content="Include unlisted packages"/>
+        </Border>
+
+        <!-- ── Install & Update ── -->
+        <TextBlock Classes="group-header" Text="INSTALL AND UPDATE"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Dependency Behavior"/>
+                <ComboBox Classes="setting-ctrl"
+                          x:Name="DependencyBehaviorComboBox"
+                          MinWidth="200">
+                    <ComboBoxItem Content="Ignore Dependencies"/>
+                    <ComboBoxItem Content="Lowest"/>
+                    <ComboBoxItem Content="Highest Patch"/>
+                    <ComboBoxItem Content="Highest Minor"/>
+                    <ComboBoxItem Content="Highest"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="How NuGet decides which versions of dependent packages to install"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="200,0,0,0"/>
+        </Border>
+
+        <!-- ── Restore ── -->
+        <TextBlock Classes="group-header" Text="RESTORE"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="AutoRestoreMissingCheckBox"
+                      Content="Allow Rider to restore missing packages"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="AutoRestoreBeforeBuildCheckBox"
+                      Content="Automatically restore missing packages before build"/>
+        </Border>
+
+        <!-- ── Package Management ── -->
+        <TextBlock Classes="group-header" Text="PACKAGE MANAGEMENT"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Default Format"/>
+                <ComboBox Classes="setting-ctrl"
+                          x:Name="PackageFormatComboBox"
+                          MinWidth="200">
+                    <ComboBoxItem Content="packages.config (Legacy)"/>
+                    <ComboBoxItem Content="PackageReference"/>
+                    <ComboBoxItem Content="Auto-detect"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="PackageReference is recommended for new projects"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="200,0,0,0"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

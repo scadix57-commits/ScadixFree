@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.BuildPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Build, Execution, Deployment › Build"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="BUILD OPTIONS"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkBuildBeforeRun"
+                      Content="Build project before run"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkShowOutput"
+                      Content="Show build output automatically"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkClearOutput"
+                      Content="Clear output before build"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Build configuration"/>
+                <ComboBox x:Name="CmbConfiguration" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="Debug"/>
+                    <ComboBoxItem Content="Release"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Target platform"/>
+                <ComboBox x:Name="CmbPlatform" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="Any CPU"/>
+                    <ComboBoxItem Content="x64"/>
+                    <ComboBoxItem Content="x86"/>
+                    <ComboBoxItem Content="ARM64"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="COMPILER"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkNullable"
+                      Content="Enable nullable reference types"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkImplicitUsings"
+                      Content="Enable implicit usings"
+                      IsChecked="True"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="DOTNET CLI"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text=".NET SDK path"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox x:Name="TxtSdkPath"
+                             Grid.Column="0" Classes="setting-ctrl"
+                             Watermark="(auto-detect)" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

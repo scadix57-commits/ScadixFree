@@ -1,0 +1,105 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Scadix.Designer.Views"
+        x:Class="Scadix.Designer.Views.AttachToProcessDialog"
+        x:DataType="local:AttachToProcessDialog"
+        Title="Attach to Process"
+        Width="700"
+        Height="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+
+    <Window.Styles>
+        <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#E3F2FD"/>
+        </Style>
+        <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+            <Setter Property="Fill" Value="#F5F5F5"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel Margin="10">
+        
+        <!-- Title and Filter -->
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,10">
+            <TextBlock Text="Select a process to attach the debugger to:"
+                       FontSize="13"
+                       Foreground="#333333"/>
+            
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" 
+                           Text="Filter:" 
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <TextBox x:Name="FilterTextBox"
+                         Watermark="Type to filter processes..."
+                         TextChanged="FilterTextBox_TextChanged"/>
+            </DockPanel>
+
+            <CheckBox x:Name="ShowAllProcessesCheckBox"
+                      Content="Show processes from all users"
+                      IsChecked="False"
+                      Checked="ShowAllProcesses_Changed"
+                      Unchecked="ShowAllProcesses_Changed"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel DockPanel.Dock="Bottom" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,10,0,0">
+            <Button Content="Refresh"
+                    Width="100"
+                    Click="Refresh_Click"/>
+            <Button Content="Attach"
+                    Width="100"
+                    Click="Attach_Click"
+                    x:Name="AttachButton"/>
+            <Button Content="Cancel"
+                    Width="100"
+                    Click="Cancel_Click"/>
+        </StackPanel>
+
+        <!-- Process List -->
+        <Border BorderBrush="#D0D0D0" 
+                BorderThickness="1"
+                Background="White">
+            <DataGrid x:Name="ProcessDataGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="Horizontal"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      SelectionMode="Single"
+                      SelectionChanged="ProcessDataGrid_SelectionChanged">
+                
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Process Name" 
+                                        Binding="{Binding ProcessName}" 
+                                        Width="*"
+                                        MinWidth="150"
+                                        x:DataType="local:ProcessInfo"/>
+                    <DataGridTextColumn Header="PID" 
+                                        Binding="{Binding Id}" 
+                                        Width="80"
+                                        x:DataType="local:ProcessInfo"/>
+                    <DataGridTextColumn Header="Title" 
+                                        Binding="{Binding MainWindowTitle}" 
+                                        Width="2*"
+                                        MinWidth="200"
+                                        x:DataType="local:ProcessInfo"/>
+                    <DataGridTextColumn Header="Type" 
+                                        Binding="{Binding ProcessType}" 
+                                        Width="100"
+                                        x:DataType="local:ProcessInfo"/>
+                    <DataGridTextColumn Header="User" 
+                                        Binding="{Binding UserName}" 
+                                        Width="120"
+                                        x:DataType="local:ProcessInfo"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+    </DockPanel>
+</Window>

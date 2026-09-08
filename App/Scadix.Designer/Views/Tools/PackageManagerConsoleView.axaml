@@ -1,0 +1,156 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Scadix.Designer.ViewModels.Tools"
+             x:Class="Scadix.Designer.Views.Tools.PackageManagerConsoleView"
+             x:DataType="vm:PackageManagerConsoleViewModel"
+             Background="#1E1E2E">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- ══ Header ════════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="0" Background="#181825"
+            BorderBrush="#313244" BorderThickness="0,0,0,1"
+            Padding="10,6">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+        <PathIcon Grid.Column="0"
+                  Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"
+                  Width="14" Height="14" Foreground="#CBA6F7" Margin="0,0,8,0"/>
+        <TextBlock Grid.Column="1" Text="Package Manager Console"
+                   FontSize="12" FontWeight="SemiBold"
+                   Foreground="#CDD6F4" VerticalAlignment="Center"/>
+
+        <!-- Busy indicator -->
+        <Border Grid.Column="2"
+                IsVisible="{Binding IsBusy}"
+                Background="#F38BA8" CornerRadius="8"
+                Padding="8,2" Margin="8,0">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBlock Text="Running" FontSize="10" Foreground="#1E1E2E" FontWeight="SemiBold"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Cancel button -->
+        <Button Grid.Column="3"
+                IsVisible="{Binding IsBusy}"
+                Command="{Binding CancelCommand}"
+                Background="#45475A" BorderThickness="0"
+                CornerRadius="4" Padding="8,3"
+                Foreground="#F38BA8" FontSize="11">
+          <TextBlock Text="✕ Cancel"/>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- ══ Quick Commands ════════════════════════════════════════════════════ -->
+    <Border Grid.Row="1" Background="#181825"
+            BorderBrush="#313244" BorderThickness="0,0,0,1"
+            Padding="8,5">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Quick:" FontSize="10" Foreground="#6C7086"
+                   VerticalAlignment="Center" Margin="0,0,4,0"/>
+        <Button Command="{Binding RunQuickCommand}" CommandParameter="list"
+                Background="#313244" BorderThickness="0" CornerRadius="12"
+                Padding="10,3" Foreground="#A6E3A1" FontSize="10">
+          <TextBlock Text="📦 list"/>
+        </Button>
+        <Button Command="{Binding RunQuickCommand}" CommandParameter="restore"
+                Background="#313244" BorderThickness="0" CornerRadius="12"
+                Padding="10,3" Foreground="#89DCEB" FontSize="10">
+          <TextBlock Text="🔄 restore"/>
+        </Button>
+        <Button Command="{Binding RunQuickCommand}" CommandParameter="outdated"
+                Background="#313244" BorderThickness="0" CornerRadius="12"
+                Padding="10,3" Foreground="#FAB387" FontSize="10">
+          <TextBlock Text="⚠ outdated"/>
+        </Button>
+        <Button Command="{Binding ClearOutputCommand}"
+                Background="Transparent" BorderThickness="0"
+                Padding="6,3" Foreground="#6C7086" FontSize="10"
+                HorizontalAlignment="Right">
+          <TextBlock Text="clear"/>
+        </Button>
+      </StackPanel>
+    </Border>
+
+    <!-- ══ Output ═════════════════════════════════════════════════════════════ -->
+    <ScrollViewer Grid.Row="2"
+                  x:Name="OutputScroll"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  Padding="0">
+      <ItemsControl ItemsSource="{Binding Output}">
+        <ItemsControl.Styles>
+          <Style Selector="ItemsControl > ContentPresenter">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+          </Style>
+        </ItemsControl.Styles>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:PmcLine">
+            <SelectableTextBlock Text="{Binding Text}"
+                                 FontFamily="Cascadia Code, Consolas, monospace"
+                                 FontSize="11.5"
+                                 TextWrapping="NoWrap"
+                                 Padding="10,0.5"
+                                 Foreground="{Binding Kind, Converter={x:Static vm:PmcConverters.KindToForeground}}"/>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <!-- ══ Input Bar ═════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="3"
+            Background="#181825"
+            BorderBrush="#313244"
+            BorderThickness="0,1,0,0"
+            Padding="6,5">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+
+        <!-- PM> prompt -->
+        <TextBlock Grid.Column="0"
+                   Text="PM&gt;"
+                   FontFamily="Cascadia Code, Consolas, monospace"
+                   FontSize="12" FontWeight="Bold"
+                   Foreground="#CBA6F7"
+                   VerticalAlignment="Center"
+                   Margin="4,0,8,0"/>
+
+        <!-- Input -->
+        <TextBox Grid.Column="1"
+                 x:Name="InputBox"
+                 Text="{Binding Input}"
+                 FontFamily="Cascadia Code, Consolas, monospace"
+                 FontSize="12"
+                 Foreground="#CDD6F4"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 CaretBrush="#CDD6F4"
+                 Watermark="install PackageName [version]  |  type 'help'"
+                 IsEnabled="{Binding !IsBusy}"
+                 VerticalAlignment="Center"/>
+
+        <!-- History buttons -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="1">
+          <Button Background="Transparent" BorderThickness="0" Padding="4,2"
+                  Command="{Binding HistoryUpCommand}" ToolTip.Tip="Previous (↑)">
+            <PathIcon Data="M7 14l5-5 5 5z" Width="11" Height="11" Foreground="#6C7086"/>
+          </Button>
+          <Button Background="Transparent" BorderThickness="0" Padding="4,2"
+                  Command="{Binding HistoryDownCommand}" ToolTip.Tip="Next (↓)">
+            <PathIcon Data="M7 10l5 5 5-5z" Width="11" Height="11" Foreground="#6C7086"/>
+          </Button>
+        </StackPanel>
+
+        <!-- Execute -->
+        <Button Grid.Column="3"
+                Command="{Binding RunInputCommand}"
+                IsEnabled="{Binding !IsBusy}"
+                Background="#CBA6F7" BorderThickness="0"
+                CornerRadius="4" Padding="12,4"
+                Margin="4,0,0,0">
+          <TextBlock Text="Run" FontSize="11" FontWeight="SemiBold" Foreground="#1E1E2E"/>
+        </Button>
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

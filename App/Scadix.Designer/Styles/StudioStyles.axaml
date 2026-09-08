@@ -1,0 +1,245 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══ TOOLBAR BUTTONS ═══ -->
+    <Style Selector="Button.toolbar-btn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#333333"/>
+        <Setter Property="Padding" Value="10,0"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Content="{TemplateBinding Content}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      FontSize="{TemplateBinding FontSize}"
+                                      FontWeight="{TemplateBinding FontWeight}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.toolbar-btn:pointerover">
+        <Setter Property="Background" Value="#E0E0E0"/>
+    </Style>
+    <Style Selector="Button.toolbar-btn:pressed">
+        <Setter Property="Background" Value="#CCCCCC"/>
+    </Style>
+    <Style Selector="Button.toolbar-btn.build">
+        <Setter Property="Background" Value="#0078D4"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="12,0"/>
+    </Style>
+    <Style Selector="Button.toolbar-btn.build:pointerover">
+        <Setter Property="Background" Value="#106EBE"/>
+    </Style>
+    <Style Selector="Button.toolbar-btn.run">
+        <Setter Property="Background" Value="#107C10"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="12,0"/>
+    </Style>
+    <Style Selector="Button.toolbar-btn.run:pointerover">
+        <Setter Property="Background" Value="#0B6A0B"/>
+    </Style>
+
+    <!-- ═══ TOOLBAR LABELS ═══ -->
+    <Style Selector="TextBlock.toolbar-label">
+        <Setter Property="Foreground" Value="#555555"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <!-- ═══ TOOLBAR COMBOBOX ═══ -->
+    <Style Selector="ComboBox.toolbar-combo">
+        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#C8C8C8"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Padding" Value="6,0,4,0"/>
+    </Style>
+    <Style Selector="ComboBox.toolbar-combo:pointerover">
+        <Setter Property="BorderBrush" Value="#0078D4"/>
+    </Style>
+
+    <!-- ═══ PANEL TITLE ═══ -->
+    <Style Selector="TextBlock.panel-title">
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- ═══ ERROR LIST HEADER TABS ═══ -->
+    <Style Selector="Button.errorlist-tab">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#555555"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#C8C8C8"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Margin" Value="2,0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Content="{TemplateBinding Content}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      FontSize="{TemplateBinding FontSize}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.errorlist-tab:pointerover">
+        <Setter Property="Background" Value="#E8E8E8"/>
+    </Style>
+    <Style Selector="Button.errorlist-tab.active">
+        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#0078D4"/>
+        <Setter Property="Foreground" Value="#0078D4"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- ═══ ERROR LIST FOOTER TABS ═══ -->
+    <Style Selector="Button.errorlist-footer-tab">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#555555"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="Button">
+                <Panel>
+                    <Border Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          FontWeight="{TemplateBinding FontWeight}"/>
+                    </Border>
+                    <Border Height="2" Background="#0078D4" VerticalAlignment="Bottom"
+                            IsVisible="False" x:Name="ActiveLine"/>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.errorlist-footer-tab.active">
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.errorlist-footer-tab:pointerover">
+        <Setter Property="Background" Value="#E8E8E8"/>
+    </Style>
+
+    <!-- ═══ TREE VIEW ═══ -->
+    <Style Selector="TreeView">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+        <Setter Property="Padding" Value="2"/>
+    </Style>
+    <Style Selector="TreeViewItem">
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="2,1"/>
+    </Style>
+    <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#CCE8FF"/>
+    </Style>
+    <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#E8F4FF"/>
+    </Style>
+
+    <!-- ═══ DOCUMENT TABS (Visual Studio Style) ═══ -->
+    <Style Selector="DocumentTabStripItem">
+        <Setter Property="Background" Value="#F5F5F5"/>
+        <Setter Property="Foreground" Value="#5A5D63"/>
+        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderThickness" Value="0,0,1,0"/>
+    </Style>
+
+    <Style Selector="DocumentTabStripItem:pointerover">
+        <Setter Property="Background" Value="#E8E8E8"/>
+    </Style>
+
+    <Style Selector="DocumentTabStripItem:selected">
+        <Setter Property="Background" Value="#FFFFFF"/>
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+        <Setter Property="BorderBrush" Value="#0078D4"/>
+        <Setter Property="BorderThickness" Value="0,2,1,0"/>
+    </Style>
+
+    <Style Selector="DocumentTabStripItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#FFFFFF"/>
+    </Style>
+
+    <!-- Close Button Visibility -->
+    <Style Selector="DocumentTabStripItem /template/ Button#PART_CloseButton">
+        <Setter Property="Opacity" Value="0"/> <!-- Hide on inactive -->
+        <Setter Property="Foreground" Value="#5A5D63"/>
+    </Style>
+    <Style Selector="DocumentTabStripItem:pointerover /template/ Button#PART_CloseButton">
+        <Setter Property="Opacity" Value="1"/> <!-- Show on hover -->
+    </Style>
+    <Style Selector="DocumentTabStripItem:selected /template/ Button#PART_CloseButton">
+        <Setter Property="Opacity" Value="1"/> <!-- Show on active -->
+        <Setter Property="Foreground" Value="#1E1E1E"/>
+    </Style>
+    <Style Selector="DocumentTabStripItem /template/ Button#PART_CloseButton:pointerover">
+        <Setter Property="Background" Value="#E0E0E0"/>
+        <Setter Property="Foreground" Value="#D32F2F"/>
+    </Style>
+
+    <!-- ═══ ACCENT BUTTON (Commit, etc) ═══ -->
+    <Style Selector="Button.accent">
+        <Setter Property="Background" Value="#0078D4"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="3"/>
+    </Style>
+    <Style Selector="Button.accent:pointerover">
+        <Setter Property="Background" Value="#106EBE"/>
+    </Style>
+    <Style Selector="Button.accent:pressed">
+        <Setter Property="Background" Value="#005A9E"/>
+    </Style>
+
+    <!-- ═══ GIT LOG & COMMIT STYLES ═══ -->
+    <Style Selector="ListBox.git-list">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="ListBoxItem.git-item">
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="#F0F0F0"/>
+    </Style>
+    <Style Selector="ListBoxItem.git-item:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="#F0F7FF"/>
+    </Style>
+</Styles>

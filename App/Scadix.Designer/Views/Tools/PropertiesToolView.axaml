@@ -1,0 +1,11 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pg="clr-namespace:Scadix.AxamlDesigner.PropertyGrid;assembly=Scadix.AxamlDesigner"
+             x:Class="Scadix.Designer.PropertiesToolView">
+    <!--
+        PropertyGridView sets its own DataContext = PropertyGrid internally,
+        so XAML bindings to Shell won't work here.
+        SelectedItems is wired in code-behind via SelectionChanged events.
+    -->
+    <pg:PropertyGridView x:Name="uxPropertyGridView" />
+</UserControl>

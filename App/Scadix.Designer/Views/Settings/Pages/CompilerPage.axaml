@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.CompilerPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Build, Execution, Deployment › Compiler"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="BUILD PROCESS"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Build process heap size (MB)"/>
+                <TextBox Name="TxtHeapSize" Classes="setting-ctrl" Text="1024" MaxWidth="80"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkParallelCompilation"
+                      Content="Compile independent projects in parallel" IsChecked="True"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="COMPILER OUTPUT"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Compiler output path"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtOutputPath" Text="bin/Debug" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="ADDITIONAL OPTIONS"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Additional compiler arguments"/>
+                <TextBox Name="TxtAdditionalArgs" Classes="setting-ctrl" 
+                         Text="" Watermark="e.g., /nowarn:CS1591"/>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="WARNINGS"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkTreatWarningsAsErrors"
+                      Content="Treat warnings as errors"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Warning level"/>
+                <ComboBox Name="CmbWarningLevel" Classes="setting-ctrl" SelectedIndex="4">
+                    <ComboBoxItem Content="0 - Turn off all warnings"/>
+                    <ComboBoxItem Content="1 - Severe warnings"/>
+                    <ComboBoxItem Content="2 - Level 1 + certain warnings"/>
+                    <ComboBoxItem Content="3 - Level 2 + informational warnings"/>
+                    <ComboBoxItem Content="4 - All warnings (default)"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.GitHubPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Version Control › GitHub"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="ACCOUNT"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="GitHub account"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtGitHubAccount" Text="" Watermark="username or email" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Login..."
+                            FontSize="12" Height="28"
+                            Background="#2D5A8E" Foreground="White"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Token"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtGitHubToken" Text="" Watermark="Personal access token" 
+                             PasswordChar="•" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Generate..."
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="CLONE"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkCloneUsingSSH"
+                      Content="Clone repositories using SSH" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Default clone directory"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtCloneDirectory" Text="" Watermark="(default)" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="CONNECTION"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Timeout (seconds)"/>
+                <TextBox Name="TxtTimeout" Classes="setting-ctrl" Text="30" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <Button Content="Test Connection" FontSize="12" Height="28"
+                    Background="#2D5A8E" Foreground="White" Width="120"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="PULL REQUESTS"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkShowPullRequestsInToolWindow"
+                      Content="Show pull requests in tool window" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkAutoFetchPullRequests"
+                      Content="Automatically fetch pull requests"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

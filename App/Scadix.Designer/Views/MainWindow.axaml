@@ -1,0 +1,137 @@
+<Window
+x:Class="Scadix.Designer.MainWindow"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
+xmlns:local="clr-namespace:Scadix.Designer"
+x:DataType="local:MainWindowViewModel"
+Title="{Binding Title}"
+x:Name="root"
+Width="1280"
+Height="800"
+WindowState="Maximized"
+DragDrop.AllowDrop="True">
+
+	<Window.KeyBindings>
+		<KeyBinding Command="{Binding New}"                 Gesture="Ctrl+N" />
+		<KeyBinding Command="{Binding Open}"                Gesture="Ctrl+O" />
+		<KeyBinding Command="{Binding SaveCurrentDocument}" Gesture="Ctrl+S" />
+		<KeyBinding Command="{Binding BuildCommand}"   Gesture="F6" />
+		<KeyBinding Command="{Binding BuildCommand}"   Gesture="Ctrl+Shift+B" />
+		<KeyBinding Command="{Binding RebuildCommand}" Gesture="Ctrl+Shift+R" />
+		<KeyBinding Command="{Binding CleanCommand}"   Gesture="Ctrl+Shift+L" />
+	</Window.KeyBindings>
+
+	<DockPanel>
+
+		<!-- ── Menu bar ── -->
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="_File">
+				<MenuItem Header="_New"      Command="{Binding New}"                 InputGesture="Ctrl+N" />
+				<MenuItem Header="_Open File" Command="{Binding Open}"               InputGesture="Ctrl+O" />
+				<MenuItem Header="Open _Project..." Click="OpenProject_Click" />
+				<MenuItem Header="Open _Folder..."  Click="OpenFolder_Click" />
+				<Separator />
+				<MenuItem Header="_Close"     Command="{Binding CloseCurrentDocument}" />
+				<MenuItem Header="Close _All" Command="{Binding CloseAll}" />
+				<MenuItem Header="Close Pro_ject" Click="CloseProject_Click" />
+				<Separator />
+				<MenuItem Header="_Save"      Command="{Binding SaveCurrentDocument}" InputGesture="Ctrl+S" />
+				<MenuItem Header="Save _As..." Command="{Binding SaveCurrentDocumentAs}" />
+				<MenuItem Header="Save All"   Command="{Binding SaveAll}" />
+				<Separator />
+				<MenuItem Header="Recent Files"
+						  IsEnabled="{Binding RecentFiles.Count}"
+						  ItemsSource="{Binding RecentFiles}">
+					<MenuItem.ItemTemplate>
+						<DataTemplate>
+							<MenuItem Header="{Binding}" Click="RecentFiles_Click" />
+						</DataTemplate>
+					</MenuItem.ItemTemplate>
+				</MenuItem>
+				<Separator />
+				<MenuItem Header="E_xit" Command="{Binding Exit}" />
+			</MenuItem>
+			<MenuItem Header="_Edit">
+				<MenuItem Header="_Undo"    Command="{Binding CurrentDocument.DesignSurface.Undo}" />
+				<MenuItem Header="_Redo"    Command="{Binding CurrentDocument.DesignSurface.Redo}" />
+				<Separator />
+				<MenuItem Header="Cu_t"     Command="{Binding CurrentDocument.DesignSurface.Cut}" />
+				<MenuItem Header="_Copy"    Command="{Binding CurrentDocument.DesignSurface.Copy}" />
+				<MenuItem Header="_Paste"   Command="{Binding CurrentDocument.DesignSurface.Paste}" />
+				<MenuItem Header="_Delete"  Command="{Binding CurrentDocument.DesignSurface.Delete}" />
+				<Separator />
+				<MenuItem Header="_Refresh" Command="{Binding Refresh}" />
+			</MenuItem>
+			<MenuItem Header="_Build">
+				<MenuItem Header="_Build Solution"   Command="{Binding BuildCommand}"   InputGesture="F6" />
+				<MenuItem Header="_Rebuild Solution" Command="{Binding RebuildCommand}" InputGesture="Ctrl+Shift+R" />
+				<MenuItem Header="_Clean Solution"   Command="{Binding CleanCommand}"   InputGesture="Ctrl+Shift+L" />
+			</MenuItem>
+			<MenuItem Header="_View">
+
+				<MenuItem Header="NuGet Package Manager" Click="NuGetPackageManager_Click" />
+				<Separator />
+				<MenuItem Header="_Tool">
+					<MenuItem x:Name="MenuSolutionExplorer" Header="Solution Explorer" IsChecked="True" Click="ToggleSolutionExplorer_Click" Tag="Solution" Classes="ViewItem" />
+					<MenuItem x:Name="MenuFileExplorer" Header="File Explorer" IsChecked="True" Click="ToggleFileExplorer_Click" Tag="FileExplorer" Classes="ViewItem" />
+					<MenuItem x:Name="MenuToolbox" Header="Toolbox" IsChecked="True" Click="ToggleToolbox_Click" Tag="Toolbox" Classes="ViewItem" />
+					<Separator />
+					<MenuItem x:Name="MenuErrorList" Header="Error List" Click="ToggleErrorList_Click" Tag="Errors" Classes="ViewItem" />
+					<MenuItem x:Name="MenuOutput" Header="Output" Click="ToggleOutput_Click" Tag="BuildOutput" Classes="ViewItem" />
+					<MenuItem x:Name="MenuGit" Header="Git" Click="ToggleGit_Click" Tag="GitChanges" Classes="ViewItem" />
+				 
+					<MenuItem x:Name="MenuTerminal" Header="Terminal" Click="ToggleTerminal_Click" Tag="Terminal" Classes="ViewItem" />
+					<MenuItem x:Name="MenuPMC" Header="Package Manager Console" Click="TogglePMC_Click" Tag="PackageManagerConsole" Classes="ViewItem" />
+					<Separator />
+					<MenuItem x:Name="MenuProperties" Header="Properties Window" IsChecked="True" Click="ToggleProperties_Click" Tag="Properties" Classes="ViewItem" />
+					<MenuItem x:Name="MenuOutline" Header="Outline" Click="ToggleOutline_Click" Tag="Outline" Classes="ViewItem" />
+					<MenuItem x:Name="MenuThumbnail" Header="Thumbnail" Click="ToggleThumbnail_Click" Tag="Thumbnail" Classes="ViewItem" />
+					<MenuItem x:Name="MenuSymbols" Header="Symbols" Click="ToggleSymbols_Click" Tag="Symbols" Classes="ViewItem" />
+					<Separator />
+					<MenuItem x:Name="MenuLogicalTree" Header="Logical Tree" IsChecked="False" Click="ToggleLogicalTree_Click" Tag="LogicalTree" Classes="ViewItem" />
+				 
+					<Separator />
+					<MenuItem x:Name="MenuReferences" Header="FindReferences" Click="ToggleReferences_Click" Tag="FindReferences" Classes="ViewItem" />
+					<MenuItem x:Name="MenuDebugSettings" Header="Debug Settings" Click="ToggleDebugSettings_Click" Tag="DebugSettings" Classes="ViewItem" />
+
+					<MenuItem x:Name="MenuBreakpoints" Header="Breakpoints" Click="ToggleBreakpoints_Click" Tag="Breakpoints" Classes="ViewItem" />
+					<MenuItem x:Name="MenuCallStack" Header="Call Stack" Click="ToggleCallStack_Click" Tag="CallStack" Classes="ViewItem" />
+					<MenuItem x:Name="MenuLocals" Header="Locals" Click="ToggleLocals_Click" Tag="Locals" Classes="ViewItem" />
+					<MenuItem x:Name="MenuWatchers" Header="Watchers" Click="ToggleWatchers_Click" Tag="Watchers" Classes="ViewItem" />
+				 
+				</MenuItem>
+			</MenuItem>
+			<MenuItem Header="_Tools">
+				<MenuItem Header="_Settings..." Click="OpenSettings_Click" InputGesture="Ctrl+Alt+S"/>
+			</MenuItem>
+			<MenuItem Header="_Git">
+				<MenuItem Header="Create Git Repository..." Click="GitCreateRepo_Click" />
+				<Separator />
+				<MenuItem Header="Open Git Repositories" Click="GitRepositories_Click" />
+				<MenuItem Header="Open Git Changes"      Click="GitManager_Click" />
+				<Separator />
+				<MenuItem Header="Commit..." Click="GitCommit_Click" />
+				<MenuItem Header="Push" Click="GitPush_Click" />
+				<MenuItem Header="Pull" Click="GitPull_Click" />
+				<Separator />
+				<MenuItem Header="GitHub">
+					<MenuItem Header="Share Project on GitHub..." Click="GitShareGitHub_Click" />
+				</MenuItem>
+			</MenuItem>
+		</Menu>
+
+		<!-- ── Toolbar ── -->
+		<local:ToolbarView x:Name="ToolbarView" DockPanel.Dock="Top" />
+
+		<!-- ── Status bar ── -->
+		<local:StatusBarView x:Name="StatusBarView" DockPanel.Dock="Bottom" />
+
+
+		<!-- ── Dock layout ── -->
+		<idc:DockControl x:Name="DockControl"
+						 Layout="{Binding Layout}"
+						 Factory="{Binding Factory}" />
+
+	</DockPanel>
+</Window>

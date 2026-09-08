@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helpers="using:Scadix.Designer"
+             xmlns:vm="clr-namespace:Scadix.Designer.ViewModels.Tools"
+             x:Class="Scadix.Designer.Views.Tools.FileExplorerView"
+             x:DataType="vm:FileExplorerViewModel"
+             Background="{DynamicResource ThemeBackgroundBrush}">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="FileItemNameCell" x:DataType="vm:FileItemViewModel">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Image Source="{Binding IconKey, Converter={x:Static helpers:StringToImageConverter.Instance}}"
+                       Width="16" Height="16" 
+                       VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource ThemeForegroundBrush}"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <DockPanel LastChildFill="True">
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource ThemeControlLowBrush}" BorderBrush="{DynamicResource ThemeBorderLowBrush}" BorderThickness="0,0,0,1" Padding="4,4">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button Command="{Binding RefreshCommand}" Width="24" Height="24" Background="Transparent" BorderThickness="0" ToolTip.Tip="Refresh">
+                    <PathIcon Data="M 6 2 A 4 4 0 1 1 2 6" Foreground="{DynamicResource ThemeForegroundBrush}" Width="12" Height="12"/>
+                </Button>
+                <Button Command="{Binding NavigateToProjectCommand}" Width="24" Height="24" Background="Transparent" BorderThickness="0" ToolTip.Tip="Project Root">
+                    <PathIcon Data="M 1 2 L 4 2 L 5 3 L 11 3 L 11 9 L 1 9 Z" Foreground="#0E639C" Width="12" Height="12"/>
+                </Button>
+                <Button Command="{Binding OpenInExplorerCommand}" Width="24" Height="24" Background="Transparent" BorderThickness="0" ToolTip.Tip="Open in Explorer">
+                    <PathIcon Data="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" Foreground="{DynamicResource ThemeForegroundBrush}" Width="12" Height="12"/>
+                </Button>
+                
+                <TextBox Text="{Binding SearchText}" Height="24" Margin="4,0,0,0" Watermark="Search..." VerticalContentAlignment="Center" FontSize="11" Width="150" Background="{DynamicResource ThemeBackgroundBrush}" BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderLowBrush}">
+                    <TextBox.InnerRightContent>
+                        <PathIcon Data="M 10 10 L 7 7 M 8 4 A 4 4 0 1 1 0 4 A 4 4 0 1 1 8 4" Foreground="{DynamicResource ThemeForegroundLowBrush}" Margin="4" Width="10" Height="10"/>
+                    </TextBox.InnerRightContent>
+                </TextBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Path Bar -->
+        <Border DockPanel.Dock="Top" IsVisible="{Binding CurrentPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Background="{DynamicResource ThemeBackgroundBrush}" BorderBrush="{DynamicResource ThemeBorderLowBrush}" BorderThickness="0,0,0,1" Padding="8,4">
+            <TextBlock Text="{Binding CurrentPath}" FontFamily="Consolas, monospace" FontSize="10" Foreground="{DynamicResource ThemeForegroundLowBrush}" TextTrimming="CharacterEllipsis"/>
+        </Border>
+
+        <!-- Empty State -->
+        <StackPanel DockPanel.Dock="Top" IsVisible="{Binding CurrentPath, Converter={x:Static StringConverters.IsNullOrEmpty}}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="0,40,0,0">
+            <TextBlock Text="No project loaded" FontSize="12" Foreground="{DynamicResource ThemeForegroundLowBrush}" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Tree Data Grid -->
+        <TreeDataGrid x:Name="FileTree" 
+                      Source="{Binding Source}" 
+                      Background="Transparent"
+                      BorderThickness="0"
+                      IsVisible="{Binding CurrentPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+    </DockPanel>
+
+</UserControl>

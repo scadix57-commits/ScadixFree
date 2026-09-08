@@ -1,0 +1,10 @@
+﻿<ContextMenu x:Class="Scadix.AxamlDesigner.Extensions.EditStyleContextMenu"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Translation="clr-namespace:Scadix.AxamlDesigner">
+	<MenuItem Header="{Binding EditStyle, Source={x:Static Translation:Translations.Instance}}" Click="Click_EditStyle">
+		<MenuItem.Icon>
+			<Image Source="avares://Scadix.AxamlDesigner/Images/edit.png" />
+		</MenuItem.Icon>
+	</MenuItem>
+</ContextMenu>

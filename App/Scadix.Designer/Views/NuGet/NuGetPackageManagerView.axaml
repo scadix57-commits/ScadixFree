@@ -1,0 +1,1093 @@
+<UserControl  xmlns="https://github.com/avaloniaui"
+        xmlns:conv="using:Scadix.Designer.Converters"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="using:Scadix.Designer.Models.NuGet"
+        xmlns:vm="using:Scadix.Designer.ViewModels.NuGet"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+         x:DataType="vm:NuGetPackageManagerViewModel"
+        x:Class="Scadix.Designer.NuGetPackageManagerView"
+         >  
+    <UserControl.Resources>
+        <conv:BitmapValueConverter x:Key="BitmapConverter" />
+    </UserControl.Resources>
+
+    <Design.DataContext>
+        <vm:NuGetPackageManagerViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <Style Selector="Button.PrimaryButton">
+            <Setter Property="Background" Value="#0078D4" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Button.PrimaryButton:pointerover">
+            <Setter Property="Background" Value="#005A9E" />
+        </Style>
+        <Style Selector="Button.PrimaryButton:disabled">
+            <Setter Property="Background" Value="#CCCCCC" />
+            <Setter Property="Foreground" Value="#666666" />
+        </Style>
+        
+        <Style Selector="Button.SecondaryButton">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#333333" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#CCCCCC" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Button.SecondaryButton:pointerover">
+            <Setter Property="Background" Value="#F5F5F5" />
+            <Setter Property="BorderBrush" Value="#999999" />
+        </Style>
+        
+        <Style Selector="Button.UpdateButton">
+            <Setter Property="Background" Value="#28A745" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Button.UpdateButton:pointerover">
+            <Setter Property="Background" Value="#218838" />
+        </Style>
+        
+        <Style Selector="Button.UninstallButton">
+            <Setter Property="Background" Value="#DC3545" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Button.UninstallButton:pointerover">
+            <Setter Property="Background" Value="#C82333" />
+        </Style>
+        
+        <Style Selector="RadioButton.TabButton">
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+        <Style Selector="RadioButton.TabButton:checked">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderBrush" Value="#0078D4" />
+        </Style>
+        <Style Selector="RadioButton.TabButton:pointerover">
+            <Setter Property="Background" Value="#F0F0F0" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border
+        Background="White"
+        BorderBrush="#E0E0E0"
+        BorderThickness="1"
+        CornerRadius="6"
+        BoxShadow="0 2 8 0 #20000000">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  Header with Close Button  -->
+            <Border
+                Background="#F8F9FA"
+                BorderBrush="#E0E0E0"
+                BorderThickness="0,0,0,1"
+                CornerRadius="6,6,0,0"
+                Grid.Row="0"
+                Padding="12,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Vertical">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="#212529"
+                            Text="📦 NuGet Package Manager" />
+                        <TextBlock
+                            FontSize="10"
+                            Foreground="#6C757D"
+                            Margin="0,2,0,0"
+                            Text="{Binding ProjectName, StringFormat='Project: {0}'}" />
+                    </StackPanel>
+
+                    <Button
+                        Classes="SecondaryButton"
+                        Command="{Binding CloseCommand}"
+                        Content="✕ Close"
+                        Grid.Column="1"
+                        Name="CloseButton"
+                        VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <!--  Main Content  -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  Top Tab Bar  -->
+                <Border
+                    Background="#F8F9FA"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="0,0,0,1"
+                    Grid.Row="0">
+                    <StackPanel Orientation="Horizontal" Spacing="0">
+                        <RadioButton
+                            Classes="TabButton"
+                            Content="🔍 Browse"
+                            GroupName="NuGetTabs"
+                            IsChecked="{Binding IsBrowseTabSelected}" />
+                        <RadioButton
+                            Classes="TabButton"
+                            Content="📦 Installed"
+                            GroupName="NuGetTabs"
+                            IsChecked="{Binding IsInstalledTabSelected}" />
+                        <RadioButton
+                            Classes="TabButton"
+                            Content="🔄 Updates"
+                            FontFamily="Segoe UI Emoji"
+                            GroupName="NuGetTabs"
+                            IsChecked="{Binding IsUpdatesTabSelected}" />
+                        <RadioButton
+                            Classes="TabButton"
+                            Content="⚙️ Settings"
+                            GroupName="NuGetTabs"
+                            IsChecked="{Binding IsSettingsTabSelected}" />
+                    </StackPanel>
+                </Border>
+
+                <!--  Right Content Area  -->
+                <Grid Grid.Row="1" Background="White">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <!--  Search Bar with Refresh and Prerelease Option  -->
+                    <Border
+                        Background="White"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="0,0,0,1"
+                        Grid.Row="0"
+                        Padding="12,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            
+                            <!--  Package Source Row  -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="200" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock
+                                    Grid.Column="0"
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Margin="0,0,8,0"
+                                    Text="📦 Package source:"
+                                    VerticalAlignment="Center" />
+
+                                <ComboBox
+                                    Grid.Column="1"
+                                    ItemsSource="{Binding PackageSources}"
+                                    SelectedItem="{Binding SelectedSearchSource}"
+                                    BorderBrush="#CED4DA"
+                                    CornerRadius="3"
+                                    Padding="6,4"
+                                    FontSize="10">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock
+                                                    FontSize="10"
+                                                    FontWeight="SemiBold"
+                                                    Text="{Binding Name}"
+                                                    VerticalAlignment="Center" />
+                                                <TextBlock
+                                                    FontSize="9"
+                                                    Foreground="#6C757D"
+                                                    Text="{Binding Type, StringFormat='({0})'}"
+                                                    VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                            
+                            <!--  Search Box Row  -->
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox
+                                    Grid.Column="0"
+                                    Margin="0,0,8,0"
+                                    Padding="6"
+                                    BorderBrush="#CED4DA"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    FontSize="11"
+                                    Text="{Binding SearchQuery}"
+                                    Watermark="🔍 Search all packages..." />
+
+                                <Button
+                                    Classes="SecondaryButton"
+                                    Command="{Binding RefreshCommand}"
+                                    Content="🔄 Refresh"
+                                    FontFamily="Segoe UI Emoji"
+                                    Grid.Column="1"
+                                    Margin="0,0,6,0"
+                                    ToolTip.Tip="Refresh package list" />
+
+                                <Button
+                                    Classes="PrimaryButton"
+                                    Command="{Binding SearchCommand}"
+                                    Content="Search"
+                                    Grid.Column="2" />
+                            </Grid>
+                            
+                            <!--  Options Row  -->
+                            <StackPanel Grid.Row="2" Margin="0,8,0,0" Orientation="Horizontal" Spacing="10">
+                                <CheckBox
+                                    Content="Include prerelease"
+                                    FontSize="10"
+                                    IsChecked="{Binding IncludePrerelease}"
+                                    ToolTip.Tip="Show pre-release versions (alpha, beta, rc)" />
+                                
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock
+                                        FontSize="10"
+                                        Text="Results per page:"
+                                        VerticalAlignment="Center" />
+                                    <ComboBox
+                                        SelectedIndex="{Binding ResultsPerPageIndex}"
+                                        MinWidth="60"
+                                        FontSize="10">
+                                        <ComboBoxItem Content="20" />
+                                        <ComboBoxItem Content="50" IsSelected="True" />
+                                        <ComboBoxItem Content="100" />
+                                        <ComboBoxItem Content="200" />
+                                        <ComboBoxItem Content="All (1000)" />
+                                    </ComboBox>
+                                </StackPanel>
+                                
+                                <TextBlock
+                                    FontSize="9"
+                                    Foreground="#6C757D"
+                                    Text="💡 Tip: Search for any package from NuGet.org"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!--  Package List and Details  -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" MinWidth="250" />
+                            <ColumnDefinition Width="3*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Package List  -->
+                        <Border
+                            Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="0,0,1,0"
+                            Grid.Column="0">
+                            <Grid>
+                                <!--  No Project Warning for Installed/Updates Tabs  -->
+                                <Border
+                                    Background="#FFF3CD"
+                                    BorderBrush="#FFC107"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    IsVisible="{Binding IsNoProjectMode}"
+                                    Margin="10"
+                                    Padding="10"
+                                    VerticalAlignment="Top">
+                                    <StackPanel Spacing="8">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock
+                                                FontSize="14"
+                                                Text="⚠️"
+                                                FontFamily="Segoe UI Emoji"
+                                                VerticalAlignment="Center" />
+                                            <TextBlock
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Foreground="#856404"
+                                                Text="No Project Loaded"
+                                                VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            FontSize="10"
+                                            Foreground="#856404"
+                                            Text="Please open a project to:"
+                                            TextWrapping="Wrap" />
+                                        <StackPanel Margin="10,0,0,0" Spacing="3">
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#856404"
+                                                Text="• Install packages"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#856404"
+                                                Text="• View installed packages"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#856404"
+                                                Text="• Check for updates"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            FontSize="9"
+                                            Foreground="#856404"
+                                            Margin="0,4,0,0"
+                                            Text="💡 You can still browse packages in the Browse tab."
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                                  
+                                <!--  Package List  -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ListBox
+                                        Background="Transparent"
+                                        ItemsSource="{Binding Packages}"
+                                        SelectedItem="{Binding SelectedPackage}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border
+                                                    Background="Transparent"
+                                                    BorderBrush="#E9ECEF"
+                                                    BorderThickness="0,0,0,1"
+                                                    Padding="8,5">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+
+                                                        <!-- CheckBox (visible only in Updates tab) -->
+                                                        <CheckBox
+                                                            Grid.Column="0"
+                                                            Grid.Row="0"
+                                                            Grid.RowSpan="3"
+                                                            IsChecked="{Binding IsSelected}"
+                                                            IsVisible="{Binding $parent[UserControl].((vm:NuGetPackageManagerViewModel)DataContext).IsUpdatesTabSelected}"
+                                                            Margin="0,0,6,0"
+                                                            VerticalAlignment="Center" />
+
+                                                        <!-- Package Icon -->
+                                                        <Panel
+                                                            Grid.Column="1"
+                                                            Grid.Row="0"
+                                                            Grid.RowSpan="3"
+                                                            Width="24" Height="24"
+                                                            Margin="0,0,6,0"
+                                                            VerticalAlignment="Center">
+                                                            <!-- Real icon from NuGet -->
+                                                            <Image
+                                                                Width="24" Height="24"
+                                                                Source="{Binding IconUrl, Converter={StaticResource BitmapConverter}}"
+                                                                IsVisible="{Binding IconUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                            <!-- Fallback: colored box with first letter -->
+                                                            <Border
+                                                                Width="24" Height="24"
+                                                                CornerRadius="3"
+                                                                Background="#0078D4"
+                                                                IsVisible="{Binding IconUrl, Converter={x:Static StringConverters.IsNullOrEmpty}}">
+                                                                <TextBlock
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    FontSize="11"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="White"
+                                                                    Text="{Binding Id[0]}" />
+                                                            </Border>
+                                                        </Panel>
+
+                                                        <TextBlock
+                                                            FontSize="10"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#212529"
+                                                            Grid.Column="2"
+                                                            Grid.Row="0"
+                                                            Text="{Binding Id}"
+                                                            TextTrimming="CharacterEllipsis" />
+
+                                                        <TextBlock
+                                                            FontSize="9"
+                                                            Foreground="#6C757D"
+                                                            Grid.Column="2"
+                                                            Grid.Row="1"
+                                                            Margin="0,1,0,0"
+                                                            Text="{Binding Authors}"
+                                                            TextTrimming="CharacterEllipsis" />
+
+                                                        <TextBlock
+                                                            FontSize="8"
+                                                            Foreground="#ADB5BD"
+                                                            Grid.Column="2"
+                                                            Grid.Row="2"
+                                                            Margin="0,1,0,0"
+                                                            Text="{Binding DownloadCount, StringFormat='⬇ {0:N0} downloads'}"
+                                                            FontFamily="Segoe UI Emoji"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                </ListBox>
+                            </ScrollViewer>
+                         </Grid>
+                        </Border>
+
+                        <!--  Package Details  -->
+                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                            <Border
+                                Background="White"
+                                IsVisible="{Binding SelectedPackage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Padding="16">
+                                <StackPanel>
+                                    <!--  Package Header  -->
+                                    <TextBlock
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Foreground="#212529"
+                                        Text="{Binding SelectedPackage.Id}" />
+
+                                    <TextBlock
+                                        FontSize="10"
+                                        Foreground="#6C757D"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedPackage.Authors, StringFormat='by {0}'}" />
+
+                                    <!-- ── Projects Grid (like VS "Manage for Solution") ── -->
+                                    <Border
+                                        Background="#F8F9FA"
+                                        BorderBrush="#E0E0E0"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Margin="0,10,0,0"
+                                        Padding="0">
+                                        <StackPanel>
+                                            <!-- Header row -->
+                                            <Border
+                                                Background="#ECECEC"
+                                                BorderBrush="#E0E0E0"
+                                                BorderThickness="0,0,0,1"
+                                                Padding="8,5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="22"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="70"/>
+                                                        <ColumnDefinition Width="70"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="1" FontSize="10" FontWeight="SemiBold" Text="Project" />
+                                                    <TextBlock Grid.Column="2" FontSize="10" FontWeight="SemiBold" Text="Version" />
+                                                    <TextBlock Grid.Column="3" FontSize="10" FontWeight="SemiBold" Text="Installed" />
+                                                    <TextBlock Grid.Column="4" FontSize="10" FontWeight="SemiBold" Text="Action" />
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Projects list -->
+                                            <ListBox
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                MaxHeight="160"
+                                                ItemsSource="{Binding ProjectEntries}"
+                                                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                <ListBox.ItemContainerTheme>
+                                                    <ControlTheme TargetType="ListBoxItem">
+                                                        <Setter Property="Padding" Value="0"/>
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                    </ControlTheme>
+                                                </ListBox.ItemContainerTheme>
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:ProjectInstallEntry">
+                                                        <Border
+                                                            BorderBrush="#E9ECEF"
+                                                            BorderThickness="0,0,0,1"
+                                                            Padding="8,4">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="22"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="80"/>
+                                                                    <ColumnDefinition Width="70"/>
+                                                                    <ColumnDefinition Width="70"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <CheckBox
+                                                                    Grid.Column="0"
+                                                                    IsChecked="{Binding IsChecked}"
+                                                                    VerticalAlignment="Center" />
+
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    FontSize="10"
+                                                                    Text="{Binding ProjectName}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    VerticalAlignment="Center" />
+
+                                                                <TextBlock
+                                                                    Grid.Column="2"
+                                                                    FontSize="9"
+                                                                    Foreground="#495057"
+                                                                    Text="{Binding SelectedVersion}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    VerticalAlignment="Center" />
+
+                                                                <TextBlock
+                                                                    Grid.Column="3"
+                                                                    FontSize="9"
+                                                                    Foreground="#28A745"
+                                                                    Text="{Binding InstalledVersion}"
+                                                                    VerticalAlignment="Center"
+                                                                    IsVisible="{Binding InstalledVersion, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                                                                <TextBlock
+                                                                    Grid.Column="3"
+                                                                    FontSize="9"
+                                                                    Foreground="#ADB5BD"
+                                                                    Text="—"
+                                                                    VerticalAlignment="Center"
+                                                                    IsVisible="{Binding InstalledVersion, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+
+                                                                <TextBlock
+                                                                    Grid.Column="4"
+                                                                    FontSize="9"
+                                                                    Foreground="#0078D4"
+                                                                    Text="Installed"
+                                                                    VerticalAlignment="Center"
+                                                                    IsVisible="{Binding IsInstalled}" />
+
+                                                                <TextBlock
+                                                                    Grid.Column="4"
+                                                                    FontSize="9"
+                                                                    Foreground="#6C757D"
+                                                                    Text="Not installed"
+                                                                    VerticalAlignment="Center"
+                                                                    IsVisible="{Binding !IsInstalled}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!--  Action Buttons Section  -->
+                                    <Border
+                                        Background="#F8F9FA"
+                                        BorderBrush="#E0E0E0"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Margin="0,12,0,0"
+                                        Padding="10">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <!--  No Project Warning  -->
+                                            <Border
+                                                Background="#FFF3CD"
+                                                BorderBrush="#FFC107"
+                                                BorderThickness="1"
+                                                CornerRadius="3"
+                                                Grid.Row="0"
+                                                IsVisible="{Binding IsNoProjectMode}"
+                                                Margin="0,0,0,8"
+                                                Padding="8,6">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Text="⚠️"
+                                                        FontFamily="Segoe UI Emoji"
+                                                        VerticalAlignment="Center" />
+                                                    <TextBlock
+                                                        FontSize="10"
+                                                        Foreground="#856404"
+                                                        Text="No project loaded. Open a project to install packages."
+                                                        TextWrapping="Wrap"
+                                                        VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!--  Version Selector  -->
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    FontWeight="SemiBold"
+                                                    Grid.Column="0"
+                                                    Margin="0,0,8,0"
+                                                    Text="Version:"
+                                                    VerticalAlignment="Center" />
+
+                                                <ComboBox
+                                                    Grid.Column="1"
+                                                    ItemsSource="{Binding SelectedPackage.Versions}"
+                                                    SelectedItem="{Binding SelectedVersion}"
+                                                    BorderBrush="#CED4DA"
+                                                    CornerRadius="3"
+                                                    Padding="6,4"
+                                                    FontSize="10" />
+                                            </Grid>
+
+                                            <!--  Action Buttons — work on checked projects in the grid above  -->
+                                            <StackPanel Grid.Row="2" Margin="0,10,0,0" Orientation="Horizontal" Spacing="8">
+                                                <!--  Install  -->
+                                                <Button
+                                                    Classes="PrimaryButton"
+                                                    Command="{Binding InstallCheckedCommand}"
+                                                    Content="Install"
+                                                    IsEnabled="{Binding !IsInstalling}"
+                                                    MinWidth="80"
+                                                    ToolTip.Tip="Install selected version into checked projects" />
+
+                                                <!--  Update  -->
+                                                <Button
+                                                    Classes="UpdateButton"
+                                                    Command="{Binding UpdateCheckedCommand}"
+                                                    Content="Update"
+                                                    IsEnabled="{Binding !IsInstalling}"
+                                                    MinWidth="80"
+                                                    ToolTip.Tip="Update to selected version in checked projects" />
+
+                                                <!--  Uninstall  -->
+                                                <Button
+                                                    Classes="UninstallButton"
+                                                    Command="{Binding UninstallCheckedCommand}"
+                                                    Content="Uninstall"
+                                                    IsEnabled="{Binding !IsInstalling}"
+                                                    MinWidth="80"
+                                                    ToolTip.Tip="Remove package from checked projects" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <!--  Description  -->
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#212529"
+                                        Margin="0,16,0,6"
+                                        FontFamily="Segoe UI Emoji"
+                                        Text="📄 Description" />
+
+                                    <TextBlock
+                                        FontSize="10"
+                                        Foreground="#495057"
+                                        LineHeight="16"
+                                        Text="{Binding SelectedPackage.Description}"
+                                        TextWrapping="Wrap" />
+
+                                    <!--  Stats  -->
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#212529"
+                                        Margin="0,16,0,6"
+                                        Text="📊 Statistics" />
+
+                                    <Grid Margin="0,0,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border
+                                            Background="#F8F9FA"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Grid.Column="0"
+                                            Margin="0,0,6,0"
+                                            Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontSize="9"
+                                                    Foreground="#6C757D"
+                                                    FontFamily="Segoe UI Emoji"
+                                                    Text="⬇ Total Downloads" />
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="Bold"
+                                                    Foreground="#0078D4"
+                                                    Margin="0,3,0,0"
+                                                    Text="{Binding SelectedPackage.DownloadCount, StringFormat='{}{0:N0}'}" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border
+                                            Background="#F8F9FA"
+                                            BorderBrush="#E0E0E0"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Grid.Column="1"
+                                            Margin="6,0,0,0"
+                                            Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontSize="9"
+                                                    Foreground="#6C757D"
+                                                    FontFamily="Segoe UI Emoji"
+                                                    Text="🏷 Latest Version" />
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    FontWeight="Bold"
+                                                    Foreground="#28A745"
+                                                    Margin="0,3,0,0"
+                                                    Text="{Binding SelectedPackage.LatestVersion}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!--  Project URL  -->
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="SemiBold"
+                                        Foreground="#212529"
+                                        Margin="0,16,0,6"
+                                        FontFamily="Segoe UI Emoji"
+                                        Text="🔗 Links" />
+
+                                    <Button
+                                        Classes="SecondaryButton"
+                                        Command="{Binding OpenProjectUrlCommand}"
+                                        Content="🌐 View Project Website"
+                                        FontFamily="Segoe UI Emoji"
+                                        HorizontalAlignment="Left"
+                                        IsVisible="{Binding SelectedPackage.ProjectUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </StackPanel>
+                            </Border>
+                        </ScrollViewer>
+
+                        <!--  Settings Panel (visible when Settings tab is selected)  -->
+                        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto" IsVisible="{Binding IsSettingsTabSelected}">
+                            <Border Background="White" Padding="20,16">
+                                <StackPanel MaxWidth="800">
+                                    <!--  Settings Header  -->
+                                    <TextBlock
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Foreground="#212529"
+                                        Text="⚙️ Package Sources Settings" />
+                                    
+                                    <TextBlock
+                                        FontSize="10"
+                                        Foreground="#6C757D"
+                                        Margin="0,6,0,0"
+                                        TextWrapping="Wrap"
+                                        Text="Configure NuGet package sources. Add local folders or online feeds to install packages from custom locations." />
+
+                                    <!--  Package Sources List  -->
+                                    <TextBlock
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="#212529"
+                                        Margin="0,20,0,8"
+                                        Text="📦 Package Sources" />
+
+                                    <Border
+                                        Background="#F8F9FA"
+                                        BorderBrush="#E0E0E0"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="10">
+                                        <StackPanel>
+                                            <!--  Sources ListBox  -->
+                                            <ListBox
+                                                Background="White"
+                                                BorderBrush="#CED4DA"
+                                                BorderThickness="1"
+                                                CornerRadius="3"
+                                                Height="150"
+                                                ItemsSource="{Binding PackageSources}"
+                                                SelectedItem="{Binding SelectedPackageSource}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="6,3">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <CheckBox
+                                                                Grid.Column="0"
+                                                                IsChecked="{Binding IsEnabled}"
+                                                                Margin="0,0,8,0"
+                                                                VerticalAlignment="Center" />
+
+                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                <TextBlock
+                                                                    FontSize="10"
+                                                                    FontWeight="SemiBold"
+                                                                    Text="{Binding Name}" />
+                                                                <TextBlock
+                                                                    FontSize="9"
+                                                                    Foreground="#6C757D"
+                                                                    Text="{Binding Source}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+
+                                                            <TextBlock
+                                                                Grid.Column="2"
+                                                                FontSize="8"
+                                                                Foreground="#ADB5BD"
+                                                                Margin="6,0,0,0"
+                                                                Text="{Binding Type}"
+                                                                VerticalAlignment="Center" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+
+                                            <!--  Source Management Buttons  -->
+                                            <StackPanel Margin="0,10,0,0" Orientation="Horizontal" Spacing="8">
+                                                <Button
+                                                    Classes="PrimaryButton"
+                                                    Command="{Binding AddPackageSourceCommand}"
+                                                    Content="➕ Add Source"
+                                                    FontFamily="Segoe UI Emoji" />
+                                                <Button
+                                                    Classes="SecondaryButton"
+                                                    Command="{Binding EditPackageSourceCommand}"
+                                                    Content="✏️ Edit"
+                                                    FontFamily="Segoe UI Emoji"
+                                                    IsEnabled="{Binding SelectedPackageSource, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                                <Button
+                                                    Classes="UninstallButton"
+                                                    Command="{Binding RemovePackageSourceCommand}"
+                                                    Content="🗑 Remove"
+                                                    FontFamily="Segoe UI Emoji"
+                                                    IsEnabled="{Binding SelectedPackageSource, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!--  Add/Edit Source Form  -->
+                                    <Border
+                                        Background="#F8F9FA"
+                                        BorderBrush="#E0E0E0"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        IsVisible="{Binding IsAddingSource}"
+                                        Margin="0,16,0,0"
+                                        Padding="12">
+                                        <StackPanel>
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="#212529"
+                                                Text="Add New Package Source" />
+
+                                            <!--  Source Name  -->
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#495057"
+                                                Margin="0,10,0,4"
+                                                Text="Source Name:" />
+                                            <TextBox
+                                                BorderBrush="#CED4DA"
+                                                CornerRadius="3"
+                                                Padding="6"
+                                                FontSize="10"
+                                                Text="{Binding NewSourceName}"
+                                                Watermark="e.g., My Local Packages" />
+
+                                            <!--  Source Type  -->
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#495057"
+                                                Margin="0,10,0,4"
+                                                Text="Source Type:" />
+                                            <ComboBox
+                                                BorderBrush="#CED4DA"
+                                                CornerRadius="3"
+                                                Padding="6"
+                                                FontSize="10"
+                                                SelectedIndex="{Binding NewSourceTypeIndex}">
+                                                <ComboBoxItem Content="🌐 Online Feed (HTTP/HTTPS)" />
+                                                <ComboBoxItem Content="📁 Local Folder" />
+                                                <ComboBoxItem Content="🗂️ Network Share (UNC)" />
+                                            </ComboBox>
+
+                                            <!--  Source Path/URL  -->
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#495057"
+                                                Margin="0,10,0,4"
+                                                Text="Source Path/URL:" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBox
+                                                    BorderBrush="#CED4DA"
+                                                    CornerRadius="3"
+                                                    Grid.Column="0"
+                                                    Margin="0,0,6,0"
+                                                    Padding="6"
+                                                    FontSize="10"
+                                                    Text="{Binding NewSourcePath}"
+                                                    Watermark="e.g., C:\MyPackages or https://api.nuget.org/v3/index.json" />
+
+                                                <Button
+                                                    Classes="SecondaryButton"
+                                                    Command="{Binding BrowseSourcePathCommand}"
+                                                    Content="📁 Browse"
+                                                    FontFamily="Segoe UI Emoji"
+                                                    Grid.Column="1"
+                                                    IsVisible="{Binding IsLocalSourceType}" />
+                                            </Grid>
+
+                                            <!--  Action Buttons  -->
+                                            <StackPanel Margin="0,12,0,0" Orientation="Horizontal" Spacing="8">
+                                                <Button
+                                                    Classes="PrimaryButton"
+                                                    Command="{Binding SavePackageSourceCommand}"
+                                                    Content="💾 Save"
+                                                    FontFamily="Segoe UI Emoji" />
+                                                <Button
+                                                    Classes="SecondaryButton"
+                                                    Command="{Binding CancelAddSourceCommand}"
+                                                    Content="✕ Cancel" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!--  Default Sources Info  -->
+                                    <Border
+                                        Background="#E7F3FF"
+                                        BorderBrush="#0078D4"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Margin="0,16,0,0"
+                                        Padding="10">
+                                        <StackPanel>
+                                            <TextBlock
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Foreground="#0078D4"
+                                                FontFamily="Segoe UI Emoji"
+                                                Text="ℹ️ Information" />
+                                            <TextBlock
+                                                FontSize="10"
+                                                Foreground="#495057"
+                                                Margin="0,6,0,0"
+                                                TextWrapping="Wrap">
+                                                <Run Text="• Default NuGet source: " FontWeight="SemiBold" />
+                                                <Run Text="https://api.nuget.org/v3/index.json" />
+                                                <LineBreak />
+                                                <Run Text="• Local folders must contain .nupkg files" />
+                                                <LineBreak />
+                                                <Run Text="• Network shares use UNC paths (e.g., \\server\share\packages)" />
+                                                <LineBreak />
+                                                <Run Text="• Changes take effect immediately" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!--  Status Bar  -->
+                    <Border
+                        Background="#F8F9FA"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="0,1,0,0"
+                        CornerRadius="0,0,6,6"
+                        Grid.Row="2"
+                        Padding="12,8">
+                        <Grid>
+                            <TextBlock
+                                FontSize="10"
+                                Foreground="#6C757D"
+                                IsVisible="{Binding !IsBusy}"
+                                Text="{Binding StatusMessage}"
+                                VerticalAlignment="Center" />
+
+                            <StackPanel
+                                IsVisible="{Binding IsBusy}"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <ProgressBar
+                                    Height="4"
+                                    IsIndeterminate="True"
+                                    Width="180"
+                                    CornerRadius="2" />
+                                <TextBlock
+                                    FontSize="10"
+                                    Foreground="#0078D4"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding LoadingMessage}"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

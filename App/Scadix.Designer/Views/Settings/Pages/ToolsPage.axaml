@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.ToolsPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Tools"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── Terminal ── -->
+        <TextBlock Classes="group-header" Text="TERMINAL"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Shell Path"/>
+                <TextBox Classes="setting-ctrl"
+                         x:Name="TerminalShellPathTextBox"
+                         Watermark="C:\Windows\System32\cmd.exe"
+                         MinWidth="300"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Startup Directory"/>
+                <TextBox Classes="setting-ctrl"
+                         x:Name="TerminalStartupDirTextBox"
+                         Watermark="Leave empty for project directory"
+                         MinWidth="300"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="TerminalCursorBlinkCheckBox"
+                      Content="Cursor blinking"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Scrollback Lines"/>
+                <NumericUpDown Classes="setting-ctrl"
+                               x:Name="TerminalScrollbackNumeric"
+                               Minimum="100"
+                               Maximum="10000"
+                               Increment="100"
+                               MinWidth="150"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── External Tools ── -->
+        <TextBlock Classes="group-header" Text="EXTERNAL TOOLS"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Diff Tool"/>
+                <TextBox Classes="setting-ctrl"
+                         x:Name="ExternalDiffToolTextBox"
+                         Watermark="Path to diff tool"
+                         MinWidth="300"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Merge Tool"/>
+                <TextBox Classes="setting-ctrl"
+                         x:Name="ExternalMergeToolTextBox"
+                         Watermark="Path to merge tool"
+                         MinWidth="300"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Database ── -->
+        <TextBlock Classes="group-header" Text="DATABASE"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="DatabaseAutoConnectCheckBox"
+                      Content="Auto-connect to databases on startup"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Query Timeout (seconds)"/>
+                <NumericUpDown Classes="setting-ctrl"
+                               x:Name="DatabaseTimeoutNumeric"
+                               Minimum="5"
+                               Maximum="300"
+                               Increment="5"
+                               MinWidth="150"/>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.EditorGeneralPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Editor › General"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- Mouse -->
+        <TextBlock Classes="group-header" Text="MOUSE"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkCtrlWheel"
+                      Content="Change font size with Ctrl+Mouse Wheel"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkSmoothScroll"
+                      Content="Enable smooth scrolling"/>
+        </Border>
+
+        <!-- Appearance -->
+        <TextBlock Classes="group-header" Text="APPEARANCE"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkLineNumbers"
+                      Content="Show line numbers"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkWhitespace"
+                      Content="Show whitespace characters"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkIndentGuides"
+                      Content="Show indent guides"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkHighlightLine"
+                      Content="Highlight current line"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkMatchBraces"
+                      Content="Show matching braces"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Right margin column"/>
+                <TextBox x:Name="TxtRightMargin"
+                         Classes="setting-ctrl" Text="120" MaxWidth="80"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Tabs and Indents -->
+        <TextBlock Classes="group-header" Text="TABS AND INDENTS"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkUseTab"
+                      Content="Use tab character"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Tab size"/>
+                <TextBox x:Name="TxtTabSize"
+                         Classes="setting-ctrl" Text="4" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Indent size"/>
+                <TextBox x:Name="TxtIndentSize"
+                         Classes="setting-ctrl" Text="4" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Auto Save -->
+        <TextBlock Classes="group-header" Text="AUTO SAVE"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ChkAutoSave"
+                      Content="Save files automatically"
+                      IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Auto save interval (seconds)"/>
+                <TextBox x:Name="TxtAutoSaveInterval"
+                         Classes="setting-ctrl" Text="30" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

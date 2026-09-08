@@ -1,0 +1,10 @@
+﻿<ContextMenu x:Class="Scadix.AxamlDesigner.Extensions.UnwrapItemContextMenu"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Translation="clr-namespace:Scadix.AxamlDesigner">
+    <MenuItem Header="{Binding Unwrap, Source={x:Static Translation:Translations.Instance}}" Click="Click_Unwrap">
+        <MenuItem.Icon>
+            <Image Source="avares://Scadix.AxamlDesigner/Images/wrap-option.png" />
+        </MenuItem.Icon>
+    </MenuItem>
+</ContextMenu>

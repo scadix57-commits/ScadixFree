@@ -1,0 +1,8 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tv="clr-namespace:Scadix.AxamlDesigner.ThumbnailView;assembly=Scadix.AxamlDesigner"
+             xmlns:local="clr-namespace:Scadix.Designer"
+             x:Class="Scadix.Designer.ThumbnailToolView">
+    <tv:ThumbnailView x:DataType="local:MainWindowViewModel"
+                      DesignSurface="{Binding CurrentDocument.DesignSurface}" />
+</UserControl>

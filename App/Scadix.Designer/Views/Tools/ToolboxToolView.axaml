@@ -1,0 +1,30 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Outline="clr-namespace:Scadix.AxamlDesigner.OutlineView;assembly=Scadix.AxamlDesigner"
+             xmlns:Default="clr-namespace:Scadix.Designer"
+             x:DataType="Default:Toolbox"
+             x:Class="Scadix.Designer.ToolboxView">
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Browse..." Click="BrowseForAssemblies_OnClick" />
+        </ContextMenu>
+    </UserControl.ContextMenu>
+  
+    <TreeView x:Name="uxTreeView" 
+              ItemsSource="{Binding AssemblyNodes}" 
+              BorderThickness="0" >
+    
+      <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="Default:AssemblyNode" ItemsSource="{Binding Controls}" >
+            <Outline:IconItem Icon="avares://Scadix.Designer/Images/Reference.png"
+                              Text="{Binding Name}"
+                              ToolTip.Tip="{Binding Path}" />
+        </TreeDataTemplate>
+        <DataTemplate DataType="Default:ControlNode">
+            <Outline:IconItem Icon="avares://Scadix.Designer/Images/Tag.png"
+                              Text="{Binding Type.Name}" />
+        </DataTemplate>
+    </TreeView.DataTemplates>
+    
+    </TreeView>
+</UserControl>

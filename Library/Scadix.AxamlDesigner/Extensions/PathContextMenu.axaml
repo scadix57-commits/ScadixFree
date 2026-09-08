@@ -1,0 +1,6 @@
+﻿<ContextMenu x:Class="Scadix.AxamlDesigner.Extensions.PathContextMenu"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <MenuItem Header="Convert To Figures" Click="Click_ConvertToFigures">
+    </MenuItem>
+</ContextMenu>

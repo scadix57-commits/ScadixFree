@@ -1,0 +1,221 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Scadix.Designer.ViewModels.Tools"
+             x:Class="Scadix.Designer.Views.Tools.FindAllReferencesView"
+             x:DataType="vm:FindAllReferencesViewModel"
+             Background="{DynamicResource ThemeBackgroundBrush}">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- ══ Search Bar ════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource ThemeControlLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="8,6">
+      <Grid ColumnDefinitions="*,Auto">
+        <!-- Query input -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                BorderThickness="1" CornerRadius="4"
+                Padding="6,4" Margin="0,0,6,0">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <PathIcon Grid.Column="0"
+                      Data="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                      Width="12" Height="12"
+                      Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                      Margin="0,0,6,0"/>
+            <TextBox Grid.Column="1"
+                     x:Name="QueryBox"
+                     Text="{Binding Query}"
+                     Background="Transparent" BorderThickness="0" Padding="0"
+                     FontSize="12" Watermark="Search symbol, text, or regex..."
+                     VerticalAlignment="Center"/>
+            <Button Grid.Column="2"
+                    IsVisible="{Binding Query, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                    Command="{Binding ClearResultsCommand}"
+                    Background="Transparent" BorderThickness="0" Padding="2">
+              <TextBlock Text="✕" FontSize="9" Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+            </Button>
+          </Grid>
+        </Border>
+        <!-- Search button -->
+        <Button Grid.Column="1"
+                Command="{Binding RunSearchCommand}"
+                IsEnabled="{Binding !IsSearching}"
+                Background="#0E639C" Foreground="White"
+                BorderThickness="0" CornerRadius="4"
+                Padding="14,6">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <PathIcon Data="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                      Width="12" Height="12" Foreground="White"/>
+            <TextBlock Text="Find" FontSize="11" FontWeight="SemiBold"/>
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- ══ Options Bar ═══════════════════════════════════════════════════════ -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource ThemeControlLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="10,4">
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <CheckBox Content="Match Case" FontSize="11"
+                  IsChecked="{Binding MatchCase}"
+                  Foreground="{DynamicResource ThemeForegroundBrush}"/>
+        <CheckBox Content="Whole Word" FontSize="11"
+                  IsChecked="{Binding WholeWord}"
+                  Foreground="{DynamicResource ThemeForegroundBrush}"/>
+        <CheckBox Content="Regex" FontSize="11"
+                  IsChecked="{Binding UseRegex}"
+                  Foreground="{DynamicResource ThemeForegroundBrush}"/>
+
+        <Border Width="1" Background="{DynamicResource ThemeBorderLowBrush}" Margin="4,2"/>
+
+        <!-- Busy indicator -->
+        <StackPanel Orientation="Horizontal" Spacing="6"
+                    IsVisible="{Binding IsSearching}"
+                    VerticalAlignment="Center">
+          <TextBlock Text="⏳" FontSize="11"/>
+          <TextBlock Text="Searching..." FontSize="11"
+                     Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- ══ Results ════════════════════════════════════════════════════════════ -->
+    <Panel Grid.Row="2">
+
+      <!-- Empty / No results state -->
+      <StackPanel IsVisible="{Binding !HasResults}"
+                  VerticalAlignment="Center" HorizontalAlignment="Center"
+                  Spacing="8">
+        <PathIcon Data="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                  Width="36" Height="36"
+                  Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+        <TextBlock Text="{Binding StatusText}"
+                   FontSize="12" Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   HorizontalAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Grouped results -->
+      <ScrollViewer IsVisible="{Binding HasResults}"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Groups}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ReferenceGroup">
+              <Border Margin="0,0,0,2">
+                <Expander IsExpanded="True" Padding="0">
+                  <Expander.Header>
+                    <!-- File group header -->
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                      <PathIcon Grid.Column="0"
+                                Data="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-7-7z"
+                                Width="13" Height="13"
+                                Foreground="#0E639C"
+                                Margin="0,0,6,0"/>
+                      <TextBlock Grid.Column="1"
+                                 Text="{Binding FileName}"
+                                 FontSize="12" FontWeight="SemiBold"
+                                 Foreground="{DynamicResource ThemeForegroundBrush}"
+                                 VerticalAlignment="Center"/>
+                      <TextBlock Grid.Column="2"
+                                 Text="{Binding Directory}"
+                                 FontSize="10"
+                                 Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                                 VerticalAlignment="Center"
+                                 Margin="8,0,0,0"
+                                 TextTrimming="LeadingEllipsis"/>
+                      <Border Grid.Column="3"
+                              Background="#0E639C" CornerRadius="8"
+                              Padding="6,1" Margin="8,0,4,0">
+                        <TextBlock Text="{Binding Count}"
+                                   FontSize="10" Foreground="White"
+                                   FontWeight="SemiBold"/>
+                      </Border>
+                    </Grid>
+                  </Expander.Header>
+
+                  <!-- Location rows -->
+                  <ItemsControl ItemsSource="{Binding Locations}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ReferenceLocation">
+                        <Border x:Name="ResultRow"
+                                Background="Transparent"
+                                Padding="24,2,8,2"
+                                Cursor="Hand">
+                          <Border.Styles>
+                            <Style Selector="Border:pointerover">
+                              <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}"/>
+                            </Style>
+                          </Border.Styles>
+                          <Grid ColumnDefinitions="Auto,*">
+                            <!-- Line number -->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding Line, StringFormat='{}:{0}'}"
+                                       FontFamily="Consolas, monospace"
+                                       FontSize="10.5"
+                                       Foreground="#6A9955"
+                                       Width="42"
+                                       VerticalAlignment="Center"/>
+                            <!-- Highlighted line text -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                              <TextBlock Text="{Binding TextBefore}"
+                                         FontFamily="Consolas, monospace"
+                                         FontSize="11"
+                                         Foreground="{DynamicResource ThemeForegroundBrush}"/>
+                              <Border Background="#264F78" CornerRadius="2" Padding="1,0">
+                                <TextBlock Text="{Binding MatchText}"
+                                           FontFamily="Consolas, monospace"
+                                           FontSize="11" FontWeight="Bold"
+                                           Foreground="#4EC9B0"/>
+                              </Border>
+                              <TextBlock Text="{Binding TextAfter}"
+                                         FontFamily="Consolas, monospace"
+                                         FontSize="11"
+                                         Foreground="{DynamicResource ThemeForegroundBrush}"/>
+                            </StackPanel>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                </Expander>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Panel>
+
+    <!-- ══ Status Bar ════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="3"
+            Background="{DynamicResource ThemeControlLowBrush}"
+            BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="10,3">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0"
+                   Text="{Binding StatusText}"
+                   FontSize="11"
+                   Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                   VerticalAlignment="Center"/>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                    IsVisible="{Binding HasResults}">
+          <TextBlock FontSize="10" Foreground="{DynamicResource ThemeForegroundLowBrush}"
+                     VerticalAlignment="Center">
+            <Run Text="{Binding TotalMatches}"/>
+            <Run Text="match(es) in"/>
+            <Run Text="{Binding TotalFiles}"/>
+            <Run Text="file(s)"/>
+          </TextBlock>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

@@ -1,0 +1,312 @@
+<ResourceDictionary
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:designer="clr-namespace:Scadix.AxamlDesigner"
+xmlns:local="clr-namespace:Scadix.AxamlDesigner.Controls">
+
+	<designer:CollapsedWhenFalse x:Key="TrueVisibleConverter" />
+
+	<ControlTheme x:Key="ClearSelectionButtonStyle" TargetType="Button">
+		<Setter Property="Background" Value="#FF3C688D" />
+		<Setter Property="BorderBrush" Value="#FF617584" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="Width" Value="15" />
+		<Setter Property="Height" Value="15" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid Background="Transparent">
+					<Border
+					x:Name="MouseOverElement"
+					Background="#FFC8E4ED"
+					BorderBrush="#FF3F6A8E"
+					BorderThickness="{TemplateBinding BorderThickness}"
+					IsVisible="False" />
+					<ContentPresenter
+					x:Name="contentPresenter"
+					Margin="{TemplateBinding Padding}"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Content="{TemplateBinding Content}"
+					ContentTemplate="{TemplateBinding ContentTemplate}" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+
+		<Style Selector="^:pointerover /template/ Border#MouseOverElement">
+			<Setter Property="IsVisible" Value="True" />
+		</Style>
+		<Style Selector="^:pressed /template/ Border#MouseOverElement">
+			<Setter Property="IsVisible" Value="True" />
+		</Style>
+	</ControlTheme>
+
+	<ControlTheme x:Key="ComboBoxFocusVisual" TargetType="TemplatedControl">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Rectangle
+				Margin="4,4,21,4"
+				Stroke="Black"
+				StrokeDashArray="1,2"
+				StrokeThickness="1" />
+			</ControlTemplate>
+		</Setter>
+	</ControlTheme>
+
+	<LinearGradientBrush x:Key="ButtonNormalBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+		<GradientStop Offset="0" Color="#F3F3F3" />
+		<GradientStop Offset="0.5" Color="#EBEBEB" />
+		<GradientStop Offset="0.5" Color="#DDDDDD" />
+		<GradientStop Offset="1" Color="#CDCDCD" />
+	</LinearGradientBrush>
+
+	<SolidColorBrush x:Key="ButtonNormalBorder" Color="#FF707070" />
+	<StreamGeometry x:Key="DownArrowGeometry">M 0 0 L 3.5 4 L 7 0 Z</StreamGeometry>
+
+	<ControlTheme x:Key="ComboBoxReadonlyToggleButton" TargetType="ToggleButton">
+		<Setter Property="IsTabStop" Value="False" />
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="ClickMode" Value="Press" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border
+				x:Name="Chrome"
+				Background="{TemplateBinding Background}"
+				BorderBrush="{TemplateBinding BorderBrush}"
+				BorderThickness="1">
+					<Grid Width="18" HorizontalAlignment="Right"> <Path
+					x:Name="Arrow"
+					Margin="3,1,0,0"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Data="{StaticResource DownArrowGeometry}"
+					Fill="Black" />
+					</Grid>
+				</Border>
+			</ControlTemplate>
+		</Setter>
+
+		<Style Selector="^:checked /template/ Border#Chrome">
+			<Setter Property="Background" Value="#D4D4D4" />
+		</Style>
+		<Style Selector="^:disabled /template/ Path#Arrow">
+			<Setter Property="Fill" Value="#AFAFAF" />
+		</Style>
+	</ControlTheme>
+
+	<LinearGradientBrush x:Key="TextBoxBorder" StartPoint="0%,0%" EndPoint="0%,200%">
+		<GradientStop Offset="0.05" Color="#ABADB3" />
+		<GradientStop Offset="0.07" Color="#E2E3EA" />
+		<GradientStop Offset="1" Color="#E3E9EF" />
+	</LinearGradientBrush>
+
+	<ControlTheme x:Key="ComboBoxEditableTextBox" TargetType="TextBox">
+		<Setter Property="DragDrop.AllowDrop" Value="True" />
+		<Setter Property="MinWidth" Value="0" />
+		<Setter Property="MinHeight" Value="0" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<ScrollViewer
+				HorizontalScrollBarVisibility="Hidden"
+				VerticalScrollBarVisibility="Hidden">
+
+					<TextPresenter
+					x:Name="PART_TextPresenter"
+					Text="{TemplateBinding Text, Mode=TwoWay}"
+					CaretIndex="{TemplateBinding CaretIndex}"
+					SelectionStart="{TemplateBinding SelectionStart}"
+					SelectionEnd="{TemplateBinding SelectionEnd}"
+					TextAlignment="{TemplateBinding TextAlignment}"
+					TextWrapping="{TemplateBinding TextWrapping}"
+					PasswordChar="{TemplateBinding PasswordChar}"
+					RevealPassword="{TemplateBinding RevealPassword}"
+					SelectionBrush="{TemplateBinding SelectionBrush}"
+					SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+					CaretBrush="{TemplateBinding CaretBrush}"
+					Margin="{TemplateBinding Padding}"
+					VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+					HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+
+				</ScrollViewer>
+			</ControlTemplate>
+		</Setter>
+	</ControlTheme>
+
+	<ControlTheme x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+		<Setter Property="IsTabStop" Value="False" />
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="ClickMode" Value="Press" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border
+				x:Name="Chrome"
+				Width="18"
+				Background="{TemplateBinding Background}"
+				BorderBrush="{TemplateBinding BorderBrush}"
+				BorderThickness="1"
+				CornerRadius="0">
+					<Path
+					x:Name="Arrow"
+					Margin="0,1,0,0"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Data="{StaticResource DownArrowGeometry}"
+					Fill="Black" />
+				</Border>
+			</ControlTemplate>
+		</Setter>
+		<Style Selector="^:checked /template/ Border#Chrome">
+			<Setter Property="Background" Value="#D4D4D4" />
+		</Style>
+		<Style Selector="^:disabled /template/ Path#Arrow">
+			<Setter Property="Fill" Value="#AFAFAF" />
+		</Style>
+	</ControlTheme>
+
+	<ControlTheme x:Key="ComboBoxEditableTemplate" TargetType="ComboBox">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid x:Name="Placement">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+
+					<Popup
+					x:Name="PART_Popup"
+					Grid.ColumnSpan="2"
+					IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+					Placement="Bottom">
+
+						<Border
+						x:Name="DropDownBorder"
+						Background="{DynamicResource ThemeBackgroundBrush}"
+						BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+						BorderThickness="1"
+						BoxShadow="0 0 5 0 #71000000"
+						MinWidth="{Binding Bounds.Width, ElementName=Placement}"
+						MaxHeight="{TemplateBinding MaxDropDownHeight}">
+							<ScrollViewer>
+								<ItemsPresenter />
+							</ScrollViewer>
+						</Border>
+					</Popup>
+
+					<Border
+					x:Name="Border"
+					Grid.ColumnSpan="2"
+					Background="{TemplateBinding Background}"
+					BorderBrush="{TemplateBinding BorderBrush}"
+					BorderThickness="{TemplateBinding BorderThickness}" />
+
+					<TextBox
+					x:Name="PART_EditableTextBox"
+					Margin="3,3,23,3"
+					HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+					VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+					IsReadOnly="False"
+					Theme="{StaticResource ComboBoxEditableTextBox}" />
+
+					<ToggleButton
+					Grid.Column="1"
+					IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+					Theme="{StaticResource ComboBoxToggleButton}" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+
+		<Style Selector="^:focus-within /template/ TextBox#PART_EditableTextBox">
+			<Setter Property="Foreground" Value="Black" />
+		</Style>
+		<Style Selector="^:dropdownopen /template/ Border#Border">
+			<Setter Property="Background" Value="#EBEBEB" />
+		</Style>
+		<Style Selector="^:disabled">
+			<Setter Property="Foreground" Value="Gray" />
+			<Setter Property="Background" Value="#FFF4F4F4" />
+		</Style>
+	</ControlTheme>
+
+	<ControlTheme TargetType="local:NullableComboBox" x:Key="{x:Type local:NullableComboBox}">
+		<Setter Property="Foreground" Value="Black" />
+		<Setter Property="Background" Value="{StaticResource ButtonNormalBackground}" />
+		<Setter Property="BorderBrush" Value="{StaticResource ButtonNormalBorder}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Padding" Value="4,3" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid x:Name="MainGrid">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="0" MinWidth="18" />
+					</Grid.ColumnDefinitions>
+
+					<Popup
+					x:Name="PART_Popup"
+					Grid.ColumnSpan="2"
+					Margin="1"
+					IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+					Placement="Bottom">
+						<Border
+						x:Name="DropDownBorder"
+						Background="White"
+						BorderBrush="Gray"
+						BorderThickness="1"
+						BoxShadow="0 0 5 0 #71000000"
+						MinWidth="{Binding Bounds.Width, ElementName=MainGrid}"
+						MaxHeight="{TemplateBinding MaxDropDownHeight}">
+							<ScrollViewer>
+								<ItemsPresenter />
+							</ScrollViewer>
+						</Border>
+					</Popup>
+
+					<ToggleButton
+					Grid.ColumnSpan="2"
+					Background="{TemplateBinding Background}"
+					BorderBrush="{TemplateBinding BorderBrush}"
+					IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+					Theme="{StaticResource ComboBoxReadonlyToggleButton}" />
+
+					<ContentPresenter
+					Margin="3,3,18,3"
+					HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+					VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+					Content="{TemplateBinding SelectionBoxItem}"
+					ContentTemplate="{TemplateBinding ItemTemplate}" />
+
+					<Button
+					x:Name="PART_ClearButton"
+					Margin="0,0,0,0"
+					HorizontalAlignment="Right"
+					Theme="{StaticResource ClearSelectionButtonStyle}"
+					IsVisible="{Binding IsNullable, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TrueVisibleConverter}}">
+						<Path
+						Width="7"
+						Height="5"
+						Data="M0,0 L1.6,0 L3,1.56 L4.4,0 L6,0 L3.8,2.5 L6,5 L4.4,5 L3,3.49 L1.59,5 L-4.2E-09,5 L2.18,2.5 z"
+						Fill="#CC111111"
+						Stretch="Fill" />
+					</Button>
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+
+		<Style Selector="^:disabled">
+			<Setter Property="Foreground" Value="Gray" />
+			<Setter Property="Background" Value="#FFF4F4F4" />
+		</Style>
+		<Style Selector="^[IsEditable=True]">
+			<Setter Property="BorderBrush" Value="{StaticResource TextBoxBorder}" />
+			<Setter Property="Background" Value="White" />
+			<Setter Property="IsTabStop" Value="False" />
+			<Setter Property="Padding" Value="3" />
+			<Setter Property="Theme" Value="{StaticResource ComboBoxEditableTemplate}" />
+		</Style>
+	</ControlTheme>
+</ResourceDictionary>

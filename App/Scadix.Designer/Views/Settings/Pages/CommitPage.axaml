@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.CommitPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Version Control › Commit"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="COMMIT INTERFACE"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkUseNonModalCommit"
+                      Content="Use non-modal commit interface" IsChecked="True"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="COMMIT OPTIONS"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkShowUnversionedFiles"
+                      Content="Show unversioned files" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkHighlightSpellingErrors"
+                      Content="Highlight spelling errors in commit messages" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkAnalyzeCodeBeforeCommit"
+                      Content="Analyze code before commit"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkCheckTodoBeforeCommit"
+                      Content="Check TODO items before commit"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkOptimizeImportsBeforeCommit"
+                      Content="Optimize imports before commit"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="COMMIT MESSAGE"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkRightMarginInCommitMessage"
+                      Content="Show right margin in commit message" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Right margin at column"/>
+                <TextBox Name="TxtCommitMessageRightMargin" Classes="setting-ctrl" Text="72" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkWrapCommitMessage"
+                      Content="Wrap when typing reaches right margin"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

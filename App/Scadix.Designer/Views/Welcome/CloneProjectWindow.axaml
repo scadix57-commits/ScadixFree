@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Scadix.Designer.Views.CloneProjectWindow"
+        xmlns:vm="clr-namespace:Scadix.Designer.Views"
+        x:DataType="vm:CloneProjectWindow"
+        Title="Get from Version Control" Width="550" Height="380"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3F3F3"
+        Padding="24"
+        CanResize="False">
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,24">
+            <TextBlock Text="Clone Repository" FontSize="20" FontWeight="SemiBold" Foreground="#1E1E1E" />
+            <TextBlock Text="Enter the repository URL to clone a project from Git" FontSize="12" Foreground="Gray" />
+        </StackPanel>
+
+        <!-- Content -->
+        <StackPanel Grid.Row="1" Spacing="20">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Repository URL" FontSize="12" FontWeight="Medium" />
+                <TextBox x:Name="RepoUrl" Watermark="https://github.com/user/repo.git" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="Directory" FontSize="12" FontWeight="Medium" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" x:Name="ClonePath" Text="C:\Projects" />
+                    <Button Grid.Column="1" Content="..." Margin="8,0,0,0" Width="32" Click="Browse_Click" />
+                </Grid>
+            </StackPanel>
+
+            <!-- VCS Selection (Simplified) -->
+            <Border Background="White" CornerRadius="8" Padding="12" BorderBrush="#D0D0D0" BorderThickness="1">
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <Path Data="M13,8.5c0,1.2-0.7,2.3-1.7,2.8v1.4c1,0.5,1.7,1.6,1.7,2.8c0,1.9-1.6,3.5-3.5,3.5c-1.9,0-3.5-1.6-3.5-3.5 c0-1.2,0.7-2.3,1.7-2.8V5.3c-1-0.5-1.7-1.6-1.7-2.8c0-1.9,1.6-3.5,3.5-3.5S13,0.6,13,2.5c0,1.2-0.7,2.3-1.7,2.8v4.4 C12.3,6.2,13,7.3,13,8.5z" 
+                          Fill="#0078D4" Width="16" Height="22" Stretch="Uniform" VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Git" FontWeight="Bold" FontSize="13" />
+                        <TextBlock Text="Distributed version control system" FontSize="11" Foreground="Gray" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Footer -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+             <ProgressBar Grid.Column="0" IsIndeterminate="True" Width="100" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
+             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                <Button Content="Cancel" Width="80" Height="32" Click="Cancel_Click" />
+                <Button Content="Clone" Width="100" Height="32" Classes="accent" Click="Clone_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,20 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Control="clr-namespace:Scadix.AxamlExpressionBlendInteractionAddon.TriggersEditor;assembly=Scadix.AxamlExpressionBlendInteractionAddon"
+    xmlns:design="clr-namespace:Scadix.AxamlDesign;assembly=Scadix.AxamlDesign">
+
+    <ControlTheme x:Key="{x:Type Control:TriggersEditor}" TargetType="Control:TriggersEditor">
+        <Setter Property="Template">
+             <ControlTemplate>
+                 <ListBox x:Name="PART_ListBox">
+                     <ListBox.ItemTemplate>
+                         <DataTemplate DataType="design:DesignItem">
+                             <TextBlock Text="{Binding Component}" />
+                         </DataTemplate>
+                     </ListBox.ItemTemplate>
+                 </ListBox>
+             </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

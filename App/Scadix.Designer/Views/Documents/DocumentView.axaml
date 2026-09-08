@@ -1,0 +1,58 @@
+﻿<UserControl
+    x:Class="Scadix.Designer.DocumentView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:DesignerControls="clr-namespace:Scadix.AxamlDesigner.Controls;assembly=Scadix.AxamlDesigner"
+    xmlns:local="clr-namespace:Scadix.Designer"
+    x:DataType="local:Document">
+
+    <DockPanel>
+
+        <!-- Mode switcher (Design / XAML) — hidden for non-XAML files -->
+        <DesignerControls:EnumBar
+            Value="{Binding Mode}"
+            DockPanel.Dock="Bottom"
+            IsVisible="{Binding IsXamlFile, Converter={StaticResource CollapsedWhenFalse}}" />
+
+        <Grid>
+
+            <!-- ── XAML Editor (XamlEditorView replaces raw TextEditor) ── -->
+            <local:XamlEditorView
+                x:Name="uxXamlEditor"
+                IsVisible="{Binding InXamlMode,
+                            Converter={StaticResource CollapsedWhenFalse}}">
+
+                <local:XamlEditorView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuItem Header="Copy"
+                                  InputGesture="Ctrl+C"
+                                  Command="{Binding CopyMouseCommand}"
+                                  CommandParameter="{Binding #uxXamlEditor.TextArea}" />
+                        <MenuItem Header="Cut"
+                                  InputGesture="Ctrl+X"
+                                  Command="{Binding CutMouseCommand}"
+                                  CommandParameter="{Binding #uxXamlEditor.TextArea}" />
+                        <MenuItem Header="Paste"
+                                  InputGesture="Ctrl+V"
+                                  Command="{Binding PasteMouseCommand}"
+                                  CommandParameter="{Binding #uxXamlEditor.TextArea}" />
+                        <MenuItem Header="-"/>
+                        <MenuItem Header="Select All"
+                                  InputGesture="Ctrl+A"
+                                  Command="{Binding SelectAllMouseCommand}"
+                                  CommandParameter="{Binding #uxXamlEditor.TextArea}" />
+                    </MenuFlyout>
+                </local:XamlEditorView.ContextFlyout>
+
+            </local:XamlEditorView>
+
+            <!-- ── Design surface ── -->
+            <ContentPresenter
+                Content="{Binding DesignSurface}"
+                IsVisible="{Binding InDesignMode,
+                            Converter={StaticResource CollapsedWhenFalse}}" />
+
+        </Grid>
+
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,11 @@
+﻿<UserControl 
+    x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.EventEditor"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    >	
+    <TextBox   BorderThickness="0" x:Name="txtEventHandler"
+    Background="{x:Null}"
+    Text="{Binding Value, UpdateSourceTrigger=Explicit}"></TextBox>
+
+
+</UserControl>

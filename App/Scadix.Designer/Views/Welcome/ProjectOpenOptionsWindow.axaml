@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Scadix.Designer.Views.ProjectOpenOptionsWindow"
+        x:DataType="local:ProjectOpenOptionsViewModel"
+        xmlns:local="clr-namespace:Scadix.Designer.Views"
+        Title="Open Project" Width="400" Height="200"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ExtendClientAreaToDecorationsHint="True">
+    
+    <Border Padding="20">
+        <StackPanel Spacing="20">
+            <TextBlock Text="How would you like to open the project?" FontSize="16" FontWeight="SemiBold" />
+            <TextBlock Text="The project can be opened in a new window or added to the current solution." FontSize="12" Foreground="Gray" TextWrapping="Wrap" />
+            
+            <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right">
+                <Button Content="New Window" Click="NewWindow_Click" Padding="12,6" />
+                <Button Content="Add to Current" Click="AddToCurrent_Click" Padding="12,6" IsEnabled="{Binding CanAdd}" />
+                <Button Content="Cancel" Click="Cancel_Click" Padding="12,6" Background="Transparent" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

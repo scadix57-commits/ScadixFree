@@ -1,0 +1,119 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\ScadixDesigner.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <OutputPath>G:\MyScade\Scadix2026</OutputPath>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Remove="Assets\Fonts\OpenSans-Bold.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\OpenSans-BoldItalic.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\OpenSans-Italic.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\OpenSans-Regular.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\RobotoMono-Bold.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\RobotoMono-BoldItalic.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\RobotoMono-Italic.ttf" />
+    <AvaloniaResource Remove="Assets\Fonts\RobotoMono-Regular.ttf" />
+  </ItemGroup>
+	<ItemGroup>
+		<AvaloniaResource Include="Images\Error.png" />
+		<AvaloniaResource Include="Images\Reference.png" />
+		<AvaloniaResource Include="Images\Tag.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Assets\Fonts\OpenSans-Bold.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\OpenSans-BoldItalic.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\OpenSans-Italic.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\OpenSans-Regular.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\RobotoMono-Bold.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\RobotoMono-BoldItalic.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\RobotoMono-Italic.ttf" />
+		<EmbeddedResource Include="Assets\Fonts\RobotoMono-Regular.ttf" />
+		<EmbeddedResource Include="Assets\XamlHighlighting.xshd" />
+	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.13" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.13" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.13" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.13" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+	  <PackageReference Include="Dock.Model.Mvvm" Version="11.3.11.22" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+	  <PackageReference Include="System.CodeDom" Version="10.0.11" />
+	  <PackageReference Include="Xaml.Behaviors" Version="11.3.9.5" />
+	  <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+	  <PackageReference Include="Dock.Avalonia" Version="11.3.11.22" />
+	  <PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.22" />
+	  <PackageReference Include="Dock.Model.Avalonia" Version="11.3.11.22" />
+	  <PackageReference Include="DialogHost.Avalonia" Version="0.10.4" />
+	  <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.0.2" />
+	  <PackageReference Include="TreeDataGrid" Version="11.3.12.1" />
+	  <PackageReference Include="IntellisenseIcon" Version="1.2.0" />
+	  <PackageReference Include="VectSharp.Canvas" Version="2.8.0" />
+	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.10.0" />
+    <!-- Align Microsoft.Extensions.* to v10 to match MAUI 10 requirements -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Content Include="NewFileTemplate.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Prevent MSBuild and Avalonia from auto-compiling templates -->
+		<Compile Remove="Templates\**" />
+		<Page Remove="Templates\**" />
+		<AvaloniaResource Remove="Templates\**" />
+		<AvaloniaXaml Remove="Templates\**" />
+		<EmbeddedResource Remove="Templates\**" />
+		<None Remove="Templates\**" />
+		<Content Remove="Templates\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Library\Scadix.AxamlDesigner\Scadix.AxamlDesigner.csproj" />
+	  <ProjectReference Include="..\..\Library\Scadix.AxamlDesign\Scadix.AxamlDesign.csproj" />
+	  <ProjectReference Include="..\..\Library\Scadix.AxamlDom\Scadix.AxamlDom.csproj" />
+	  <ProjectReference Include="..\..\Library\Scadix.AxamlExpressionBlendInteractionAddon\Scadix.AxamlExpressionBlendInteractionAddon.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\Symbols\" />
+	</ItemGroup>
+
+	<!-- Force copy all templates to output without using Content/None items which might be intercepted -->
+	<Target Name="CopyTemplatesToOutput" AfterTargets="Build">
+		<ItemGroup>
+			<MyTemplateFiles Include="Templates\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(MyTemplateFiles)" DestinationFiles="@(MyTemplateFiles->'$(OutDir)Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+	</Target>
+
+	 
+</Project>

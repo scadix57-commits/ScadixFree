@@ -1,0 +1,997 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:converters="clr-namespace:Scadix.Designer.Converters"
+		xmlns:vm="clr-namespace:Scadix.Designer.ViewModels"
+		xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+		xmlns:local="clr-namespace:Scadix.Designer"
+		x:DataType="local:MainWindowViewModel"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Scadix.Designer.FirstScreen"
+         >
+   <!-- <Design.DataContext>
+		<vm:MainWindowViewModel />
+	</Design.DataContext>-->
+
+    <Window.KeyBindings>
+		<KeyBinding  Gesture="Ctrl+N" />
+		<KeyBinding  Gesture="Ctrl+O" />
+		<KeyBinding  Gesture="Ctrl+S" />
+		<KeyBinding  Gesture="Ctrl+Shift+S" />
+		<KeyBinding  Gesture="Ctrl+W" />
+		<KeyBinding  Gesture="Alt+F4" />
+		<KeyBinding  Gesture="F5" />
+		<KeyBinding  Gesture="Ctrl+F5" />
+		<!-- Debug stepping shortcuts -->
+		<KeyBinding   Gesture="F5" />
+		<KeyBinding   Gesture="F10" />
+		<KeyBinding   Gesture="F11" />
+		<KeyBinding   Gesture="Shift+F11" />
+		<KeyBinding   Gesture="Shift+F5" />
+	</Window.KeyBindings>
+	<Window.Resources>
+
+		<StreamGeometry x:Key="IconOpen">M4 4H6L7 6H14V12H6L4 10V4Z</StreamGeometry>
+		<StreamGeometry x:Key="IconSave">M3 3H12L14 5V13H3V3ZM5 5V7H11V5H5Z</StreamGeometry>
+		<StreamGeometry x:Key="IconRun">M5 4L12 8L5 12V4Z</StreamGeometry>
+		<StreamGeometry x:Key="IconBuild">M14.7,11C15.3,11 16,10.3 16,9.5C16,8.7 15.3,8 14.5,8C13.7,8 13,8.7 13,9.5C13,10.3 13.7,11 14.5,11M14.5,1C12,1 10,3 10,5.5C10,6.7 10.5,7.8 11.3,8.6L2.3,17.6C1.9,18 1.9,18.7 2.3,19.1L4.9,21.7C5.3,22.1 6,22.1 6.4,21.7L15.4,12.7C16.2,13.5 17.3,14 18.5,14C21,14 23,12 23,9.5C23,7 21,5 18.5,5C17.3,5 16.2,5.5 15.4,6.3L13.7,4.6C13.9,4.9 14,5.2 14,5.5C14,6.3 13.3,7 12.5,7C11.7,7 11,6.3 11,5.5C11,4.7 11.7,4 12.5,4C12.8,4 13.1,4.1 13.4,4.3L11.7,2.6C10.9,3.4 10.4,4.5 10.4,5.7L14.5,1.6L14.5,1Z</StreamGeometry>
+
+		<!--<converters:ProjectNameConverter x:Key="ProjectNameConverter" />-->
+
+
+		<BoxShadows x:Key="ModernShadow">0 8 20 0 #261F2937</BoxShadows>
+		<!--  Rider Light Theme Brushes  -->
+		<SolidColorBrush x:Key="ModernBackgroundBrush" Color="#FFFFFF" />
+		<SolidColorBrush x:Key="HeaderGradientBrush" Color="#F2F2F2" />
+		<SolidColorBrush x:Key="ToolbarGradientBrush" Color="#F2F2F2" />
+
+		<!-- Sidebar Icon Brushes -->
+		<SolidColorBrush x:Key="SidebarExplorerBrush" Color="#007ACC" />
+		<SolidColorBrush x:Key="SidebarSearchBrush" Color="#616161" />
+		<SolidColorBrush x:Key="SidebarGitBrush" Color="#F1502F" />
+		<SolidColorBrush x:Key="SidebarDebugBrush" Color="#388E3C" />
+		<SolidColorBrush x:Key="SidebarExtensionsBrush" Color="#AB47BC" />
+		<SolidColorBrush x:Key="SidebarAccountsBrush" Color="#007ACC" />
+		<SolidColorBrush x:Key="SidebarSettingsBrush" Color="#616161" />
+
+		<!--<converters:InverseBooleanConverter x:Key="InverseBool" />-->
+	</Window.Resources>
+	<Window.Styles>
+
+
+
+		<!--  Modern Button Style  -->
+		<Style Selector="Button.ModernToolbarButton">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Padding" Value="8,6" />
+			<Setter Property="Margin" Value="2,0" />
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="FontWeight" Value="Normal" />
+			<Setter Property="Foreground" Value="#1E1E1E" />
+			<Setter Property="Cursor" Value="Hand" />
+
+			<Setter Property="CornerRadius" Value="4" />
+
+			<Setter Property="Template">
+				<ControlTemplate TargetType="Button">
+					<Border
+					Background="{TemplateBinding Background}"
+					BorderBrush="{TemplateBinding BorderBrush}"
+					BorderThickness="{TemplateBinding BorderThickness}"
+					CornerRadius="{TemplateBinding CornerRadius}"
+					Padding="{TemplateBinding Padding}"
+					x:Name="PART_Border">
+						<ContentPresenter
+						Content="{TemplateBinding Content}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						x:Name="PART_ContentPresenter" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<!--  Trigger: PointerOver (MouseOver في WPF)  -->
+		<Style Selector="Button.ModernToolbarButton:pointerover /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#EDF5FF" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+		</Style>
+
+		<!--  Trigger: Pressed  -->
+		<Style Selector="Button.ModernToolbarButton:pressed /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#DFE1E5" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+		</Style>
+		<!--  Modern Icon Button Style  -->
+		<Style Selector="Button.ModernIconButton">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Width" Value="32" />
+			<Setter Property="Height" Value="32" />
+			<Setter Property="Margin" Value="2,0" />
+			<Setter Property="Padding" Value="4" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="CornerRadius" Value="4" />
+
+			<Setter Property="Template">
+				<ControlTemplate TargetType="Button">
+					<Border
+					Background="{TemplateBinding Background}"
+					BorderBrush="{TemplateBinding BorderBrush}"
+					BorderThickness="{TemplateBinding BorderThickness}"
+					CornerRadius="{TemplateBinding CornerRadius}"
+					x:Name="PART_Border">
+						<ContentPresenter
+						Content="{TemplateBinding Content}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						x:Name="PART_ContentPresenter" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+
+		<Style Selector="Button.ModernIconButton:pointerover /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#DFE1E5" />
+		</Style>
+
+
+		<Style Selector="Button.ModernIconButton:pressed /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#D0D0D0" />
+		</Style>
+
+		<!--  Office-Style Toolbar Button  -->
+		<Style Selector="Button.OfficeToolbarButton">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Padding" Value="4" />
+			<Setter Property="Margin" Value="2" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="MinWidth" Value="24" />
+			<Setter Property="CornerRadius" Value="4" />
+
+			<Setter Property="Template">
+				<ControlTemplate TargetType="Button">
+					<Border
+					Background="{TemplateBinding Background}"
+					BorderBrush="{TemplateBinding BorderBrush}"
+					BorderThickness="{TemplateBinding BorderThickness}"
+					CornerRadius="{TemplateBinding CornerRadius}"
+					Padding="{TemplateBinding Padding}"
+					x:Name="PART_Border">
+						<ContentPresenter
+						Content="{TemplateBinding Content}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						x:Name="PART_ContentPresenter" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+
+		<Style Selector="Button.OfficeToolbarButton:pointerover /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#EDF5FF" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+		</Style>
+
+
+		<Style Selector="Button.OfficeToolbarButton:pressed /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#DFE1E5" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+		</Style>
+
+		<!--  Modern ComboBox Style  -->
+		<Style Selector="ComboBox.ModernToolbarComboBox">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="4" />
+			<Setter Property="Padding" Value="8,2" />
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="MinHeight" Value="24" />
+		</Style>
+
+		<Style Selector="ComboBox.ModernToolbarComboBox:pointerover">
+			<Setter Property="BorderBrush" Value="#FFCCCCCC" />
+			<Setter Property="Background" Value="#F5F5F5" />
+		</Style>
+
+	</Window.Styles>
+
+	 
+		<!--  Main Container with Modern Design  -->
+		<Border
+		Background="{StaticResource ModernBackgroundBrush}"
+		CornerRadius="0"
+		Margin="0">
+
+			<DockPanel>
+				<!--  Custom Title Bar  -->
+				<Border
+				Background="{StaticResource HeaderGradientBrush}"
+				CornerRadius="0"
+				DockPanel.Dock="Top"
+				Height="36"
+				>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+
+						<!--  App Icon and Title  -->
+						<StackPanel
+						Grid.Column="0"
+						Margin="16,0,0,0"
+						Orientation="Horizontal"
+						VerticalAlignment="Center">
+							<Image
+							Height="20"
+							Margin="0,0,12,0"
+							Source="avares://Scadix.Designer/Assets/avalonia-logo.ico"
+							Width="24" />
+							<TextBlock
+							FontSize="13"
+							FontWeight="Normal"
+							Foreground="#1E1E1E"
+							Text="{Binding}"
+							VerticalAlignment="Center" />
+						</StackPanel>
+
+						<!--  Window Controls  -->
+						<StackPanel
+						Grid.Column="2"
+						Margin="0,0,8,0"
+						Orientation="Horizontal">
+							<Button
+							Classes="ModernIconButton"
+							Click="Minimize_Click"
+							ToolTip.Tip="Minimize"
+							x:Name="MinimizeButton">
+								<Path
+								Data="M0,0 L10,0"
+								Stroke="#1E1E1E"
+								StrokeThickness="1" />
+							</Button>
+							<Button
+							Classes="ModernIconButton"
+							Click="MaximizeRestore_Click"
+							ToolTip.Tip="Maximize"
+							x:Name="MaximizeButton">
+								<Path
+								Data="M0,0 L10,0 L10,10 L0,10 Z"
+								Fill="Transparent"
+								Stroke="#1E1E1E"
+								StrokeThickness="1" />
+							</Button>
+							<Button
+							Classes="ModernIconButton"
+							Click="Close_Click"
+							ToolTip.Tip="Close"
+							x:Name="CloseButton">
+								<Path
+								Data="M0,0 L10,10 M10,0 L0,10"
+								Stroke="#1E1E1E"
+								StrokeThickness="1" />
+							</Button>
+						</StackPanel>
+					</Grid>
+				</Border>
+
+				<!--  Hidden Menu for Context  -->
+				<Menu DockPanel.Dock="Top">
+					<MenuItem Header="File">
+						<MenuItem Header="New">
+							<MenuItem  Header="New Solution..." />
+						</MenuItem>
+						<MenuItem   Header="_Open Solution..." InputGesture="Ctrl+O" />
+						<Separator Background="#333" />
+						<MenuItem Command="{Binding}"
+								  Header="_Save"
+								  InputGesture="Ctrl+S" />
+						<MenuItem Command="{Binding }"
+								  Header="Save _All"
+								  InputGesture="Ctrl+Shift+S" />
+						<Separator Background="#333" />
+
+						<MenuItem Command="{Binding }"
+								  Header="Close Solution" />
+						<Separator Background="#333" />
+						
+
+						<MenuItem Header="Recent Projects"
+								 
+								  ItemsSource="{Binding }"  IsEnabled="{Binding , Converter={StaticResource FalseWhenZero}}">
+							<MenuItem.Styles>
+								<Style Selector="MenuItem">
+									<Setter Property="Header" Value="{Binding }" />
+									<Setter Property="MaxWidth" Value="800" />
+									<Setter Property="ToolTip.Tip" Value="{Binding}" />
+								</Style>
+							</MenuItem.Styles>
+						</MenuItem>
+						<MenuItem x:Name="DelFiles"
+								  
+								  Header="Clear Projects"
+								  IsEnabled="{Binding , Converter={StaticResource FalseWhenZero}}" />
+						<Separator />
+
+						<MenuItem Command="{Binding }"
+								  Header="E_xit"
+								  InputGesture="Alt+F4" />
+
+					</MenuItem>
+					<MenuItem Header="Edit">
+						<MenuItem Command="{Binding }" Header="Undo" InputGesture="Ctrl+Z">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Undo_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding }" Header="Redo" InputGesture="Ctrl+Y">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Redo_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<Separator />
+						<MenuItem Command="{Binding }" Header="Cut" InputGesture="Ctrl+X">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Cut_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding }" Header="Copy" InputGesture="Ctrl+C">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Copy_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding }" Header="Paste" InputGesture="Ctrl+V">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Paste_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<Separator />
+						<MenuItem Command="{Binding }" Header="Select All" InputGesture="Ctrl+A">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/SelectAll_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+					</MenuItem>
+
+					<MenuItem Header="View" x:Name="ViewMenu">
+						 <MenuItem Header="_Theme">
+            <MenuItem Command="{Binding }"
+                      Header="_Rider Light"
+                      IsChecked="{Binding , Mode=OneWay}" />
+            <MenuItem Command="{Binding }"
+                      Header="_Rider Dark"
+                      IsChecked="{Binding , Mode=OneWay}" />
+          </MenuItem>
+						<MenuItem x:Name="MenuSolutionExplorer" Header="Solution Explorer" IsChecked="True"  Tag="projectExplorer" Classes="ViewItem" />
+						<MenuItem x:Name="MenuFileExplorer" Header="File Explorer" IsChecked="True"  Tag="FileExplorer" Classes="ViewItem" />
+						<MenuItem x:Name="MenuToolbox" Header="Toolbox" IsChecked="True"  Tag="Toolbox" Classes="ViewItem" />
+						<Separator />
+						<MenuItem x:Name="MenuErrorList" Header="Error List"  Tag="Errors" Classes="ViewItem" />
+						<MenuItem x:Name="MenuOutput" Header="Output"  Tag="Output" Classes="ViewItem" />
+						<MenuItem x:Name="MenuGit" Header="Git"  Tag="Git" Classes="ViewItem" />
+						<MenuItem x:Name="MenuBuild" Header="Build Output"  Tag="Build" Classes="ViewItem" />
+						<MenuItem x:Name="MenuTerminal" Header="Terminal"  Tag="Terminal" Classes="ViewItem" />
+						<MenuItem x:Name="MenuNuGet" Header="NuGet Package Manager"  Tag="NuGet" Classes="ViewItem" />
+						<MenuItem x:Name="MenuPMC" Header="Package Manager Console"  Tag="PackageManagerConsole" Classes="ViewItem" />
+						<Separator />
+						<MenuItem x:Name="MenuProperties" Header="Properties Window" IsChecked="True"  Tag="Properties" Classes="ViewItem" />
+						<MenuItem x:Name="MenuOutline" Header="Outline"  Tag="Outline" Classes="ViewItem" />
+						<MenuItem x:Name="MenuThumbnail" Header="Thumbnail"  Tag="Thumbnail" Classes="ViewItem" />
+						<MenuItem x:Name="MenuSymbols" Header="Symbols"  Tag="Symbols" Classes="ViewItem" />
+						<Separator />
+						<MenuItem x:Name="MenuLogicalTree" Header="Logical Tree" IsChecked="False"  Tag="LogicalTree" Classes="ViewItem" />
+						<MenuItem x:Name="MenuVisualTree" Header="Visual Tree"  Tag="VisualTree" Classes="ViewItem" />
+						<Separator />
+						<MenuItem x:Name="MenuReferences" Header="References"  Tag="References" Classes="ViewItem" />
+						<MenuItem x:Name="MenuDebugSettings" Header="Debug Settings"  Tag="DebugSettings" Classes="ViewItem" />
+						<MenuItem x:Name="MenuLSPSettings" Header="LSP Settings"  Tag="LSPSettings" Classes="ViewItem" />
+						<MenuItem x:Name="MenuBreakpoints" Header="Breakpoints"  Tag="Breakpoints" Classes="ViewItem" />
+						<MenuItem x:Name="MenuCallStack" Header="Call Stack"  Tag="CallStack" Classes="ViewItem" />
+						<MenuItem x:Name="MenuLocals" Header="Locals"  Tag="Locals" Classes="ViewItem" />
+						<MenuItem x:Name="MenuWatchers" Header="Watchers"  Tag="Watchers" Classes="ViewItem" />
+						<Separator />
+						<MenuItem x:Name="MenuAnimation" Header="Animation"  Tag="Animation" Classes="ViewItem" />
+						<MenuItem x:Name="MenuCollaboration" Header="Collaboration"  Tag="Collaboration" Classes="ViewItem" />
+						<MenuItem x:Name="MenuACP" Header="ACP"  Tag="ACP" Classes="ViewItem" />
+						<MenuItem x:Name="MenuIDEBridge" Header="IDE Bridge"  Tag="IDEBridge" Classes="ViewItem" />
+						<MenuItem x:Name="MenuExtensions" Header="Extensions"  Tag="Extensions" Classes="ViewItem" />
+					</MenuItem>
+
+					<MenuItem Header="Debug">
+						<MenuItem Command="{Binding }" Header="Build Project" InputGesture="F6">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Save_32x32.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding }" Header="Rebuild Project" InputGesture="Ctrl+Shift+B">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Convert_32x32.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<Separator />
+						<MenuItem Command="{Binding }" Header="Start Debugging" InputGesture="F5">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Play_32x32.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding }" Header="Start Without Debugging" InputGesture="Ctrl+F5">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Play_32x32.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding }" Header="Stop Debugging" InputGesture="Shift+F5">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Stop.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+					</MenuItem>
+
+					<MenuItem Header="Tools">
+						<MenuItem Header="NuGet Package Manager" >
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/nuget_icon.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem x:Name="MenuPackageManagerConsole" Header="Package Manager Console"  Tag="PackageManagerConsole" />
+						<Separator />
+						<MenuItem Header="Grid Settings" >
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Reference.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Header="Page Size Settings" >
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Convert_16x16.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Header="Designer Engine Settings" >
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/Reference.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+					</MenuItem>
+
+					<MenuItem Header="Extensions">
+						<MenuItem Header="Manage Extensions"  />
+					</MenuItem>
+
+					<MenuItem Header="Refactor">
+						<MenuItem Header="Rename Symbol"
+								   
+								  InputGesture="F2">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/FindSymbol_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Header="Extract Method"
+								   
+								  InputGesture="Ctrl+R">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/CS_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+						<Separator />
+						<MenuItem Header="Find All References"
+								   
+								  InputGesture="Shift+F12">
+							<MenuItem.Icon><Image Source="avares://Scadix.Designer/Assets/FindSymbol_16x.png" Width="16" Height="16"/></MenuItem.Icon>
+						</MenuItem>
+					</MenuItem>
+
+					<MenuItem Header="Help">
+						<MenuItem Header="About MyDesigner" />
+					</MenuItem>
+				</Menu>
+
+				<!--  VB-Style Grouped Toolbar  -->
+				<Border
+				Background="#FFF8F8F8"
+				BorderBrush="#FFE0E0E0"
+				BorderThickness="0,0,0,1"
+				DockPanel.Dock="Top"
+				Height="52"
+				>
+					<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+						<StackPanel Margin="4,2" Orientation="Horizontal" VerticalAlignment="Stretch" Spacing="0">
+
+							<!-- ── Project Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="New Project (Ctrl+Shift+N)" Width="26" Height="22" Padding="2" x:Name="mnNewProject">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/New_32x32.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Open (Ctrl+O)" Width="26" Height="22" Padding="2" x:Name="mnOpenProject">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Open_32x32.png" Width="18" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Project" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── File Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Save (Ctrl+S)" Width="26" Height="22" Padding="2" x:Name="mnSave">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Save_32x32.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Save As (Ctrl+Shift+S)" Width="26" Height="22" Padding="2" x:Name="mnSaveAs">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/SaveTo_32x32.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Save All" Width="26" Height="22" Padding="2" x:Name="mnSaveAll">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Save_32x32.png" Width="18" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="File" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Clipboard Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Cut (Ctrl+X)" Width="26" Height="22" Padding="2" x:Name="btnCut">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Cut_16x.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Copy (Ctrl+C)" Width="26" Height="22" Padding="2" x:Name="btnCopy">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Copy_16x.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Paste (Ctrl+V)" Width="26" Height="22" Padding="2" x:Name="btnPaste">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Paste_16x.png" Width="18" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Clipboard" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Edit Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Undo (Ctrl+Z)" Width="26" Height="22" Padding="2" x:Name="btnUndo">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Undo_16x.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Redo (Ctrl+Y)" Width="26" Height="22" Padding="2" x:Name="btnRedo">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Redo_16x.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Select All (Ctrl+A)" Width="26" Height="22" Padding="2" x:Name="btnSelectAll">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/SelectAll_16x.png" Width="18" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Edit" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Build Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Build (F6)" Width="26" Height="22" Padding="2" x:Name="btnBuild">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Save_32x32.png" Width="18" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Rebuild (Ctrl+Shift+B)" Width="26" Height="22" Padding="2" x:Name="btnRebuild">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Convert_32x32.png" Width="18" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Build" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Debug Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" IsVisible="{Binding }"
+												ToolTip.Tip="{Binding }" Background="#FFE6E6" Width="24" Height="22" Padding="2">
+											<PathIcon Data="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12C2,17.5 6.47,22 12,22C17.5,22 22,17.5 22,12C22,6.5 17.5,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z" Foreground="#D32F2F" Width="14" Height="14"/>
+										</Button>
+										<ComboBox Classes="ModernToolbarComboBox" ItemsSource="{Binding }" SelectedItem="{Binding }" Width="90" />
+										<ComboBox Classes="ModernToolbarComboBox" ItemsSource="{Binding }" SelectedItem="{Binding }" Width="90" />
+										<ComboBox Classes="ModernToolbarComboBox" ItemsSource="{Binding }" SelectedItem="{Binding }" Width="160" />
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" ToolTip.Tip="Start Debugging (F5)" Height="22" Padding="4,2" x:Name="mStart">
+											<StackPanel Orientation="Horizontal" Spacing="4">
+												<Image Height="14" Source="avares://Scadix.Designer/Assets/Play_32x32.png" Width="14" />
+												<TextBlock Text="{Binding }" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#007ACC" />
+											</StackPanel>
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" ToolTip.Tip="Start Without Debugging (Ctrl+F5)" Height="22" Padding="4,2">
+											<StackPanel Orientation="Horizontal" Spacing="4">
+												<Image Height="14" Source="avares://Scadix.Designer/Assets/Play_32x32.png" Width="14" />
+												<TextBlock Text="Run" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="#1E1E1E" />
+											</StackPanel>
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" ToolTip.Tip="Stop" Width="24" Height="22" Padding="2" x:Name="mStop">
+											<Image Height="14" Source="avares://Scadix.Designer/Assets/Stop.png" Width="14" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" ToolTip.Tip="Refresh" Width="24" Height="22" Padding="2" x:Name="btnRestart">
+											<Image Height="14" Source="avares://Scadix.Designer/Assets/Refresh_16x.png" Width="14" />
+										</Button>
+										<TextBlock Text="{Binding }" IsVisible="{Binding }"
+												   VerticalAlignment="Center" FontSize="11" Foreground="#D32F2F" FontWeight="SemiBold" Margin="4,0" />
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Debug" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Step Group (visible only while debugging) ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2"
+									IsVisible="{Binding }">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" IsEnabled="{Binding }" ToolTip.Tip="Continue (F5)" Width="26" Height="22" Padding="2">
+											<PathIcon Data="M8,5.14V19.14L19,12.14L8,5.14Z" Foreground="#007ACC" Width="14" Height="14"/>
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" IsEnabled="{Binding }" ToolTip.Tip="Step Over (F10)" Width="26" Height="22" Padding="2">
+											<PathIcon Data="M14,6L10,6L10,4L14,4L14,6M14,20L10,20L10,18L14,18L14,20M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z" Foreground="#388E3C" Width="14" Height="14"/>
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" IsEnabled="{Binding }" ToolTip.Tip="Step Into (F11)" Width="26" Height="22" Padding="2">
+											<PathIcon Data="M11,4H13V12L16.5,8.5L17.92,9.92L12,15.84L6.08,9.92L7.5,8.5L11,12V4M12,18A2,2 0 0,1 14,20A2,2 0 0,1 12,22A2,2 0 0,1 10,20A2,2 0 0,1 12,18Z" Foreground="#388E3C" Width="14" Height="14"/>
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" IsEnabled="{Binding }" ToolTip.Tip="Step Out (Shift+F11)" Width="26" Height="22" Padding="2">
+											<PathIcon Data="M11,20H13V12L16.5,15.5L17.92,14.08L12,8.16L6.08,14.08L7.5,15.5L11,12V20M12,6A2,2 0 0,1 14,4A2,2 0 0,1 12,2A2,2 0 0,1 10,4A2,2 0 0,1 12,6Z" Foreground="#388E3C" Width="14" Height="14"/>
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Step" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Tools Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Designer Engine Settings"  Width="26" Height="22" Padding="2" x:Name="btnDesignerSettings">
+											<PathIcon Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.35 19.43,11.03L21.54,9.37C21.73,9.22 21.78,8.97 21.68,8.73L19.68,5.27C19.58,5.03 19.33,4.94 19.09,5.03L16.61,6.03C16.1,5.64 15.53,5.32 14.92,5.07L14.54,2.42C14.5,2.18 14.3,2 14.05,2H10.05C9.8,2 9.6,2.18 9.56,2.42L9.18,5.07C8.57,5.32 8,5.64 7.49,6.03L5,5.03C4.77,4.94 4.5,5.03 4.4,5.27L2.4,8.73C2.3,8.97 2.35,9.22 2.54,9.37L4.65,11.03C4.61,11.35 4.58,11.67 4.58,12C4.58,12.33 4.61,12.65 4.65,12.97L2.54,14.63C2.35,14.78 2.3,15.03 2.4,15.27L4.4,18.73C4.5,18.97 4.77,19.06 5,18.97L7.49,17.97C8,18.36 8.57,18.68 9.18,18.93L9.56,21.58C9.6,21.82 9.8,22 10.05,22H14.05C14.3,22 14.5,21.82 14.54,21.58L14.92,18.93C15.53,18.68 16.1,18.36 16.61,17.97L19.09,18.97C19.33,19.06 19.58,18.97 19.68,18.73L21.68,15.27C21.78,15.03 21.73,14.78 21.54,14.63L19.43,12.97Z" Width="14" Height="14" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }" ToolTip.Tip="Open in Visual Studio" Width="26" Height="22" Padding="2" x:Name="btnGenerateProject">
+											<Image Height="18" Source="avares://Scadix.Designer/Assets/Visual_Studio_Icon_2022.png" Width="18" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Tools" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Search Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Search in Project Files" Width="26" Height="22" Padding="2">
+											<Image Height="16" Source="{StaticResource SearchInFilesIcon}" Width="16" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Document Outline"
+												Width="26" Height="22" Padding="2" >
+											<Image Height="16" Source="{StaticResource ListIcon}" Width="16" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="View" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Comment Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Comment Selection" Width="26" Height="22" Padding="2">
+											<Image Height="16" Source="{StaticResource CommentIcon}" Width="16" />
+										</Button>
+										<Button Classes="OfficeToolbarButton" Command="{Binding }"
+												ToolTip.Tip="Uncomment Selection" Width="26" Height="22" Padding="2">
+											<Image Height="16" Source="{StaticResource UncommentIcon}" Width="16" />
+										</Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Code" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Alignment Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,0,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Align Left"              Width="26" Height="22" Padding="2"><Image Height="16" Source="{StaticResource AlignLeftIcon}"   Width="16" /></Button>
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Align Horizontal Center" Width="26" Height="22" Padding="2"><Image Height="16" Source="{StaticResource AlignCenterIcon}" Width="16" /></Button>
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Align Right"             Width="26" Height="22" Padding="2"><Image Height="16" Source="{StaticResource AlignRightIcon}"  Width="16" /></Button>
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Align Top"               Width="26" Height="22" Padding="2"><Image Height="16" Source="{StaticResource AlignTopIcon}"    Width="16" /></Button>
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Align Vertical Center"   Width="26" Height="22" Padding="2"><Image Height="16" Source="{StaticResource AlignMiddleIcon}" Width="16" /></Button>
+										<Button Classes="OfficeToolbarButton" ToolTip.Tip="Align Bottom"            Width="26" Height="22" Padding="2"><Image Height="16" Source="{StaticResource AlignBottomIcon}" Width="16" /></Button>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Align" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+
+							<!-- ── Page Size Group ── -->
+							<Border BorderBrush="#FFCCCCCC" BorderThickness="1" CornerRadius="3" Margin="2,2,2,2" Padding="3,2">
+								<Grid RowDefinitions="*,Auto">
+									<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+										<TextBlock Text="📄" FontSize="12" VerticalAlignment="Center" Margin="0,0,2,0"/>
+										<TextBox x:Name="PageWidthBox"
+										         Width="48" Height="22" FontSize="11"
+										         Watermark="W" VerticalContentAlignment="Center"
+										         TextAlignment="Center" CornerRadius="3"
+										        
+										         ToolTip.Tip="Page Width (px)" />
+										<TextBlock Text="×" FontSize="11" VerticalAlignment="Center" Foreground="#888" />
+										<TextBox x:Name="PageHeightBox"
+										         Width="48" Height="22" FontSize="11"
+										         Watermark="H" VerticalContentAlignment="Center"
+										         TextAlignment="Center" CornerRadius="3"
+										         
+										         ToolTip.Tip="Page Height (px)" />
+										<ComboBox x:Name="PagePresetCombo"
+										          Width="120" Height="22" FontSize="10"
+										          PlaceholderText="Preset…"
+										           
+										          ToolTip.Tip="Select a device preset">
+											<ComboBoxItem Tag="390,844"   Content="iPhone 14" />
+											<ComboBoxItem Tag="430,932"   Content="iPhone 14 Pro Max" />
+											<ComboBoxItem Tag="360,780"   Content="Galaxy S23" />
+											<ComboBoxItem Tag="768,1024"  Content="iPad" />
+											<ComboBoxItem Tag="800,1280"  Content="Android Tablet" />
+											<ComboBoxItem Tag="1280,720"  Content="HD 720p" />
+											<ComboBoxItem Tag="1366,768"  Content="Laptop 1366" />
+											<ComboBoxItem Tag="1920,1080" Content="Full HD" />
+											<ComboBoxItem Tag="1440,900"  Content="macOS 1440" />
+											<ComboBoxItem Tag="3840,2160" Content="4K UHD" />
+											<ComboBoxItem Tag="390,390"   Content="Square 390" />
+											<ComboBoxItem Tag="800,600"   Content="Small Window" />
+										</ComboBox>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="Page Size" FontSize="9" Foreground="#888" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+								</Grid>
+							</Border>
+						</StackPanel>
+					</ScrollViewer>
+				</Border>
+
+				<!--  Status Bar (Bottom) - Must come BEFORE main content in DockPanel  -->
+				<Border
+				Background="{StaticResource HeaderGradientBrush}"
+				CornerRadius="0,0,12,12"
+				DockPanel.Dock="Bottom"
+				Height="32">
+					<Grid Margin="16,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+
+						<!--  Left Section: Project Info  -->
+						<StackPanel Grid.Column="0"
+									Orientation="Horizontal"
+									Spacing="16"
+									VerticalAlignment="Center">
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<Path Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,7H13V13H11V7M11,15H13V17H11V15Z"
+									  Fill="#1E1E1E"
+									  Width="14"
+									  Height="14"
+									  Stretch="Uniform"
+									  VerticalAlignment="Center"/>
+								<TextBlock Text="Ready"
+										   x:Name="StatusText"
+										   Foreground="#1E1E1E"
+										   FontSize="12"
+										   VerticalAlignment="Center"/>
+							</StackPanel>
+
+
+							<Rectangle Width="1"
+									   Height="20"
+									   Fill="#DCDCDC"
+									   VerticalAlignment="Center"/>
+
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<Path Data="M19,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4H10L12,6H19A2,2 0 0,1 21,8H21L4,8V18L6.14,10H23.21L20.93,18.5C20.7,19.37 19.92,20 19,20Z"
+									  Fill="#1E1E1E"
+									  Width="14"
+									  Height="14"
+									  Stretch="Uniform"
+									  VerticalAlignment="Center"/>
+								<TextBlock Text="{Binding }"
+										   x:Name="ProjectNameText"
+										   Foreground="#1E1E1E"
+										   FontSize="12"
+										   VerticalAlignment="Center"/>
+							</StackPanel>
+						</StackPanel>
+
+
+						<!--  Center Section: Additional Info  -->
+						<StackPanel Grid.Column="1"
+									Orientation="Horizontal"
+									HorizontalAlignment="Center"
+									Spacing="16"
+									VerticalAlignment="Center">
+							<TextBlock Text="MyDesigner v1.0"
+									   Foreground="#6E6E6E"
+									   FontSize="11"
+									   VerticalAlignment="Center"/>
+						</StackPanel>
+
+						<!--  Right Section: System Info  -->
+						<StackPanel Grid.Column="2"
+									Orientation="Horizontal"
+									Spacing="16"
+									VerticalAlignment="Center">
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<Path Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,9H13V15H11V9M11,17H13V19H11V17Z"
+									  Fill="#1E1E1E"
+									  Width="12"
+									  Height="12"
+									  Stretch="Uniform"
+									  VerticalAlignment="Center"/>
+								<TextBlock Text="Ln 1, Col 1"
+										   x:Name="LineColumnText"
+										   Foreground="#1E1E1E"
+										   FontSize="11"
+										   VerticalAlignment="Center"/>
+							</StackPanel>
+
+							<Rectangle Width="1"
+									   Height="20"
+									   Fill="#DCDCDC"
+									   VerticalAlignment="Center"/>
+
+							<TextBlock Text="UTF-8"
+									   Foreground="#1E1E1E"
+									   FontSize="11"
+									   VerticalAlignment="Center"/>
+						</StackPanel>
+					</Grid>
+				</Border>
+
+				<!-- ══ Status Bar (VS-style bottom bar) ══════════════════════════ -->
+				<Border DockPanel.Dock="Bottom"
+						Height="24"
+						Background="#007ACC"
+						x:Name="StatusBar">
+					<Grid ColumnDefinitions="Auto,*,Auto">
+
+						<!-- Left: Build progress + status text -->
+						<StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="0">
+
+							<!-- Build progress bar (visible only while building) -->
+							<Border Width="120" Height="10" Margin="8,0,6,0"
+									CornerRadius="3"
+									Background="#005A9E"
+									IsVisible="{Binding }"
+									VerticalAlignment="Center">
+								<ProgressBar IsIndeterminate="{Binding }"
+											 Value="{Binding }"
+											 Minimum="0" Maximum="100"
+											 Height="10"
+											 Background="Transparent"
+											 Foreground="#4EC94E"
+											 CornerRadius="3"
+											 BorderThickness="0" />
+							</Border>
+
+							<!-- Build status icon (✔ / ✖) when not building -->
+							<TextBlock IsVisible="{Binding }"
+									   Text="{Binding }"
+									   Foreground="White"
+									   FontSize="12"
+									   Margin="8,0,4,0"
+									   VerticalAlignment="Center" />
+
+							<!-- Status text -->
+							<TextBlock Text="{Binding }"
+									   Foreground="White"
+									   FontSize="11"
+									   VerticalAlignment="Center"
+									   Margin="0,0,12,0" />
+						</StackPanel>
+
+						<!-- Center: empty spacer -->
+						<Border Grid.Column="1" />
+
+						<!-- Right: Git info -->
+						<StackPanel Grid.Column="2" Orientation="Horizontal"
+									VerticalAlignment="Center" Spacing="0"
+									IsVisible="{Binding }">
+
+							<!-- Branch -->
+							<Button Background="Transparent" BorderThickness="0"
+									Padding="8,0" Height="24"
+									ToolTip.Tip="Git Branch"
+									Cursor="Hand">
+								<StackPanel Orientation="Horizontal" Spacing="4">
+									<!-- branch icon -->
+									<Path Data="M6,2A2,2 0 0,1 8,4C8,5.11 7.11,6 6,6C4.89,6 4,5.11 4,4A2,2 0 0,1 6,2M6,7.5C7.93,7.5 9.5,9.07 9.5,11C9.5,12.93 7.93,14.5 6,14.5C4.07,14.5 2.5,12.93 2.5,11C2.5,9.07 4.07,7.5 6,7.5M18,2A2,2 0 0,1 20,4A2,2 0 0,1 18,6A2,2 0 0,1 16,4A2,2 0 0,1 18,2M18,7.5C19.93,7.5 21.5,9.07 21.5,11C21.5,12.93 19.93,14.5 18,14.5C16.07,14.5 14.5,12.93 14.5,11C14.5,9.07 16.07,7.5 18,7.5M6,16A2,2 0 0,1 8,18A2,2 0 0,1 6,20A2,2 0 0,1 4,18A2,2 0 0,1 6,16M6,10.5V11.5C6,13.43 7.57,15 9.5,15H14.5C16.43,15 18,13.43 18,11.5V10.5"
+									      Fill="White" Stretch="Uniform" Width="12" Height="12" />
+									<TextBlock Text="{Binding }" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+								</StackPanel>
+							</Button>
+
+							<!-- Pending changes -->
+							<Button Background="Transparent" BorderThickness="0"
+									Padding="6,0" Height="24"
+									ToolTip.Tip="Pending Changes"
+									Cursor="Hand"
+									IsVisible="{Binding }">
+								<StackPanel Orientation="Horizontal" Spacing="3">
+									<Path Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
+									      Fill="White" Stretch="Uniform" Width="11" Height="11" />
+									<TextBlock Text="{Binding }" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+								</StackPanel>
+							</Button>
+
+							<!-- Ahead/Behind -->
+							<Button Background="Transparent" BorderThickness="0"
+									Padding="6,0" Height="24"
+									ToolTip.Tip="Commits ahead/behind"
+									Cursor="Hand"
+									IsVisible="{Binding }">
+								<StackPanel Orientation="Horizontal" Spacing="3">
+									<TextBlock Text="↑" Foreground="White" FontSize="12" VerticalAlignment="Center" />
+									<TextBlock Text="{Binding }" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+								</StackPanel>
+							</Button>
+
+							<Button Background="Transparent" BorderThickness="0"
+									Padding="6,0" Height="24"
+									ToolTip.Tip="Commits behind"
+									Cursor="Hand"
+									IsVisible="{Binding }">
+								<StackPanel Orientation="Horizontal" Spacing="3">
+									<TextBlock Text="↓" Foreground="White" FontSize="12" VerticalAlignment="Center" />
+									<TextBlock Text="{Binding }" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+								</StackPanel>
+							</Button>
+
+							<!-- Repo name -->
+							<Button Background="Transparent" BorderThickness="0"
+									Padding="8,0" Height="24"
+									ToolTip.Tip="Repository"
+									Cursor="Hand">
+								<StackPanel Orientation="Horizontal" Spacing="4">
+									<Path Data="M2,3H8C9.11,3 10,3.89 10,5V19C10,20.11 9.11,21 8,21H2V3M16,3H22V21H16C14.89,21 14,20.11 14,19V5C14,3.89 14.89,3 16,3M11,3H13V21H11V3Z"
+									      Fill="White" Stretch="Uniform" Width="11" Height="11" />
+									<TextBlock Text="{Binding }" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+								</StackPanel>
+							</Button>
+
+							<Separator Width="1" Height="14" Background="#FFFFFF44" Margin="2,0" />
+						</StackPanel>
+					</Grid>
+				</Border>
+
+				<!--  Main Content Area - Fills remaining space  -->
+				<Grid ColumnDefinitions="52,*">                    <!-- Activity Bar (Far Left) -->
+				<Border Grid.Column="0"
+						Background="#FFF3F3F3"
+						BorderBrush="#FFE0E0E0"
+						BorderThickness="0,0,1,0">
+					<Grid RowDefinitions="Auto,*,Auto" Margin="0,12,0,12">
+						<!-- Top Icons -->
+						<StackPanel Grid.Row="0" Spacing="8">
+							<Button Classes="ModernIconButton" Width="40" Height="40" ToolTip.Tip="Explorer"
+									 Tag="projectExplorer">
+								<Path Fill="{StaticResource SidebarExplorerBrush}" Stretch="Uniform" Width="20" Height="20"
+									  Data="M4,4H10L12,6H20A2,2 0 0,1 22,8V18A2,2 0 0,1 20,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4Z"/>
+							</Button>
+							<Button Classes="ModernIconButton" Width="40" Height="40" ToolTip.Tip="Search">
+								<Path Fill="{StaticResource SidebarSearchBrush}" Stretch="Uniform" Width="20" Height="20"
+									  Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
+							</Button>
+
+							<Button Classes="ModernIconButton" Width="40" Height="40" ToolTip.Tip="Run and Debug"
+									Command="{Binding }">
+								<Path Fill="{StaticResource SidebarDebugBrush}" Stretch="Uniform" Width="22" Height="22"
+									  Data="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+							</Button>
+
+						</StackPanel>
+
+						<!-- Bottom Icons -->
+						<StackPanel Grid.Row="2" Spacing="8">
+
+							<Button Classes="ModernIconButton" Width="40" Height="40" ToolTip.Tip="Settings">
+								<Path Fill="{StaticResource SidebarSettingsBrush}" Stretch="Uniform" Width="20" Height="20"
+									  Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+							</Button>
+						</StackPanel>
+					</Grid>
+				</Border>
+					 <!-- ── Dock layout ── -->
+        
+				</Grid>
+			</DockPanel>
+		</Border>
+
+ 
+</Window>

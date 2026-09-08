@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Scadix.Designer.ViewModels.Tools"
+             x:Class="Scadix.Designer.Views.Tools.BuildOutputToolView"
+             x:DataType="vm:BuildOutputToolViewModel"
+             Background="White">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top"
+                Background="#F5F5F5"
+                BorderBrush="#E0E0E0"
+                BorderThickness="0,0,0,1"
+                Padding="8,4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Show output from:"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <ComboBox x:Name="OutputSourceComboBox"
+                          Width="200"
+                          SelectedIndex="0"
+                          SelectionChanged="OutputSourceComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Build" />
+                    <ComboBoxItem Content="Rebuild" />
+                    <ComboBoxItem Content="Clean" />
+                </ComboBox>
+
+                <Button x:Name="ClearButton"
+                        ToolTip.Tip="Clear"
+                        Padding="8,4"
+                        Click="ClearButton_Click">
+                    <PathIcon Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                              Width="16" Height="16"/>
+                </Button>
+
+                <Button x:Name="WordWrapButton"
+                        ToolTip.Tip="Toggle Word Wrap"
+                        Padding="8,4">
+                    <PathIcon Data="M4,6H20V8H4V6M4,12H14V14H4V12M4,18H20V20H4V18Z"
+                              Width="16" Height="16"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Log Output -->
+        <ListBox x:Name="uxLogsListBox"
+                 ItemsSource="{Binding Logs}"
+                 Background="White"
+                 BorderThickness="0"
+                 FontFamily="Consolas, monospace"
+                 FontSize="12"
+                 Padding="4">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="2,1"/>
+                    <Setter Property="MinHeight" Value="0"/>
+                    <Setter Property="Foreground" Value="#1E1E1E"/>
+                </Style>
+            </ListBox.Styles>
+            <ListBox.Template>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}">
+                        <ScrollViewer x:Name="uxScrollViewer"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Visible">
+                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                            ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </ListBox.Template>
+        </ListBox>
+    </DockPanel>
+</UserControl>

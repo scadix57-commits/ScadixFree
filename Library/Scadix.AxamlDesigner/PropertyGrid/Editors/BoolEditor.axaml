@@ -1,0 +1,11 @@
+﻿<UserControl 
+    x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.BoolEditor"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:propertyGrid="clr-namespace:Scadix.AxamlDesign.PropertyGrid;assembly=Scadix.AxamlDesign"
+    x:DataType="propertyGrid:PropertyNode"
+    
+    >	
+
+     <CheckBox Focusable="False" IsChecked="{Binding DesignerValue}" Margin="2,0,0,0" VerticalAlignment="Center" />
+</UserControl>

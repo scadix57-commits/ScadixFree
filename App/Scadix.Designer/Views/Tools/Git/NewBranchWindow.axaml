@@ -1,0 +1,143 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Scadix.Designer.ViewModels"
+        x:Class="Scadix.Designer.Views.Tools.Git.NewBranchWindow"
+        x:DataType="vm:NewBranchViewModel"
+        Title="Create a new branch"
+        Width="560" Height="420"
+        MinWidth="480" MinHeight="380"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource ThemeBackgroundBrush}">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.lbl">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Width" Value="110"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*, Auto" Margin="20,20,20,16">
+
+        <!-- Content -->
+        <StackPanel Grid.Row="0" Spacing="16">
+
+            <!-- Branch name -->
+            <Grid ColumnDefinitions="110, *">
+                <TextBlock Grid.Column="0" Text="Branch name:" Classes="lbl"/>
+                <TextBox   Grid.Column="1"
+                           Text="{Binding BranchName}"
+                           Watermark="Enter a branch name (Required)"
+                           BorderBrush="{Binding BranchNameBorderBrush}"/>
+            </Grid>
+
+            <!-- Repository -->
+            <Grid ColumnDefinitions="110, *">
+                <TextBlock Grid.Column="0" Text="Repository:" Classes="lbl"/>
+                <ComboBox  Grid.Column="1"
+                           ItemsSource="{Binding Repositories}"
+                           SelectedItem="{Binding SelectedRepository}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" FontSize="12"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+
+            <!-- Based on -->
+            <Grid ColumnDefinitions="110, *">
+                <TextBlock Grid.Column="0" Text="Based on:" Classes="lbl"/>
+                <ComboBox  Grid.Column="1"
+                           ItemsSource="{Binding BaseBranches}"
+                           SelectedItem="{Binding SelectedBaseBranch}"/>
+            </Grid>
+
+            <!-- Repos list (checkboxes) -->
+            <Border BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="10,8"
+                    Background="{DynamicResource ThemeControlLowBrush}">
+                <StackPanel Spacing="6">
+                    <!-- "Create N branches" header checkbox -->
+                    <CheckBox IsChecked="{Binding AllReposChecked}"
+                              FontWeight="SemiBold" FontSize="12">
+                        <TextBlock>
+                            <Run Text="Create "/>
+                            <Run Text="{Binding CheckedCount}"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding BranchesLabel}"/>
+                            <Run Text="."/>
+                        </TextBlock>
+                    </CheckBox>
+
+                    <!-- Per-repo checkboxes -->
+                    <ItemsControl ItemsSource="{Binding RepoItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:NewBranchRepoItem">
+                                <CheckBox IsChecked="{Binding IsChecked}" Margin="16,0,0,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <!-- branch icon -->
+                                        <Path Data="M17,17.5A2.5,2.5 0 0,1 14.5,20A2.5,2.5 0 0,1 12,17.5C12,16.5 12.58,15.65 13.4,15.22V8.78C12.58,8.35 12,7.5 12,6.5A2.5,2.5 0 0,1 14.5,4A2.5,2.5 0 0,1 17,6.5C17,7.5 16.42,8.35 15.6,8.78V15.22C16.42,15.65 17,16.5 17,17.5M9,17.5A2.5,2.5 0 0,1 6.5,20A2.5,2.5 0 0,1 4,17.5C4,16.5 4.58,15.65 5.4,15.22V6.5A2.5,2.5 0 0,1 7.9,4C8.61,4 9.25,4.29 9.7,4.76C9.28,5.2 9,5.82 9,6.5C9,7.66 9.79,8.64 10.87,8.92C10.42,9.37 10.05,9.89 9.8,10.46C9.29,9.58 8.6,8.81 7.79,8.18C8.23,7.74 8.5,7.15 8.5,6.5A2,2 0 0,0 6.5,4.5A2,2 0 0,0 4.5,6.5A2,2 0 0,0 6.5,8.5C6.96,8.5 7.39,8.34 7.72,8.08C8.59,8.79 9.35,9.66 9.94,10.66C10.53,11.66 10.95,12.75 11.2,13.88C10.5,14.36 10,15.17 10,16.08C10,16.63 10.15,17.15 10.43,17.58C9.97,17.79 9.49,17.9 9,17.9V17.5M14.5,5A1.5,1.5 0 0,0 13,6.5A1.5,1.5 0 0,0 14.5,8A1.5,1.5 0 0,0 16,6.5A1.5,1.5 0 0,0 14.5,5M14.5,16A1.5,1.5 0 0,0 13,17.5A1.5,1.5 0 0,0 14.5,19A1.5,1.5 0 0,0 16,17.5A1.5,1.5 0 0,0 14.5,16Z"
+                                              Fill="#5DA656" Width="14" Height="14" Stretch="Uniform"
+                                              VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding RepoName}"
+                                                   FontWeight="SemiBold" FontSize="12"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock FontSize="12" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource ThemeForegroundLowBrush}">
+                                            <Run Text="("/>
+                                            <Run Text="{Binding CurrentBranch}"/>
+                                            <Run Text=")"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Checkout branches -->
+            <CheckBox IsChecked="{Binding CheckoutAfterCreate}"
+                      Content="Checkout branches"
+                      FontSize="12"/>
+
+        </StackPanel>
+
+        <!-- Footer buttons -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, Auto, Auto" Margin="0,8,0,0">
+            <Button Grid.Column="1"
+                    Height="28" Padding="16,0" FontSize="12"
+                    Command="{Binding CreateCommand}"
+                    IsEnabled="{Binding CanCreate}"
+                    Classes="accent"
+                    Margin="0,0,8,0">
+                <TextBlock>
+                    <Run Text="Create "/>
+                    <Run Text="{Binding CheckedCount}"/>
+                    <Run Text=" "/>
+                    <Run Text="{Binding BranchesLabel}"/>
+                </TextBlock>
+            </Button>
+            <Button Grid.Column="2"
+                    Content="Cancel"
+                    Height="28" Padding="16,0" FontSize="12"
+                    Command="{Binding CancelCommand}"/>
+        </Grid>
+
+    </Grid>
+</Window>

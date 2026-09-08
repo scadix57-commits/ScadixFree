@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Scadix.Designer.ViewModels.Tools"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Scadix.Designer.Views.Tools.DebugSettingsView"
+             x:DataType="vm:DebugSettingsViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0" Background="#F3F3F3" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,4">
+            <TextBlock Text="Debug Settings" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        </Border>
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <StackPanel Spacing="15">
+                <CheckBox Content="Enable Just My Code" IsChecked="True"/>
+                <CheckBox Content="Enable edit and continue"/>
+                <CheckBox Content="Suppress JIT optimization on module load"/>
+                <Separator Height="1" Background="#E0E0E0"/>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="Debugger Engine:" FontWeight="SemiBold"/>
+                    <ComboBox SelectedIndex="0" HorizontalAlignment="Stretch">
+                        <ComboBoxItem>Auto</ComboBoxItem>
+                        <ComboBoxItem>Managed (Core)</ComboBoxItem>
+                        <ComboBoxItem>Native</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

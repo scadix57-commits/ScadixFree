@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Scadix.Designer"
+             x:Class="Scadix.Designer.StatusBarView"
+             x:DataType="local:MainWindowViewModel"
+             Background="#F5F5F5"
+             Height="22">
+
+    <Border BorderBrush="#D0D0D0" BorderThickness="0,1,0,0" Background="#F5F5F5">
+        <DockPanel Margin="8,0">
+
+           <!-- Right side -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                        VerticalAlignment="Center" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" ToolTip.Tip="Current Git Branch">
+                    <Path Data="M13,8.5c0,1.2-0.7,2.3-1.7,2.8v1.4c1,0.5,1.7,1.6,1.7,2.8c0,1.9-1.6,3.5-3.5,3.5c-1.9,0-3.5-1.6-3.5-3.5 c0-1.2,0.7-2.3,1.7-2.8V5.3c-1-0.5-1.7-1.6-1.7-2.8c0-1.9,1.6-3.5,3.5-3.5S13,0.6,13,2.5c0,1.2-0.7,2.3-1.7,2.8v4.4 C12.3,6.2,13,7.3,13,8.5z M9.5,2c-0.3,0-0.5,0.2-0.5,0.5S9.2,3,9.5,3S10,2.8,10,2.5S9.8,2,9.5,2z M9.5,15c-0.3,0-0.5,0.2-0.5,0.5 s0.2,0.5,0.5,0.5S10,15.8,10,15.5S9.8,15,9.5,15z" Fill="#666666" Width="10" Height="14" Stretch="Uniform" />
+                    <TextBlock Text="{Binding CurrentGitBranch}" Foreground="#666666" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="⚠" Foreground="#B8860B" FontSize="11"/>
+                    <TextBlock Text="1 Warnings" Foreground="#B8860B" FontSize="11"/>
+                </StackPanel>
+                <TextBlock Text="Workspace ready. Restore, build, and test are available."
+                           Foreground="#666666" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Text="▾" Foreground="#666666" FontSize="10"
+                           VerticalAlignment="Center" Cursor="Hand"/>
+            </StackPanel>
+
+            <!-- Left: current document info -->
+            <TextBlock FontSize="11"
+                       Foreground="#666666"
+                       VerticalAlignment="Center">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0}">
+                        <Binding Path="CurrentDocument.Title" FallbackValue="No document open"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+
+        </DockPanel>
+    </Border>
+</UserControl>

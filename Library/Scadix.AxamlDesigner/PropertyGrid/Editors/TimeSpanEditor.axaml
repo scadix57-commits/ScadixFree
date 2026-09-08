@@ -1,0 +1,41 @@
+<UserControl x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.TimeSpanEditor"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+             x:Name="root">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="OptionMark.Static.Background" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="OptionMark.Static.Border" Color="#FF707070"/>
+        <ControlTheme x:Key="negativeCheckbox" TargetType="CheckBox">
+            <Setter Property="Background" Value="{StaticResource OptionMark.Static.Background}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OptionMark.Static.Border}"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <TextBlock Margin="0,-2,0,0" FontWeight="Bold" Text="-"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </UserControl.Resources>
+    <StackPanel Orientation="Horizontal" Height="25" DataContext="{Binding ElementName=root}">
+        <CheckBox Margin="2,0,2,0" VerticalAlignment="Center" Theme="{StaticResource negativeCheckbox}" IsThreeState="False" IsChecked="{Binding Neagtive}"/>
+        <controls:NumericUpDown MinWidth="40"  Value="{Binding Days}" Minimum="-1" Maximum="10675199" />
+        <TextBlock Text="d " />
+        <controls:NumericUpDown MinWidth="36" Value="{Binding Hours}" Minimum="-1" Maximum="25" />
+        <TextBlock Text="h " />
+        <controls:NumericUpDown MinWidth="36" Value="{Binding Minutes}" Minimum="-1" Maximum="60" />
+        <TextBlock Text="m " />
+        <controls:NumericUpDown MinWidth="36" Value="{Binding Seconds}" Minimum="-1" Maximum="60" />
+        <TextBlock Text="s " />
+        <controls:NumericUpDown MinWidth="44" Value="{Binding MiliSeconds}" Minimum="-1" Maximum="1000" />
+        <TextBlock Text="ms" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,11 @@
+﻿<controls:NumericUpDown x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.NumberEditor"
+                        xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
+                        xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+                        xmlns:Converters="clr-namespace:Scadix.AxamlDesigner"
+                        
+                        BorderThickness="0"
+                        Background="{x:Null}"
+                        Value="{Binding DesignerValue, Converter={x:Static Converters:DummyConverter.Instance}, ConverterCulture={x:Static globalization:CultureInfo.InvariantCulture}}">
+</controls:NumericUpDown>

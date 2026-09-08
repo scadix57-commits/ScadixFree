@@ -1,0 +1,156 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.ColorSchemePage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Color Scheme"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── Scheme ── -->
+        <TextBlock Classes="group-header" Text="SCHEME"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                    <Button Content="⚙️" Width="32" Height="28" ToolTip.Tip="Scheme actions"/>
+                    <Button Content="📥" Width="32" Height="28" ToolTip.Tip="Import Scheme"/>
+                    <Button Content="📤" Width="32" Height="28" ToolTip.Tip="Export Scheme"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Classes="setting-label" Text="Scheme"/>
+                    <ComboBox x:Name="SchemeComboBox"
+                              MinWidth="250"
+                              Margin="0,4,0,0">
+                        <ComboBoxItem Content="Darcula (Default for Dark theme)"/>
+                        <ComboBoxItem Content="IntelliJ Light (Default for Light theme)"/>
+                        <ComboBoxItem Content="High Contrast"/>
+                        <ComboBoxItem Content="Visual Studio Dark"/>
+                        <ComboBoxItem Content="Visual Studio Light"/>
+                        <ComboBoxItem Content="Rider Dark"/>
+                        <ComboBoxItem Content="Rider Light"/>
+                    </ComboBox>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ── General ── -->
+        <TextBlock Classes="group-header" Text="GENERAL"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Default text"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Foreground" Width="100" Height="28"/>
+                    <Button Content="Background" Width="100" Height="28"/>
+                    <Button Content="Effects" Width="80" Height="28"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Line number"/>
+                <Button Content="Foreground" Width="100" Height="28"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Caret"/>
+                <Button Content="Foreground" Width="100" Height="28"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Selection"/>
+                <Button Content="Background" Width="100" Height="28"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Language Defaults ── -->
+        <TextBlock Classes="group-header" Text="LANGUAGE DEFAULTS"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="SemanticHighlightingCheckBox"
+                      Content="Enable semantic highlighting"/>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="Assigns different colors to parameters and local variables"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="20,0,0,0"/>
+        </Border>
+
+        <!-- ── Font ── -->
+        <TextBlock Classes="group-header" Text="FONT"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="UseColorSchemeFontCheckBox"
+                      Content="Use color scheme font instead of the default"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Font"/>
+                <ComboBox x:Name="FontComboBox"
+                          MinWidth="200"
+                          IsEnabled="{Binding #UseColorSchemeFontCheckBox.IsChecked}">
+                    <ComboBoxItem Content="JetBrains Mono"/>
+                    <ComboBoxItem Content="Consolas"/>
+                    <ComboBoxItem Content="Courier New"/>
+                    <ComboBoxItem Content="Fira Code"/>
+                    <ComboBoxItem Content="Source Code Pro"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Size"/>
+                <NumericUpDown x:Name="FontSizeNumeric"
+                               Minimum="8"
+                               Maximum="36"
+                               Increment="1"
+                               MinWidth="100"
+                               IsEnabled="{Binding #UseColorSchemeFontCheckBox.IsChecked}"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Line height"/>
+                <NumericUpDown x:Name="LineHeightNumeric"
+                               Minimum="0.8"
+                               Maximum="3.0"
+                               Increment="0.1"
+                               FormatString="0.0"
+                               MinWidth="100"
+                               IsEnabled="{Binding #UseColorSchemeFontCheckBox.IsChecked}"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Info -->
+        <Border Background="#F5F5F5"
+                BorderBrush="#E0E0E0"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="16"
+                Margin="0,20,0,0">
+            <StackPanel Spacing="8">
+                <TextBlock Text="ℹ️ Color Schemes"
+                           FontSize="13"
+                           FontWeight="Medium"
+                           Foreground="#1E1E1E"/>
+                <TextBlock Text="Color schemes define syntax highlighting colors for the code editor. You can customize colors for different language elements like keywords, strings, comments, etc."
+                           FontSize="12"
+                           Foreground="#666666"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="• Use the scheme selector to choose a predefined scheme"
+                           FontSize="12"
+                           Foreground="#666666"
+                           Margin="0,8,0,0"/>
+                <TextBlock Text="• Click the gear icon to duplicate, rename, or delete schemes"
+                           FontSize="12"
+                           Foreground="#666666"/>
+                <TextBlock Text="• Export schemes to share with your team"
+                           FontSize="12"
+                           Foreground="#666666"/>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,132 @@
+<Application
+x:Class="Scadix.Designer.App"
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:core="clr-namespace:Dock.Model.Core;assembly=Dock.Model"
+ xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+xmlns:local="clr-namespace:Scadix.Designer"
+RequestedThemeVariant="Light">
+
+	<!--
+	ViewLocator is registered here as an application-level IDataTemplate.
+	Dock.Avalonia calls Build() whenever a tab is rendered (including after
+	drag/move). ViewLocator returns the same cached Control instance for the
+	same ViewModel, preventing the "content disappears after drag" bug.
+	-->
+	<Application.DataTemplates>
+		<local:ViewLocator />
+	</Application.DataTemplates>
+	<Application.Resources>
+		<ResourceDictionary>
+			<local:CollapsedWhenFalse x:Key="CollapsedWhenFalse" />
+			<local:FalseWhenZero x:Key="FalseWhenZero" />
+			<local:EqualConverter x:Key="EqualConverter" />
+			<local:NotEqualConverter x:Key="NotEqualConverter" />
+			<local:BranchColorConverter x:Key="BranchColorConverter" />
+			<local:BoldIfTrueConverter x:Key="BoldIfTrueConverter" />
+			<local:GitStatusBackgroundConverter x:Key="GitStatusBackgroundConverter" />
+			<local:GitStatusForegroundConverter x:Key="GitStatusForegroundConverter" />
+			<local:ConflictRowColorConverter x:Key="ConflictRowColorConverter" />
+			<local:BoolToExpandArrowConverter x:Key="BoolToExpandArrowConverter" />
+			<ControlRecycling x:Key="ControlRecyclingKey" />
+
+			<!-- Theme brushes used across Git views and other tool panels -->
+			<SolidColorBrush x:Key="ThemeForegroundBrush"    Color="#1F1F1F" />
+			<SolidColorBrush x:Key="ThemeForegroundLowBrush" Color="#6E6E6E" />
+			<SolidColorBrush x:Key="ThemeBorderLowBrush"     Color="#D0D0D0" />
+			<SolidColorBrush x:Key="ThemeControlLowBrush"    Color="#F5F5F5" />
+
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="avares://Scadix.AxamlExpressionBlendInteractionAddon/Themes/InteractionAddonStyles.axaml" />
+				<ResourceInclude Source="avares://Scadix.AxamlDesigner/Themes/Generic.axaml" />
+				<ResourceInclude Source="avares://Scadix.Designer/Styles/Icons.axaml" />
+				 
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+	<Application.Styles>
+		<FluentTheme />
+		<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+		
+		<DockFluentTheme />
+		<StyleInclude Source="avares://Scadix.Designer/Styles/StudioStyles.axaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+		 <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
+		 <dialogHostAvalonia:DialogHostStyles />
+
+		<Style Selector="Button.ColorView /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button:pointerover.ColorView /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button:pressed.ColorView /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="Button:pressed:pointerover.ColorView /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="DockControl">
+			<Setter Property="(ControlRecyclingDataTemplate.ControlRecycling)" Value="{StaticResource ControlRecyclingKey}" />
+		</Style>
+
+		<Style Selector="DocumentControl">
+			<Setter Property="IconTemplate">
+				<DataTemplate DataType="core:IDockable">
+					<PathIcon
+					Data="M5 1C3.89543 1 3 1.89543 3 3V13C3 14.1046 3.89543 15 5 15H11C12.1046 15 13 14.1046 13 13V5.41421C13 5.01639 12.842 4.63486 12.5607 4.35355L9.64645 1.43934C9.36514 1.15804 8.98361 1 8.58579 1H5ZM4 3C4 2.44772 4.44772 2 5 2H8V4.5C8 5.32843 8.67157 6 9.5 6H12V13C12 13.5523 11.5523 14 11 14H5C4.44772 14 4 13.5523 4 13V3ZM11.7929 5H9.5C9.22386 5 9 4.77614 9 4.5V2.20711L11.7929 5Z"
+					Height="16"
+					Margin="0"
+					Padding="0,0,2,0"
+					Width="16" />
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="DocumentControl">
+			<Setter Property="HeaderTemplate">
+				<DataTemplate DataType="core:IDockable">
+					<TextBlock
+					Padding="2"
+					Text="{Binding Title}"
+					VerticalAlignment="Center" />
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="ToolControl">
+			<Setter Property="HeaderTemplate">
+				<DataTemplate DataType="core:IDockable">
+					<TextBlock Padding="2" Text="{Binding Title}" />
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="ToolChromeControl">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+
+		<Style Selector="MenuItem.ViewItem">
+			<Setter Property="Icon">
+				<Template>
+					<Panel Width="16" Height="16">
+						<PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" 
+								  Foreground="#4CAF50" 
+								  Width="12" Height="12"
+								  IsVisible="{Binding $parent[MenuItem].IsChecked}" />
+						<PathIcon Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" 
+								  Foreground="#F44336" 
+								  Opacity="0.4"
+								  Width="12" Height="12"
+								  IsVisible="{Binding !$parent[MenuItem].IsChecked}" />
+					</Panel>
+				</Template>
+			</Setter>
+		</Style>
+	</Application.Styles>
+
+	
+
+</Application>

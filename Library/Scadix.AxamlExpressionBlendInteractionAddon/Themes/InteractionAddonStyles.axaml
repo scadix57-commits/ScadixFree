@@ -1,0 +1,8 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Scadix.AxamlExpressionBlendInteractionAddon/BehaviorsEditor/BehaviorsEditor.axaml" />
+        <ResourceInclude Source="avares://Scadix.AxamlExpressionBlendInteractionAddon/TriggersEditor/TriggersEditor.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

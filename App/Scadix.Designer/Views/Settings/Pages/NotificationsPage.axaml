@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.NotificationsPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Notifications"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── Balloon Notifications ── -->
+        <TextBlock Classes="group-header" Text="BALLOON NOTIFICATIONS"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="DisplayBalloonCheckBox"
+                      Content="Display balloon notifications"/>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="Balloon notifications show up in the bottom right corner of the IDE"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="20,0,0,0"/>
+        </Border>
+
+        <!-- ── Sound ── -->
+        <TextBlock Classes="group-header" Text="SOUND"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="PlaySoundCheckBox"
+                      Content="Play sound notifications"/>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="Enable sound notifications to inform you that an operation has finished"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="20,0,0,0"/>
+        </Border>
+
+        <!-- ── Tool Window ── -->
+        <TextBlock Classes="group-header" Text="TOOL WINDOW"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ShowInToolWindowCheckBox"
+                      Content="Show notifications in tool window"/>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="Display notifications in the Notifications tool window"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="20,0,0,0"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

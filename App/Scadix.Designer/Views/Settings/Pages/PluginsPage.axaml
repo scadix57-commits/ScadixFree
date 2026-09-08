@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.PluginsPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Plugins"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── Updates ── -->
+        <TextBlock Classes="group-header" Text="UPDATES"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="AutoUpdateCheckBox" 
+                      Content="Automatically update plugins"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="CheckUpdatesOnStartupCheckBox" 
+                      Content="Check for plugin updates on startup"/>
+        </Border>
+
+        <!-- ── Custom Repository ── -->
+        <TextBlock Classes="group-header" Text="CUSTOM PLUGIN REPOSITORY"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Repository URL"/>
+                <TextBox Classes="setting-ctrl"
+                         x:Name="CustomRepositoryTextBox"
+                         Watermark="https://example.com/plugins"
+                         MinWidth="300"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row" BorderThickness="0">
+            <TextBlock Text="Leave empty to use default repository"
+                       FontSize="11"
+                       Foreground="#888888"
+                       Margin="200,0,0,0"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

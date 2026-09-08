@@ -1,0 +1,29 @@
+<UserControl x:Class="Scadix.AxamlDesigner.OutlineView.Outline"
+             x:Name="root"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+             xmlns:Default="clr-namespace:Scadix.AxamlDesigner.OutlineView"
+              >
+ 
+
+    <UserControl.DataTemplates>
+        <StaticResource ResourceKey="PropertyOutlineNodeTemplate" />
+        <StaticResource ResourceKey="OutlineNodeTemplate" />
+    </UserControl.DataTemplates>
+
+    <DockPanel LastChildFill="True">
+        <controls:ClearableTextBox
+            DockPanel.Dock="Top"
+            Height="20"
+            Text="{Binding Filter, ElementName=OutlineTreeView}" />
+        <Default:OutlineTreeView x:Name="OutlineTreeView" Root="{Binding Root, ElementName=root}">
+            <ItemsControl.ItemContainerTheme>
+                <ControlTheme TargetType="{x:Type Default:DragTreeViewItem}" BasedOn="{StaticResource {x:Type Default:DragTreeViewItem}}">
+                    <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                </ControlTheme>
+            </ItemsControl.ItemContainerTheme>
+        </Default:OutlineTreeView>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "TemplateProjectName",
+  "display": "standalone",
+  "name": "TemplateProjectName",
+  "short_name": "TemplateProjectName",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}

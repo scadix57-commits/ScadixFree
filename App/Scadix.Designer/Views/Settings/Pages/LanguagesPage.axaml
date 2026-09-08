@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.LanguagesPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Languages &amp; Frameworks"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── C# ── -->
+        <TextBlock Classes="group-header" Text="C#"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="CSharpCodeAnalysisCheckBox"
+                      Content="Enable code analysis"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="CSharpInlayHintsCheckBox"
+                      Content="Show inlay hints (parameter names, types)"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="CSharpAutoImportCheckBox"
+                      Content="Auto-import namespaces"/>
+        </Border>
+
+        <!-- ── XAML ── -->
+        <TextBlock Classes="group-header" Text="XAML"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="XamlIntellisenseCheckBox"
+                      Content="Enable IntelliSense"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="XamlFormatOnPasteCheckBox"
+                      Content="Format code on paste"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="XamlDesignerPreviewCheckBox"
+                      Content="Show designer preview"/>
+        </Border>
+
+        <!-- ── JSON ── -->
+        <TextBlock Classes="group-header" Text="JSON"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="JsonValidateSchemaCheckBox"
+                      Content="Validate against schema"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="JsonFormatOnSaveCheckBox"
+                      Content="Format on save"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

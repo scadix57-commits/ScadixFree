@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.ImageTypeEditor">
+    <Grid ColumnDefinitions="*,Auto">
+        <TextBox Grid.Column="0" 
+                 Text="{Binding ValueString, Mode=TwoWay}" 
+                 VerticalAlignment="Center" 
+                 Margin="0,0,2,0"/>
+        <Button x:Name="uxFlyoutButton"
+                Grid.Column="1" 
+                Content="..." 
+                Padding="8,2"
+                VerticalAlignment="Center">
+         <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight" ShowMode="Transient">
+              <ImagePickerControl Name="ImagePickerControlView" />
+            </Flyout>
+         </Button.Flyout>
+        </Button>
+    </Grid>
+</UserControl>

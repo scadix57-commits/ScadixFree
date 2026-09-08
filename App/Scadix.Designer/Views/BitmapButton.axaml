@@ -1,0 +1,25 @@
+﻿<Button x:Class="Scadix.Designer.BitmapButton"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Scadix.Designer"
+        x:DataType="local:BitmapButton"
+        Focusable="False">
+    <Button.Template>
+        <ControlTemplate TargetType="Button">
+            <Image x:Name="PART_Image"
+                   Stretch="None"
+                   Source="{Binding ImageNormal}" />
+        </ControlTemplate>
+    </Button.Template>
+    <Button.Styles>
+        <Style Selector="Button:pointerover /template/ Image#PART_Image">
+            <Setter Property="Source" Value="{Binding ImageHover}" />
+        </Style>
+        <Style Selector="Button:pressed /template/ Image#PART_Image">
+            <Setter Property="Source" Value="{Binding ImagePressed}" />
+        </Style>
+        <Style Selector="Button:disabled /template/ Image#PART_Image">
+            <Setter Property="Source" Value="{Binding ImageDisabled}" />
+        </Style>
+    </Button.Styles>
+</Button>

@@ -1,0 +1,11 @@
+﻿<controls:ClearableTextBox 
+    x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.TextBoxEditor"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Scadix.AxamlDesigner.Controls"
+    xmlns="https://github.com/avaloniaui"
+    
+    Text="{Binding ValueString}"
+    BorderThickness="0"
+    Background="{x:Null}"
+    >	
+</controls:ClearableTextBox>

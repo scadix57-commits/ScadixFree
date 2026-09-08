@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.GitPage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Version Control › Git"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="GIT EXECUTABLE"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Path to Git executable"/>
+                <Grid ColumnDefinitions="*,Auto" MinWidth="280">
+                    <TextBox Grid.Column="0" Classes="setting-ctrl"
+                             Name="TxtGitPath" Text="git" Margin="0,0,6,0"/>
+                    <Button Grid.Column="1" Content="Browse..."
+                            FontSize="12" Height="28"
+                            Background="#E8E8E8" Foreground="#1E1E1E"/>
+                </Grid>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <Button Content="Test" FontSize="12" Height="28"
+                    Background="#2D5A8E" Foreground="White" Width="80"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="COMMIT"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkSignGpg" Content="Sign commits with GPG"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkCommitTemplate" Content="Show commit message template" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Default commit message"/>
+                <TextBox Name="TxtDefaultCommit" Classes="setting-ctrl" Text="" Watermark="(empty)"/>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="PUSH / PULL"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Auto fetch interval (min)"/>
+                <ComboBox Name="CmbAutoFetch" Classes="setting-ctrl" SelectedIndex="1">
+                    <ComboBoxItem Content="Off"/>
+                    <ComboBoxItem Content="5"/>
+                    <ComboBoxItem Content="10"/>
+                    <ComboBoxItem Content="30"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkPruneOnFetch" Content="Prune obsolete remote branches on fetch" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkRebaseOnPull" Content="Use rebase instead of merge on pull"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="PROTECTED BRANCHES"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Protected branch patterns"/>
+                <TextBox Name="TxtProtectedBranches" Classes="setting-ctrl" Text="main;master;release/*"/>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

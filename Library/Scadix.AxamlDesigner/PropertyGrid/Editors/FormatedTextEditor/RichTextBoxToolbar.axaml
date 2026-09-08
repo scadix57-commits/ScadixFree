@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.FormatedTextEditor.RichTextBoxToolbar"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns="https://github.com/avaloniaui"
+             mc:Ignorable="d" DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             d:DesignHeight="200" d:DesignWidth="300">
+	<StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" >
+		<StackPanel Orientation="Horizontal" >
+			<ComboBox x:Name="cmbFontFamily" Width="160" Margin="0,3,0,0">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding}" FontFamily="{Binding}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+				<ComboBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel />
+					</ItemsPanelTemplate>
+				</ComboBox.ItemsPanel>
+			</ComboBox>
+			<ComboBox x:Name="cmbFontSize" IsEditable="True" ToolTip.Tip="Font Size" Margin="10,3,0,0" Width="100">
+				<ComboBoxItem Content="6"/>
+				<ComboBoxItem Content="8"/>
+				<ComboBoxItem Content="10"/>
+				<ComboBoxItem Content="11"/>
+				<ComboBoxItem Content="12"/>
+				<ComboBoxItem Content="14"/>
+				<ComboBoxItem Content="16"/>
+				<ComboBoxItem Content="18"/>
+				<ComboBoxItem Content="20"/>
+				<ComboBoxItem Content="22"/>
+				<ComboBoxItem Content="24"/>
+				<ComboBoxItem Content="26"/>
+				<ComboBoxItem Content="28"/>
+				<ComboBoxItem Content="56"/>
+			</ComboBox>
+		</StackPanel>
+		<StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+			<ToggleButton x:Name="BoldButton" Click="BoldButton_Click">
+				<Image Source="avares://Scadix.AxamlDesigner/Images/edit-bold.png" />
+			</ToggleButton>
+			<ToggleButton x:Name="ItalicButton" Margin="3,0,0,0" Click="ItalicButton_Click">
+				<Image Source="avares://Scadix.AxamlDesigner/Images/edit-italic.png" />
+			</ToggleButton>
+			<ToggleButton x:Name="UnderlineButton" Margin="3,0,0,0" Click="UnderlineButton_Click">
+				<Image Source="avares://Scadix.AxamlDesigner/Images/edit-underline.png" />
+			</ToggleButton>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

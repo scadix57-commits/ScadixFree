@@ -1,0 +1,42 @@
+<UserControl x:Class="Scadix.AxamlDesigner.PropertyGrid.Editors.FormatedTextEditor.FormatedTextEditor"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:formatedTextEditor="clr-namespace:Scadix.AxamlDesigner.PropertyGrid.Editors.FormatedTextEditor">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <formatedTextEditor:RichTextBoxToolbar
+            x:Name="richTextBoxToolbar"
+            Grid.Row="0"
+            Margin="5" />
+
+        <TextBox
+            x:Name="PART_Editor"
+            Grid.Row="1"
+            Margin="5"
+            AcceptsReturn="True"
+            TextWrapping="Wrap" />
+
+        <StackPanel
+            Grid.Row="2"
+            Margin="10"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                Width="90"
+                Height="24"
+                Margin="0,0,5,0"
+                Content="Ok"
+                Click="Ok_Click" />
+            <Button
+                Width="90"
+                Height="24"
+                Content="Cancel"
+                Click="Cancel_Click" />
+        </StackPanel>
+    </Grid>
+</UserControl>

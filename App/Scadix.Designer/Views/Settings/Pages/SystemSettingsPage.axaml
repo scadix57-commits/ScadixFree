@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.SystemSettingsPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="System Settings"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <!-- ── General ── -->
+        <TextBlock Classes="group-header" Text="GENERAL"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ConfirmExitCheckBox"
+                      Content="Confirm before exiting the IDE"/>
+        </Border>
+
+        <!-- ── Solution ── -->
+        <TextBlock Classes="group-header" Text="SOLUTION"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="ReopenProjectsCheckBox"
+                      Content="Reopen projects on startup"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Open project in"/>
+                <ComboBox Classes="setting-ctrl"
+                          x:Name="OpenProjectInComboBox"
+                          MinWidth="180">
+                    <ComboBoxItem Content="New window"/>
+                    <ComboBoxItem Content="Current window"/>
+                    <ComboBoxItem Content="Ask"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Default project directory"/>
+                <TextBox Classes="setting-ctrl"
+                         x:Name="DefaultProjectDirTextBox"
+                         Watermark="C:\Projects"
+                         MinWidth="300"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Files ── -->
+        <TextBlock Classes="group-header" Text="FILES"/>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="MoveFilesToBinCheckBox"
+                      Content="Move files to the bin instead of deleting permanently"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="SaveWhenSwitchingCheckBox"
+                      Content="Save files when switching to a different application"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Save files if IDE is idle for (seconds)"/>
+                <NumericUpDown Classes="setting-ctrl"
+                               x:Name="AutoSaveIdleNumeric"
+                               Minimum="5"
+                               Maximum="300"
+                               Increment="5"
+                               MinWidth="100"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox x:Name="BackupBeforeSavingCheckBox"
+                      Content="Back up files before saving"/>
+        </Border>
+
+    </StackPanel>
+</UserControl>

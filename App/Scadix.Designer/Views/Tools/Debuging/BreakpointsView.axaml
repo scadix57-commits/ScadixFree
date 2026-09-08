@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Scadix.Designer.ViewModels.Tools"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Scadix.Designer.Views.Tools.BreakpointsView"
+             x:DataType="vm:BreakpointsViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0" Background="#F3F3F3" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Classes="ModernIconButton" ToolTip.Tip="New Breakpoint">
+                    <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Width="14" Height="14"/>
+                </Button>
+                <Button Classes="ModernIconButton" Command="{Binding RemoveAllCommand}" ToolTip.Tip="Delete All Breakpoints">
+                    <PathIcon Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" Width="14" Height="14"/>
+                </Button>
+            </StackPanel>
+        </Border>
+        <ListBox Grid.Row="1" ItemsSource="{Binding Breakpoints}" Background="Transparent" BorderThickness="0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="Auto, *, Auto" Margin="4">
+                        <Ellipse Grid.Column="0" Fill="#E51400" Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding FileName}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="2" Text="{Binding LineNumber, StringFormat='{}Line {0}'}" VerticalAlignment="Center" Foreground="#808080" FontSize="12"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" IsVisible="{Binding !Breakpoints.Count}">
+            <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" Width="40" Height="40" Foreground="#E51400" Opacity="0.5"/>
+            <TextBlock Text="No breakpoints defined." Foreground="#808080" FontSize="14"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

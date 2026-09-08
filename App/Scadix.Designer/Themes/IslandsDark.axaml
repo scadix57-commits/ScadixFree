@@ -1,0 +1,79 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         XAML Studio — Islands Dark Theme
+         Overrides DockFluentTheme + Fluent controls to match
+         JetBrains Rider Islands Dark palette exactly.
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Core palette ── -->
+    <Color x:Key="IslandsBg">#1E1F22</Color>
+    <Color x:Key="IslandsPanelBg">#27282C</Color>
+    <Color x:Key="IslandsEditorBg">#2B2D30</Color>
+    <Color x:Key="IslandsBorder">#393B40</Color>
+    <Color x:Key="IslandsHover">#3A3B3F</Color>
+    <Color x:Key="IslandsAccent">#4D78CC</Color>
+    <Color x:Key="IslandsTextPrimary">#DFE1E5</Color>
+    <Color x:Key="IslandsTextSecondary">#9DA0A8</Color>
+    <Color x:Key="IslandsTextMuted">#6B6D70</Color>
+    <Color x:Key="IslandsTabActive">#2B2D30</Color>
+    <Color x:Key="IslandsTabInactive">#1E1F22</Color>
+    <Color x:Key="IslandsSplitter">#393B40</Color>
+
+    <SolidColorBrush x:Key="IslandsBgBrush"         Color="{StaticResource IslandsBg}" />
+    <SolidColorBrush x:Key="IslandsPanelBgBrush"    Color="{StaticResource IslandsPanelBg}" />
+    <SolidColorBrush x:Key="IslandsEditorBgBrush"   Color="{StaticResource IslandsEditorBg}" />
+    <SolidColorBrush x:Key="IslandsBorderBrush"     Color="{StaticResource IslandsBorder}" />
+    <SolidColorBrush x:Key="IslandsHoverBrush"      Color="{StaticResource IslandsHover}" />
+    <SolidColorBrush x:Key="IslandsAccentBrush"     Color="{StaticResource IslandsAccent}" />
+    <SolidColorBrush x:Key="IslandsTextPrimaryBrush"   Color="{StaticResource IslandsTextPrimary}" />
+    <SolidColorBrush x:Key="IslandsTextSecondaryBrush" Color="{StaticResource IslandsTextSecondary}" />
+    <SolidColorBrush x:Key="IslandsTextMutedBrush"     Color="{StaticResource IslandsTextMuted}" />
+    <SolidColorBrush x:Key="IslandsSplitterBrush"   Color="{StaticResource IslandsSplitter}" />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         DOCK CONTROL OVERRIDES
+         These keys are read by DockFluentTheme at runtime.
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Root / window background -->
+    <SolidColorBrush x:Key="DockApplicationAccentBrushLow"   Color="#1E1F22" />
+    <SolidColorBrush x:Key="DockApplicationAccentBrushMid"   Color="#27282C" />
+    <SolidColorBrush x:Key="DockApplicationAccentBrushHigh"  Color="#4D78CC" />
+
+    <!-- Tool window / panel background -->
+    <SolidColorBrush x:Key="DockThemeBackgroundBrush"        Color="#27282C" />
+    <SolidColorBrush x:Key="DockThemeBorderLowBrush"         Color="#393B40" />
+    <SolidColorBrush x:Key="DockThemeBorderMidBrush"         Color="#4D4E52" />
+    <SolidColorBrush x:Key="DockThemeBorderHighBrush"        Color="#4D78CC" />
+    <SolidColorBrush x:Key="DockThemeForegroundBrush"        Color="#DFE1E5" />
+    <SolidColorBrush x:Key="DockThemeAccentBrush"            Color="#4D78CC" />
+
+    <!-- Tab strip -->
+    <SolidColorBrush x:Key="DockThemeTabStripBackgroundBrush"        Color="#1E1F22" />
+    <SolidColorBrush x:Key="DockThemeTabStripBorderBrush"            Color="#393B40" />
+    <SolidColorBrush x:Key="DockThemeTabItemBackgroundBrush"         Color="Transparent" />
+    <SolidColorBrush x:Key="DockThemeTabItemBackgroundSelectedBrush" Color="#2B2D30" />
+    <SolidColorBrush x:Key="DockThemeTabItemForegroundBrush"         Color="#9DA0A8" />
+    <SolidColorBrush x:Key="DockThemeTabItemForegroundSelectedBrush" Color="#DFE1E5" />
+    <SolidColorBrush x:Key="DockThemeTabItemBorderSelectedBrush"     Color="#4D78CC" />
+
+    <!-- Splitter -->
+    <SolidColorBrush x:Key="DockThemeSplitterBrush"          Color="#393B40" />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         FLUENT THEME OVERRIDES — buttons, scrollbars, etc.
+    ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ScrollBar -->
+    <SolidColorBrush x:Key="ScrollBarThumbBackground"        Color="#4A4B50" />
+    <SolidColorBrush x:Key="ScrollBarThumbBackgroundPointerOver" Color="#6B6D70" />
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         DOCK CONTROL STYLES — applied globally
+    ══════════════════════════════════════════════════════════════════ -->
+     
+
+</ResourceDictionary>

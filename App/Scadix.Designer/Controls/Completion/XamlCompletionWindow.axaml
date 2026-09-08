@@ -1,0 +1,128 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Width="400" Height="213" ClipToBounds="False"
+             x:Class="Scadix.Designer.Controls.Completion.XamlCompletionWindow"
+             UseLayoutRounding="True" 
+             FontFamily="avares://Avalonia.Fonts.Inter/Assets#Inter"
+             FontSize="14">
+
+  <UserControl.Styles>
+    <Style Selector="ToggleButton">
+      <Setter Property="Background" Value="#f7f9fe" />
+      <Setter Property="BorderBrush" Value="{x:Null}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="Margin" Value="3" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton:pointerover">
+      <Setter Property="Background" Value="#c4d5ff" />
+      <Setter Property="BorderBrush" Value="{x:Null}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#c4d5ff" />
+      <Setter Property="BorderBrush" Value="{x:Null}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#c4d5ff" />
+      <Setter Property="BorderBrush" Value="{x:Null}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <Border BorderBrush="#e5c365" BorderThickness="1" Background="#f7f9fe">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="1*" />
+          <RowDefinition Height="1" />
+          <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" 
+                      VerticalScrollBarVisibility="Auto" 
+                      Name="ItemsScrollViewer" 
+                      AllowAutoHide="False"
+                      ClipToBounds="True">
+          <!-- Content will be set from code-behind -->
+        </ScrollViewer>
+
+        <Canvas Grid.Row="1" Background="#e5c365" />
+
+        <!-- FilterContainer: 13 buttons total — shown/hidden per file type -->
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Name="FilterContainer">
+          <!-- 0: Namespace -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Namespaces">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/NamespaceIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 1: Class -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Classes">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/ClassIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 2: Struct -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Structs">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/StructIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 3: Interface -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Interfaces">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/InterfaceIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 4: Enum -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Enums">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/EnumIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 5: Delegate -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Delegates">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/DelegateIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 6: Field / EnumMember -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Fields / Enum Members">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/FieldIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 7: Event -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Events">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/EventIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 8: Property -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Properties">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/PropertyIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 9: Method -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Methods">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/MethodIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 10: Local / Parameter -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Locals / Parameters">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/LocalIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 11: Keyword -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Keywords / Snippets">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/KeywordIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+          <!-- 12: Unknown -->
+          <ToggleButton Focusable="False" ToolTip.Tip="Other">
+            <Image Source="avares://Scadix.Designer/Assets/IntellisenseIconsPNG/UnknownIcon.png" Width="16" Height="16" />
+          </ToggleButton>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Border Name="DocBorder"
+            BorderBrush="#9ba7b7" BorderThickness="1"
+            Background="#f5f7fe" IsVisible="False"
+            HorizontalAlignment="Left" VerticalAlignment="Top">
+      <ScrollViewer Name="DocumentationScrollViewer"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto"
+                    Padding="5,2,5,0">
+          <TextBlock Name="DocText" TextWrapping="Wrap" FontSize="12" Foreground="#333333" />
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

@@ -1,0 +1,16 @@
+﻿<ContextMenu
+    x:Class="Scadix.AxamlDesigner.Extensions.WrapItemsContextMenu"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Translation="clr-namespace:Scadix.AxamlDesigner">
+    <MenuItem Click="Click_WrapInCanvas" Header="{Binding WrapInCanvas, Source={x:Static Translation:Translations.Instance}}">
+        <MenuItem.Icon>
+            <Image Width="16" Source="avares://Scadix.AxamlDesigner/Images/canvas.png" />
+        </MenuItem.Icon>
+    </MenuItem>
+    <MenuItem Click="Click_WrapInGrid" Header="{Binding WrapInGrid, Source={x:Static Translation:Translations.Instance}}">
+        <MenuItem.Icon>
+            <Image Source="avares://Scadix.AxamlDesigner/Images/grid.png" />
+        </MenuItem.Icon>
+    </MenuItem>
+</ContextMenu>

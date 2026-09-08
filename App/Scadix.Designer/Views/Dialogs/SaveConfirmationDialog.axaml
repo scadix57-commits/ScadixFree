@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Scadix.Designer.Views.SaveConfirmationDialog"
+        Title="Save Changes?"
+        Width="380" Height="160"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        SystemDecorations="BorderOnly">
+
+  <Window.Styles>
+    <Style Selector="Button">
+      <Setter Property="Width" Value="90"/>
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Margin" Value="5,0"/>
+    </Style>
+  </Window.Styles>
+
+  <Border Background="#F5F5F5" BorderBrush="#CCCCCC" BorderThickness="1">
+    <StackPanel Margin="20">
+
+      <!-- Icon + Message -->
+      <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+        <TextBlock Text="💾" FontSize="28" VerticalAlignment="Center" Margin="0,0,12,0"/>
+        <TextBlock x:Name="MessageText"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   MaxWidth="280"/>
+      </StackPanel>
+
+      <!-- Buttons -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button x:Name="SaveButton"    Content="Save"    />
+        <Button x:Name="DiscardButton" Content="Don't Save" Width="100"/>
+        <Button x:Name="CancelButton"  Content="Cancel"  />
+      </StackPanel>
+
+    </StackPanel>
+  </Border>
+</Window>

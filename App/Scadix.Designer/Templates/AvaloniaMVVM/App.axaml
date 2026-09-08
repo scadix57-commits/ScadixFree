@@ -1,0 +1,18 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="TemplateProjectName.App"
+             xmlns:local="using:TemplateProjectName"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+  
+    <Application.Styles>
+        <FluentTheme />
+		   <StyleInclude Source="avares://HMIControl.Base/Generic.axaml" />
+        <StyleInclude Source="avares://HMIControl.Core/Themes/Generic.axaml" />
+        <StyleInclude Source="avares://HMIControl.HMI/Themes/Generic.axaml" />
+    </Application.Styles>
+</Application>

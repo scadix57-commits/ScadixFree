@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.MenusToolbarsPage">
+
+    <StackPanel Spacing="0">
+
+        <!-- Page title -->
+        <TextBlock Text="Menus and Toolbars"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Text="Customize menus and toolbars"
+                   FontSize="13"
+                   Foreground="#666666"
+                   Margin="0,0,0,20"/>
+
+        <!-- Info -->
+        <Border Background="#F5F5F5"
+                BorderBrush="#E0E0E0"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="16"
+                Margin="0,10,0,0">
+            <StackPanel Spacing="8">
+                <TextBlock Text="ℹ️ Customization"
+                           FontSize="13"
+                           FontWeight="Medium"
+                           Foreground="#1E1E1E"/>
+                <TextBlock Text="This page allows you to customize the appearance and content of menus and toolbars. You can add, remove, or reorder items to match your workflow."
+                           FontSize="12"
+                           Foreground="#666666"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="• Use View | Appearance menu to show/hide toolbars"
+                           FontSize="12"
+                           Foreground="#666666"
+                           Margin="0,8,0,0"/>
+                <TextBlock Text="• Right-click on toolbars to customize them"
+                           FontSize="12"
+                           Foreground="#666666"/>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

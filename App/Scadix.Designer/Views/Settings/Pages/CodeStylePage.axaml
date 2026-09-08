@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Scadix.Designer.Views.Settings.CodeStylePage">
+
+    <StackPanel Spacing="0">
+
+        <TextBlock Text="Editor › Code Style"
+                   FontSize="18" FontWeight="SemiBold"
+                   Foreground="#1E1E1E" Margin="0,0,0,20"/>
+
+        <TextBlock Classes="group-header" Text="SCHEME"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Scheme"/>
+                <ComboBox Name="CmbScheme" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="Project"/>
+                    <ComboBoxItem Content="Default"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="TABS AND INDENTS"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Tab size"/>
+                <TextBox Name="TxtTabSize" Classes="setting-ctrl" Text="4" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Indent size"/>
+                <TextBox Name="TxtIndentSize" Classes="setting-ctrl" Text="4" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Continuation indent"/>
+                <TextBox Name="TxtContinuationIndent" Classes="setting-ctrl" Text="8" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkKeepIndentsOnEmptyLines"
+                      Content="Keep indents on empty lines"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="SPACES"/>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkSpaceBeforeMethodParentheses"
+                      Content="Before method declaration parentheses"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkSpaceBeforeMethodCallParentheses"
+                      Content="Before method call parentheses"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkSpaceWithinMethodParentheses"
+                      Content="Within method declaration parentheses"/>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkSpaceWithinBrackets"
+                      Content="Within brackets" IsChecked="True"/>
+        </Border>
+
+        <TextBlock Classes="group-header" Text="WRAPPING AND BRACES"/>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Hard wrap at"/>
+                <TextBox Name="TxtHardWrapAt" Classes="setting-ctrl" Text="120" MaxWidth="60"/>
+            </DockPanel>
+        </Border>
+        <Border Classes="setting-row">
+            <CheckBox Name="ChkWrapLongLines"
+                      Content="Wrap on typing" IsChecked="True"/>
+        </Border>
+        <Border Classes="setting-row">
+            <DockPanel>
+                <TextBlock Classes="setting-label" Text="Braces placement"/>
+                <ComboBox Name="CmbBracesPlacement" Classes="setting-ctrl" SelectedIndex="0">
+                    <ComboBoxItem Content="End of line"/>
+                    <ComboBoxItem Content="Next line"/>
+                    <ComboBoxItem Content="Next line indented"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>
