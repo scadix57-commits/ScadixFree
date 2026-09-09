@@ -1,5 +1,7 @@
 # Split view integration checks
 
+Two-way selection checks cover source-caret navigation into root/nested controls and closing tags, caret preservation, Properties/Outline synchronization, clicking an already selected control, and restoring selection after source edits reload the preview.
+
 Requires .NET 10 and an interactive Windows desktop. From the repository root:
 
 ```powershell

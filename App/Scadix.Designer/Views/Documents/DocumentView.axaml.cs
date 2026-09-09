@@ -11,6 +11,10 @@ using Scadix.AxamlDesign;
 using Scadix.AxamlDesigner.Xaml;
 using Avalonia;
 using Avalonia.VisualTree;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml;
 
 namespace Scadix.Designer;
 
@@ -23,6 +27,8 @@ public partial class DocumentView : UserControl
     private bool _wasSplit;
     private bool _subscribed;
     private ISelectionService? _selection;
+    private bool _syncingSelection;
+    private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
 
 
     public DocumentView()
@@ -36,6 +42,11 @@ public partial class DocumentView : UserControl
             _previewTimer.Stop();
             if (Document != null && _subscribed) Document.PropertyChanged -= DocumentChanged;
             _subscribed = false;
+            if (uxXamlEditor.Editor != null)
+            {
+                uxXamlEditor.Editor.TextArea.Caret.PositionChanged -= SourceCaretChanged;
+                uxXamlEditor.Editor.TextArea.SelectionChanged -= SourceCaretChanged;
+            }
             SubscribeSelection(null);
         };
     }
@@ -62,6 +73,11 @@ public partial class DocumentView : UserControl
         if (Document == null || _subscribed) return;
         Document.PropertyChanged += DocumentChanged;
         _subscribed = true;
+        if (uxXamlEditor.Editor != null)
+        {
+            uxXamlEditor.Editor.TextArea.Caret.PositionChanged += SourceCaretChanged;
+            uxXamlEditor.Editor.TextArea.SelectionChanged += SourceCaretChanged;
+        }
         SubscribeSelection(Document.SelectionService);
         if (Document.IsSplitMode) { _previewTimer.Stop(); _previewTimer.Start(); }
     }
@@ -102,20 +118,100 @@ public partial class DocumentView : UserControl
                 if (selected != null) break;
             }
         }
+        var alreadySelected = selected != null && ReferenceEquals(Document.SelectionService!.PrimarySelection, selected);
         Document.SelectionService!.SetSelectedComponents(selected == null
             ? Array.Empty<DesignItem>() : new[] { selected }, SelectionTypes.Replace);
+        if (alreadySelected) NavigateToPreviewSelection();
     }
 
     private void SubscribeSelection(ISelectionService? selection)
     {
+        if (ReferenceEquals(_selection, selection)) return;
         if (_selection != null) _selection.SelectionChanged -= PreviewSelectionChanged;
         _selection = selection;
         if (_selection != null) _selection.SelectionChanged += PreviewSelectionChanged;
+        RebuildSourceControls();
+        SourceCaretChanged(this, EventArgs.Empty);
+    }
+
+    private void RebuildSourceControls()
+    {
+        _sourceControls.Clear();
+        if (Document?.IsPreviewSelectable != true || uxXamlEditor.Editor is not { } editor) return;
+        // Match source locations only to controls belonging to this rendered document.
+        var context = Document.DesignContext;
+        var root = context.RootItem?.View;
+        if (root == null) return;
+        var models = OutlineItems(Document.OutlineRoot).OfType<XamlDesignItem>().Distinct()
+            .Where(i => i.XamlObject.PositionXmlElement.LineNumber > 0)
+            .GroupBy(i => (i.XamlObject.PositionXmlElement.LineNumber, i.XamlObject.PositionXmlElement.LinePosition))
+            .ToDictionary(g => g.Key, g => (DesignItem)g.First());
+        var stack = new Stack<(int Start, DesignItem? Item)>();
+        try
+        {
+            using var reader = XmlReader.Create(new StringReader(Document.Text), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
+            var info = (IXmlLineInfo)reader;
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    var start = editor.Document.GetOffset(info.LineNumber, info.LinePosition) - 1;
+                    models.TryGetValue((info.LineNumber, info.LinePosition), out var item);
+                    if (reader.IsEmptyElement)
+                    {
+                        if (item != null) _sourceControls.Add((start, TagEnd(Document.Text, start), item));
+                    }
+                    else stack.Push((start, item));
+                }
+                else if (reader.NodeType == XmlNodeType.EndElement)
+                {
+                    var entry = stack.Pop();
+                    if (entry.Item != null)
+                        _sourceControls.Add((entry.Start, TagEnd(Document.Text, editor.Document.GetOffset(info.LineNumber, info.LinePosition)), entry.Item));
+                }
+            }
+        }
+        catch (XmlException) { _sourceControls.Clear(); }
+    }
+
+    private static IEnumerable<DesignItem> OutlineItems(Scadix.AxamlDesign.Interfaces.IOutlineNode? node)
+    {
+        if (node == null) yield break;
+        yield return node.DesignItem;
+        foreach (var child in node.Children)
+            foreach (var item in OutlineItems(child)) yield return item;
+    }
+
+    private static int TagEnd(string source, int start)
+    {
+        char quote = '\0';
+        for (var index = start; index < source.Length; index++)
+        {
+            var c = source[index];
+            if (quote != '\0') { if (c == quote) quote = '\0'; }
+            else if (c == '\'' || c == '"') quote = c;
+            else if (c == '>') return index + 1;
+        }
+        return source.Length;
+    }
+
+    private void SourceCaretChanged(object? sender, EventArgs e)
+    {
+        if (_syncingSelection || Document?.IsPreviewSelectable != true || _selection == null || uxXamlEditor.Editor is not { } editor) return;
+        var offset = editor.SelectionLength > 0 ? editor.SelectionStart : editor.CaretOffset;
+        var item = _sourceControls.Where(r => r.Start <= offset && offset < r.End)
+            .OrderBy(r => r.End - r.Start).Select(r => r.Item).FirstOrDefault();
+        _syncingSelection = true;
+        try { _selection.SetSelectedComponents(item == null ? Array.Empty<DesignItem>() : new[] { item }, SelectionTypes.Replace); }
+        finally { _syncingSelection = false; }
     }
 
     private void PreviewSelectionChanged(object? sender, DesignItemCollectionEventArgs e)
+        => NavigateToPreviewSelection();
+
+    private void NavigateToPreviewSelection()
     {
-        if (Document?.IsPreviewSelectable != true || _selection?.PrimarySelection is not XamlDesignItem item)
+        if (_syncingSelection || Document?.IsPreviewSelectable != true || _selection?.PrimarySelection is not XamlDesignItem item)
             return;
         var editor = uxXamlEditor.Editor;
         var element = item.XamlObject.PositionXmlElement;
@@ -132,8 +228,13 @@ public partial class DocumentView : UserControl
             else if (c == '\'' || c == '"') quote = c;
             else if (c == '>')
             {
-                editor.Select(start, end - start + 1);
-                editor.ScrollTo(element.LineNumber, element.LinePosition);
+                _syncingSelection = true;
+                try
+                {
+                    editor.Select(start, end - start + 1);
+                    editor.ScrollTo(element.LineNumber, element.LinePosition);
+                }
+                finally { _syncingSelection = false; }
                 return;
             }
         }

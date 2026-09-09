@@ -96,6 +96,29 @@ internal static class Program
                 Check(doc.SelectionService!.PrimarySelection?.Component == button && editor.Editor.SelectedText == "<Button Content=\"Inspect > this\" />",
                     "Nested templated control maps to multiline XAML with quoted angle bracket");
                 var exactText = editor.Editor.Text;
+                editor.Editor.Select(0, 0);
+                Check(doc.SelectionService!.PrimarySelection?.Component is UserControl, "Root opening tag selects root preview control");
+                var attributeOffset = exactText.IndexOf("Inspect > this", StringComparison.Ordinal) + 3;
+                editor.Editor.CaretOffset = attributeOffset;
+                Check(doc.SelectionService!.PrimarySelection?.Component == button, "Source caret selects nested preview control");
+                Check(editor.Editor.CaretOffset == attributeOffset && editor.Editor.SelectionLength == 0,
+                    "Source selection does not move caret or select text");
+                Check(propertyGrid.SelectedItems.Single().Component == button && doc.SelectionService.PrimarySelection!.CreateOutlineNode().IsSelected,
+                    "Properties and Outline follow source caret");
+                Click(button);
+                Check(editor.Editor.SelectedText == "<Button Content=\"Inspect > this\" />", "Clicking source-selected control still selects its XAML tag");
+                editor.Editor.TextArea.Caret.Offset = exactText.IndexOf("Padding", StringComparison.Ordinal);
+                editor.Editor.TextArea.ClearSelection();
+                Check(doc.SelectionService.PrimarySelection?.Component is Border, "Source mouse click after preview selection follows the new caret");
+                editor.Editor.Select(0, 0);
+                editor.Editor.CaretOffset = exactText.IndexOf("</StackPanel>", StringComparison.Ordinal) + 4;
+                Check(doc.SelectionService.PrimarySelection?.Component is StackPanel, "Closing tag selects its own container");
+                editor.Editor.CaretOffset = attributeOffset;
+                editor.Editor.Document.Replace(exactText.IndexOf("Inspect > this", StringComparison.Ordinal), "Inspect > this".Length, "Updated button");
+                await Task.Delay(750);
+                Check(doc.SelectionService?.PrimarySelection?.Component is Button restored && Equals(restored.Content, "Updated button"),
+                    "Selection survives editing and preview reload");
+                exactText = editor.Editor.Text;
                 doc.Save();
                 Check(File.ReadAllText(path) == exactText && !doc.IsDirty, "Save in Split preserves exact source");
                 doc.Mode = DocumentMode.Xaml;
