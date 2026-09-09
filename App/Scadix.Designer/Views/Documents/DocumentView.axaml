@@ -14,12 +14,12 @@
             DockPanel.Dock="Bottom"
             IsVisible="{Binding IsXamlFile, Converter={StaticResource CollapsedWhenFalse}}" />
 
-        <Grid>
+        <Grid x:Name="EditorLayout" ColumnDefinitions="*,0,0">
 
             <!-- ── XAML Editor (XamlEditorView replaces raw TextEditor) ── -->
             <local:XamlEditorView
                 x:Name="uxXamlEditor"
-                IsVisible="{Binding InXamlMode,
+                IsVisible="{Binding IsEditorVisible,
                             Converter={StaticResource CollapsedWhenFalse}}">
 
                 <local:XamlEditorView.ContextFlyout>
@@ -47,10 +47,24 @@
             </local:XamlEditorView>
 
             <!-- ── Design surface ── -->
-            <ContentPresenter
-                Content="{Binding DesignSurface}"
-                IsVisible="{Binding InDesignMode,
-                            Converter={StaticResource CollapsedWhenFalse}}" />
+            <GridSplitter x:Name="SplitDivider" Grid.Column="1"
+                          Background="{DynamicResource ThemeControlMidBrush}"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+                          IsVisible="{Binding IsSplitMode}" />
+            <DockPanel Grid.Column="2" IsVisible="{Binding IsPreviewVisible}">
+                <TextBlock DockPanel.Dock="Top" Text="Preview - Click a control to inspect it"
+                           IsVisible="{Binding IsSplitMode}" Margin="8,4" />
+                <TextBlock DockPanel.Dock="Top" Text="{Binding PreviewError}" TextWrapping="Wrap"
+                           IsVisible="{Binding HasPreviewError}" Margin="8" Foreground="DarkOrange" />
+                <Grid>
+                  <ContentPresenter Content="{Binding DesignSurface}"
+                                  IsHitTestVisible="{Binding IsDesignerInteractive}"
+                                  IsEnabled="{Binding IsDesignerInteractive}" />
+                  <Border x:Name="PreviewSelectionOverlay" Background="Transparent"
+                          IsVisible="{Binding IsSplitMode}" PointerPressed="PreviewPointerPressed" />
+                </Grid>
+            </DockPanel>
 
         </Grid>
 

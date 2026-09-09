@@ -27,7 +27,13 @@ internal static class Program
             try
             {
                 var target = Path.Combine(root, "Chosen.proj");
-                File.WriteAllText(target, "<Project><Target Name=\"Build\"><ReadLinesFromFile File=\"saved.txt\"><Output TaskParameter=\"Lines\" ItemName=\"Saved\" /></ReadLinesFromFile><Message Text=\"@(Saved)\" Importance=\"high\" /></Target></Project>");
+                File.WriteAllText(target, """
+                    <Project><Target Name="Build">
+                      <ReadLinesFromFile File="saved.txt"><Output TaskParameter="Lines" ItemName="Saved" /></ReadLinesFromFile>
+                      <Message Text="@(Saved)" Importance="high" />
+                      <Exec Command="powershell -NoProfile -Command &quot;while (-not (Test-Path release.txt)) { Start-Sleep -Milliseconds 25 }&quot;" Timeout="15000" />
+                    </Target></Project>
+                    """);
                 vm.SolutionTree.Add(new SolutionNode { FilePath = target });
                 var file = Path.Combine(root, "saved.txt");
                 File.WriteAllText(file, "OLD_CONTENT");
@@ -43,6 +49,8 @@ internal static class Program
                 await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
                 Console.WriteLine($"UI state: busy={vm.IsBuildRunning}, build={build.IsEnabled}/{build.IsEffectivelyEnabled}, cancel={cancel.IsVisible}/{cancel.IsEnabled}, context={toolbar.DataContext?.GetType().Name}");
                 Check(!build.IsEffectivelyEnabled && cancel.IsVisible && cancel.IsEffectivelyEnabled, "Toolbar disables Build and exposes Cancel");
+                // Hold the real build until the toolbar has rendered its busy state.
+                File.WriteAllText(Path.Combine(root, "release.txt"), "release");
                 await task;
                 Check(!doc.IsDirty && File.ReadAllText(file) == "SAVED_BEFORE_BUILD" && BuildOutputService.Instance.BuildLogs.Any(x => x.Contains("SAVED_BEFORE_BUILD")), "Dirty document saved before process reads it");
                 Check(vm.BuildStatus == "Build succeeded." && !vm.IsBuildRunning && vm.BuildCommand.CanExecute(null), "Success restores commands and status");

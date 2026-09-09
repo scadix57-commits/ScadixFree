@@ -51,47 +51,81 @@ namespace Scadix.Designer
 					text = value;
 					IsDirty = true;
 					RaisePropertyChanged("Text");
+                    if (IsSplitMode)
+                    {
+                        DesignContext?.Services.Selection.SetSelectedComponents(Array.Empty<DesignItem>(), SelectionTypes.Replace);
+                        RaisePropertyChanged(nameof(IsPreviewSelectable));
+                        RaisePropertyChanged(nameof(SelectionService));
+                    }
 				}
 			}
 		}
 
 		DocumentMode mode;
 
-		public DocumentMode Mode {
-			get {
-				return mode;
-			}
-			set {
-				if (mode == value) return;
-				mode = value;
-				if (IsXamlFile)
-				{
-					if (InDesignMode)
-						UpdateDesign();
-					else
-					{
-						UpdateXaml();
-						if (DesignContext?.Services?.Selection?.PrimarySelection != null)
-						{
-							var sel = DesignContext.Services.Selection.PrimarySelection;
-							var ln = ((PositionXmlElement)((XamlDesignItem)sel).XamlObject.XmlElement).LineNumber;
-						}
-					}
-				}
-				// Non-XAML files: mode is always Xaml — nothing to update
-				RaisePropertyChanged("Mode");
-				RaisePropertyChanged("InXamlMode");
-				RaisePropertyChanged("InDesignMode");
-			}
-		}
+        public DocumentMode Mode
+        {
+            get => mode;
+            set
+            {
+                if (!IsXamlFile) value = DocumentMode.Xaml;
+                if (mode == value) return;
+                if (mode == DocumentMode.Design && !HasPreviewError) UpdateXaml();
+                mode = value;
+                if (IsPreviewVisible) RefreshPreview();
+                RaisePropertyChanged(nameof(Mode));
+                RaisePropertyChanged(nameof(InXamlMode));
+                RaisePropertyChanged(nameof(InDesignMode));
+                RaisePropertyChanged(nameof(IsSplitMode));
+                RaisePropertyChanged(nameof(IsEditorVisible));
+                RaisePropertyChanged(nameof(IsPreviewVisible));
+                RaisePropertyChanged(nameof(IsPreviewSelectable));
+                RaisePropertyChanged(nameof(IsDesignerInteractive));
+                RaisePropertyChanged(nameof(SelectionService));
+            }
+        }
 
-		public bool InXamlMode {
-			get { return Mode == DocumentMode.Xaml; }
-		}
+        public bool InXamlMode => Mode == DocumentMode.Xaml;
+        public bool InDesignMode => Mode == DocumentMode.Design;
+        public bool IsSplitMode => Mode == DocumentMode.Split;
+        public bool IsEditorVisible => !InDesignMode;
+        public bool IsPreviewVisible => IsXamlFile && !InXamlMode;
+        public bool IsDesignerInteractive => InDesignMode && !HasPreviewError;
+        public bool IsPreviewSelectable => IsSplitMode && !HasPreviewError && _previewText == Text;
+        private string? _previewText;
+        private bool _updatingPreview;
+        private string? _previewError;
+        public string? PreviewError => _previewError;
+        public bool HasPreviewError => !string.IsNullOrEmpty(_previewError);
 
-		public bool InDesignMode {
-			get { return Mode == DocumentMode.Design; }
-		}
+        public void RefreshPreview()
+        {
+            if (!IsXamlFile) return;
+            _updatingPreview = true;
+            _previewError = null;
+            _previewText = null;
+            try
+            {
+                UpdateDesign();
+                if (XamlErrorService?.Errors.Count > 0)
+                    _previewError = string.Join("\n", XamlErrorService.Errors.Select(e => e.Message));
+                if (!HasPreviewError) _previewText = Text;
+            }
+            catch (Exception ex)
+            {
+                _previewError = ex.Message;
+            }
+            finally
+            {
+                _updatingPreview = false;
+                RaisePropertyChanged(nameof(PreviewError));
+                RaisePropertyChanged(nameof(HasPreviewError));
+                RaisePropertyChanged(nameof(IsPreviewSelectable));
+                RaisePropertyChanged(nameof(IsDesignerInteractive));
+                RaisePropertyChanged(nameof(SelectionService));
+                RaisePropertyChanged(nameof(XamlErrorService));
+            }
+        }
 
 		string? filePath;
 
@@ -169,7 +203,7 @@ namespace Scadix.Designer
 
 		public ISelectionService? SelectionService {
 			get {
-				if (InDesignMode) {
+				if ((IsDesignerInteractive || IsPreviewSelectable) && DesignContext != null) {
 					return DesignContext.Services.Selection;
 				}
 				return null;
@@ -212,7 +246,7 @@ namespace Scadix.Designer
 		public void Save()
 		{
 			// Only serialize from designer for XAML files in Design mode
-			if (IsXamlFile && InDesignMode)
+			if (IsXamlFile && IsDesignerInteractive)
 				UpdateXaml();
 
             if (FilePath != null)
@@ -231,12 +265,13 @@ namespace Scadix.Designer
 		public void Refresh()
 		{
 			if (!IsXamlFile) return;
-			UpdateXaml();
-			UpdateDesign();
+            if (IsDesignerInteractive) UpdateXaml();
+            RefreshPreview();
 		}
 
 		void UpdateXaml()
 		{
+            if (DesignContext?.RootItem == null) return;
 			var sb = new StringBuilder();
 			using (var xmlWriter = new XamlXmlWriter(sb)) {
 				DesignSurface.SaveDesigner(xmlWriter);
@@ -256,6 +291,8 @@ namespace Scadix.Designer
 
 		void UpdateDesign()
 		{
+            if (DesignContext != null && UndoService != null)
+                UndoService.UndoStackChanged -= UndoService_UndoStackChanged;
 			OutlineRoot = null;
 			// Pass a MemoryStream directly to LoadDesigner(Stream) so that
 			// XmlDocument.Load(Stream) is used internally — this preserves literal
@@ -304,8 +341,6 @@ namespace Scadix.Designer
 				OutlineRoot = DesignContext.RootItem.CreateOutlineNode();
 				UndoService.UndoStackChanged += new EventHandler(UndoService_UndoStackChanged);
 			}
-			RaisePropertyChanged("SelectionService");
-			RaisePropertyChanged("XamlErrorService");
 		}
 
         /// <summary>
@@ -375,6 +410,7 @@ namespace Scadix.Designer
 
 		void UndoService_UndoStackChanged(object? sender, EventArgs e)
 		{
+			if (_updatingPreview || IsSplitMode) return;
 			IsDirty = true;
 			if (InXamlMode) {
 				UpdateXaml();
@@ -483,6 +519,6 @@ namespace Scadix.Designer
 
 	public enum DocumentMode
 	{
-		Xaml, Design
+		Xaml, Design, Split
 	}
 }

@@ -227,6 +227,7 @@
                                             <Border BorderBrush="#FFF0F0F0" BorderThickness="1,0,0,0">
                                                 <ContentPresenter
                                                     x:Name="editorContainer"
+                                                    IsEnabled="{Binding !IsReadOnly, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type PropertyGrid:PropertyGridView}}}"
                                                     Margin="3,0"
                                                     VerticalAlignment="Center"
                                                     Content="{Binding Editor}" />
@@ -337,9 +338,10 @@
                             <!-- Name -->
                             <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,2,6,2"
                                        FontSize="11" Foreground="#555555" Text="Name:" />
+                            <Border Grid.Column="2" Grid.Row="1"
+                                    IsEnabled="{Binding !IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}">
                             <controls:ClearableTextBox
                                 x:Name="NameTextBox"
-                                Grid.Column="2" Grid.Row="1"
                                 Margin="0,2,0,2"
                                 Height="22"
                                 FontSize="11"
@@ -347,6 +349,7 @@
                                 BorderThickness="1"
                                 IsEnabled="{Binding IsNameEnabled}"
                                 Text="{Binding Name}" />
+                            </Border>
 
                             <!-- Filter -->
                             <TextBlock Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Margin="0,2,6,2"

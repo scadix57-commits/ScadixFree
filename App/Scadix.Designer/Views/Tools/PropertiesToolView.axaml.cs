@@ -18,6 +18,7 @@ namespace Scadix.Designer;
 public partial class PropertiesToolView : UserControl
 {
     private ISelectionService? _currentSelection;
+    private Document? _document;
 
     public PropertiesToolView()
     {
@@ -38,6 +39,8 @@ public partial class PropertiesToolView : UserControl
     {
         MainWindowViewModel.Instance.PropertyChanged -= OnShellPropertyChanged;
         UnsubscribeSelection();
+        if (_document != null) _document.PropertyChanged -= OnDocumentPropertyChanged;
+        _document = null;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -53,6 +56,9 @@ public partial class PropertiesToolView : UserControl
     private void SwitchDocument(Document? doc)
     {
         UnsubscribeSelection();
+        if (_document != null) _document.PropertyChanged -= OnDocumentPropertyChanged;
+        _document = doc;
+        UpdateEditingState();
 
         if (doc == null)
         {
@@ -70,8 +76,15 @@ public partial class PropertiesToolView : UserControl
     private void OnDocumentPropertyChanged(object? sender,
         System.ComponentModel.PropertyChangedEventArgs e)
     {
+        UpdateEditingState();
         if (e.PropertyName == nameof(Document.SelectionService))
             SubscribeAndPushSelection(MainWindowViewModel.Instance.CurrentDocument);
+    }
+
+    private void UpdateEditingState()
+    {
+        var grid = this.FindControl<PropertyGridView>("uxPropertyGridView");
+        if (grid != null) grid.IsReadOnly = _document?.IsDesignerInteractive != true;
     }
 
     // ── Selection wiring ─────────────────────────────────────────────────
