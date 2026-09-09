@@ -30,11 +30,13 @@ namespace Scadix.Designer
             RecentProjects = new ObservableCollection<RecentProjectEntry>();
             StartupProjects = new ObservableCollection<SolutionNode>();
 
-            BuildCommand = new RelayCommand(BuildSolution);
-            RebuildCommand = new RelayCommand(RebuildSolution);
-            CleanCommand = new RelayCommand(CleanSolution);
-            RunCommand = new RelayCommand(RunProject);
+            BuildCommand = new RelayCommand(BuildSolution, () => !IsBuildRunning);
+            RebuildCommand = new RelayCommand(RebuildSolution, () => !IsBuildRunning);
+            CleanCommand = new RelayCommand(CleanSolution, () => !IsBuildRunning);
+            RunCommand = new RelayCommand(RunProject, () => !IsBuildRunning);
             
+            CancelBuildCommand = new RelayCommand(() => { BuildStatus = "Cancelling..."; _buildRunner.Cancel(); }, () => IsBuildRunning);
+
             RemoveProjectCommand = new RelayCommand<SolutionNode>(DeleteNode);
             OpenProjectFolderCommand = new RelayCommand<SolutionNode>(OpenProjectFolder);
             CopyProjectPathCommand = new RelayCommand<SolutionNode>(CopyProjectPath);
@@ -85,6 +87,28 @@ namespace Scadix.Designer
         public ObservableCollection<RecentProjectEntry> RecentProjects { get; private set; }
         public Dictionary<object, Control> Views { get; private set; }
 
+        private readonly BuildRunService _buildRunner = new();
+        private bool _isBuildRunning;
+        public bool IsBuildRunning
+        {
+            get => _isBuildRunning;
+            private set
+            {
+                if (!SetProperty(ref _isBuildRunning, value)) return;
+                BuildCommand.NotifyCanExecuteChanged();
+                RebuildCommand.NotifyCanExecuteChanged();
+                CleanCommand.NotifyCanExecuteChanged();
+                RunCommand.NotifyCanExecuteChanged();
+                CancelBuildCommand.NotifyCanExecuteChanged();
+            }
+        }
+        private string _buildStatus = "Workspace ready.";
+        public string BuildStatus
+        {
+            get => _buildStatus;
+            private set => SetProperty(ref _buildStatus, value);
+        }
+        public IRelayCommand CancelBuildCommand { get; }
         public IRelayCommand BuildCommand { get; }
         public IRelayCommand RebuildCommand { get; }
         public IRelayCommand CleanCommand { get; }
@@ -780,6 +804,12 @@ namespace Scadix.Designer
         /// <summary>Close the current project/solution and all related documents.</summary>
         public bool CloseProject()
         {
+            if (IsBuildRunning)
+            {
+                BuildOutputService.Instance.AppendLine("Cancel the current Build/Run operation before closing the project.");
+                return false;
+            }
+
             // 1. Close all open documents
             if (!CloseAll())
                 return false;
@@ -830,95 +860,60 @@ namespace Scadix.Designer
 
         #region Build / Run Operations
 
-        private void BuildSolution() => _ = RunDotnetCommand($"build -c {Configuration}");
-        private void RebuildSolution() => _ = RunDotnetCommand($"build -c {Configuration} --no-incremental");
-        private void CleanSolution() => _ = RunDotnetCommand($"clean -c {Configuration}");
-        private void RunProject()
+        private void BuildSolution() => _ = RunDotnetCommand("build");
+        private void RebuildSolution() => _ = RunDotnetCommand("build --no-incremental");
+        private void CleanSolution() => _ = RunDotnetCommand("clean");
+        private void RunProject() => _ = RunDotnetCommand("run", SelectedStartupProject?.FilePath);
+
+        public async Task RunDotnetCommand(string operation, string? projectPath = null)
         {
-            var args = $"run -c {Configuration}";
-            if (SelectedStartupProject != null && !string.IsNullOrEmpty(SelectedStartupProject.TargetFramework))
+            // Guard here as well as CanExecute: context menus and callers can invoke directly.
+            if (IsBuildRunning) return;
+            var target = projectPath ?? (operation == "run" ? SelectedStartupProject?.FilePath : SolutionTree.FirstOrDefault()?.FilePath);
+            if (string.IsNullOrWhiteSpace(target) || !File.Exists(target))
             {
-                args += $" -f {SelectedStartupProject.TargetFramework}";
-            }
-            _ = RunDotnetCommand(args, SelectedStartupProject?.FilePath);
-        }
-
-        public async Task RunDotnetCommand(string args, string? projectPath = null)
-        {
-
-            BuildOutputService.Instance.BuildLogs.Clear();
-
-            string? targetPath = projectPath;
-            if (string.IsNullOrEmpty(targetPath))
-            {
-                var slnNode = SolutionTree.FirstOrDefault();
-                targetPath = slnNode?.FilePath;
-            }
-
-            if (string.IsNullOrEmpty(targetPath))
-            {
-                BuildOutputService.Instance.AppendLine("Error: No solution or project open.");
+                BuildStatus = operation == "run" ? "Select a startup project to run." : "Open a solution or project to build.";
+                BuildOutputService.Instance.AppendLine(BuildStatus);
                 return;
             }
-
-            var workingDir = Path.GetDirectoryName(targetPath);
-            BuildOutputService.Instance.AppendLine($"Target: {Path.GetFileName(targetPath)}");
-            BuildOutputService.Instance.AppendLine($"Working Directory: {workingDir}");
-
-            // If we are targeting a specific project, include it in the args
-            string finalArgs = args;
-            if (!string.IsNullOrEmpty(projectPath))
-            {
-                finalArgs = $"{args} \"{projectPath}\"";
-            }
-
-            BuildOutputService.Instance.AppendLine($"> dotnet {finalArgs}");
-
+            var configuration = Configuration;
+            var framework = operation == "run" ? SelectedStartupProject?.TargetFramework : null;
+            IsBuildRunning = true;
+            BuildStatus = operation == "run" ? "Running..." : operation == "clean" ? "Cleaning..." : "Building...";
+            BuildOutputService.Instance.Clear();
             try
             {
-                var psi = new System.Diagnostics.ProcessStartInfo("dotnet", finalArgs)
+                var result = await _buildRunner.ExecuteAsync(operation, target, configuration, framework,
+                    BuildOutputService.Instance.AppendLine, async token =>
+                    {
+                        if (operation == "clean") return true;
+                        foreach (var doc in Documents.ToArray())
+                        {
+                            token.ThrowIfCancellationRequested();
+                            if (!doc.IsDirty) continue;
+                            if (string.IsNullOrEmpty(doc.FilePath))
+                            {
+                                var path = await MainWindow.Instance!.AskSaveFileName(doc.FileName ?? doc.Name + ".xaml");
+                                token.ThrowIfCancellationRequested();
+                                if (string.IsNullOrEmpty(path)) return false;
+                                doc.SaveAs(path);
+                            }
+                            else doc.Save();
+                        }
+                        return true;
+                    });
+                BuildStatus = result switch
                 {
-                    WorkingDirectory = workingDir,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
+                    BuildRunResult.Succeeded => operation == "run" ? "Run finished." : operation == "clean" ? "Clean succeeded." : "Build succeeded.",
+                    BuildRunResult.Cancelled => "Operation cancelled.",
+                    BuildRunResult.Busy => "An operation is already running.",
+                    _ => "Operation failed. See Build Output."
                 };
-
-                using var process = new System.Diagnostics.Process { StartInfo = psi };
-
-                if (!process.Start())
-                {
-                    BuildOutputService.Instance.AppendLine("Error: Failed to start 'dotnet' process.");
-                    return;
-                }
-
-                // Capture output in real-time using tasks instead of events for better reliability
-                var outputTask = Task.Run(async () =>
-                {
-                    while (!process.StandardOutput.EndOfStream)
-                    {
-                        var line = await process.StandardOutput.ReadLineAsync();
-                        if (line != null) BuildOutputService.Instance.AppendLine(line);
-                    }
-                });
-
-                var errorTask = Task.Run(async () =>
-                {
-                    while (!process.StandardError.EndOfStream)
-                    {
-                        var line = await process.StandardError.ReadLineAsync();
-                        if (line != null) BuildOutputService.Instance.AppendLine("Error: " + line);
-                    }
-                });
-
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
-                BuildOutputService.Instance.AppendLine($"\nProcess finished with exit code {process.ExitCode}");
+                BuildOutputService.Instance.AppendLine(BuildStatus);
             }
-            catch (Exception ex)
+            finally
             {
-                BuildOutputService.Instance.AppendLine($"Exception: {ex.Message}");
-                BuildOutputService.Instance.AppendLine($"Stack Trace: {ex.StackTrace}");
+                IsBuildRunning = false;
             }
         }
 

@@ -48,6 +48,7 @@ public class DebuggerService : IDisposable
 
     public event EventHandler?                   DebuggingStarted;
     public event EventHandler?                   DebuggingStopped;
+    public event EventHandler?                   Continued;
     public event EventHandler<string>?           OutputReceived;
     public event EventHandler<StoppedEventArgs>? Stopped;
 
@@ -372,6 +373,14 @@ public class DebuggerService : IDisposable
     public Task StepOverAsync()  => SendAsync("next",     new JsonObject { ["threadId"] = ActiveThread });
     public Task StepInAsync()    => SendAsync("stepIn",   new JsonObject { ["threadId"] = ActiveThread });
     public Task StepOutAsync()   => SendAsync("stepOut",  new JsonObject { ["threadId"] = ActiveThread });
+    public async Task PauseAsync()
+    {
+        if (!_isDebugging) return;
+        var response = await SendAsync("pause", new JsonObject { ["threadId"] = ActiveThread });
+        if (response?["success"]?.GetValue<bool>() != true && _isDebugging)
+            BuildOutputService.Instance.AppendLine("[Debugger] Pause failed: " +
+                (response?["message"]?.GetValue<string>() ?? "No response from adapter."));
+    }
 
     private int ActiveThread => _activeThreadId > 0 ? _activeThreadId : 1;
 
@@ -536,6 +545,8 @@ public class DebuggerService : IDisposable
 
         if (type == "response")
         {
+            // Execution state comes from adapter events. A resume response may arrive
+            // after a newer stopped event and must not clear that newer pause.
             var reqSeq = msg["request_seq"]?.GetValue<int>() ?? -1;
             TaskCompletionSource<JsonObject>? tcs;
             lock (_pending) { _pending.TryGetValue(reqSeq, out tcs); _pending.Remove(reqSeq); }
@@ -551,6 +562,9 @@ public class DebuggerService : IDisposable
     {
         switch (evt)
         {
+            case "continued":
+                Continued?.Invoke(this, EventArgs.Empty);
+                break;
             case "initialized":
                 BuildOutputService.Instance.AppendLine("[Debugger] Adapter initialized.");
                 _initializedTcs?.TrySetResult(true);
@@ -591,6 +605,10 @@ public class DebuggerService : IDisposable
             case "thread":
                 var tid = body?["threadId"]?.GetValue<int>() ?? -1;
                 var r2  = body?["reason"]?.GetValue<string>() ?? "";
+                if (r2 == "started" && _activeThreadId < 0)
+                    _activeThreadId = tid;
+                else if (r2 == "exited" && _activeThreadId == tid)
+                    _activeThreadId = -1;
                 BuildOutputService.Instance.AppendLine($"[Debugger] Thread {tid}: {r2}");
                 break;
         }

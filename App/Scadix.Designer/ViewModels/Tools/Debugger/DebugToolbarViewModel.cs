@@ -31,6 +31,17 @@ public partial class DebugToolbarViewModel : ObservableObject
 
     /// <summary>Fired when debugging stops — views should clear their highlights.</summary>
     public event EventHandler? ExecutionLineCleared;
+    private int _stopVersion;
+
+    private void ClearExecutionLocation()
+    {
+        CurrentFile = string.Empty;
+        CurrentLine = 0;
+        ExecutionLineCleared?.Invoke(this, EventArgs.Empty);
+        NotifyEditorExecutionLine(string.Empty, -1);
+        CallStackViewModel.Current?.Clear();
+        LocalsViewModel.Current?.Clear();
+    }
 
     private DebugToolbarViewModel()
     {
@@ -38,6 +49,7 @@ public partial class DebugToolbarViewModel : ObservableObject
 
         dbg.DebuggingStarted += (_, _) => Dispatcher.UIThread.Post(() =>
         {
+            ++_stopVersion;
             IsDebugging = true;
             IsPaused    = false;
             StatusText  = "Debugging…";
@@ -46,20 +58,29 @@ public partial class DebugToolbarViewModel : ObservableObject
 
         dbg.DebuggingStopped += (_, _) => Dispatcher.UIThread.Post(() =>
         {
+            ++_stopVersion;
             IsDebugging = false;
             IsPaused    = false;
             StatusText  = "Ready";
-            ExecutionLineCleared?.Invoke(this, EventArgs.Empty);
-            CurrentFile = string.Empty;
-            CurrentLine = 0;
+            ClearExecutionLocation();
             DiagnosticsService.Instance.StopMonitoring();
+        });
+
+        dbg.Continued += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            ++_stopVersion;
+            IsPaused = false;
+            StatusText = "Running…";
+            ClearExecutionLocation();
         });
 
         dbg.Stopped += (_, e) => Dispatcher.UIThread.Post(() =>
         {
+            var version = ++_stopVersion;
+            ClearExecutionLocation();
             IsPaused   = true;
             StatusText = $"⏸ Paused — {e.Reason}";
-            _ = OnStoppedAsync(e.ThreadId);
+            _ = OnStoppedAsync(e.ThreadId, version);
         });
 
         dbg.OutputReceived += (_, msg) =>
@@ -68,11 +89,12 @@ public partial class DebugToolbarViewModel : ObservableObject
 
     // ── On stopped: fetch stack once, share with all panels ─────────────
 
-    private async Task OnStoppedAsync(int threadId)
+    private async Task OnStoppedAsync(int threadId, int version)
     {
         try
         {
             var stackEl = await DebuggerService.Instance.StackTraceAsync(threadId);
+            if (version != _stopVersion || !IsPaused) return;
             if (stackEl.ValueKind == System.Text.Json.JsonValueKind.Undefined) return;
 
             var frames = stackEl.GetProperty("stackFrames").EnumerateArray().ToList();
@@ -94,6 +116,7 @@ public partial class DebugToolbarViewModel : ObservableObject
                 StatusText  = $"⏸  {Path.GetFileName(topFile)}  line {topLine}";
                 Dispatcher.UIThread.Post(() =>
                 {
+                    if (version != _stopVersion || !IsPaused) return;
                     ExecutionLineMoved?.Invoke(this, (topFile, topLine));
                     NotifyEditorExecutionLine(topFile, topLine);
                 });
@@ -102,6 +125,7 @@ public partial class DebugToolbarViewModel : ObservableObject
             // 2. Populate Call Stack panel
             Dispatcher.UIThread.Post(() =>
             {
+                if (version != _stopVersion || !IsPaused) return;
                 var csVm = CallStackViewModel.Current;
                 if (csVm != null)
                 {
@@ -120,6 +144,7 @@ public partial class DebugToolbarViewModel : ObservableObject
 
             // 3. Populate Locals panel
             var scopesEl = await DebuggerService.Instance.ScopesAsync(topFrameId);
+            if (version != _stopVersion || !IsPaused) return;
             if (scopesEl.ValueKind == System.Text.Json.JsonValueKind.Undefined) return;
 
             var localScope = scopesEl.GetProperty("scopes").EnumerateArray()
@@ -128,10 +153,12 @@ public partial class DebugToolbarViewModel : ObservableObject
 
             var varRef = localScope.GetProperty("variablesReference").GetInt32();
             var varsEl = await DebuggerService.Instance.VariablesAsync(varRef);
+            if (version != _stopVersion || !IsPaused) return;
             if (varsEl.ValueKind == System.Text.Json.JsonValueKind.Undefined) return;
 
             Dispatcher.UIThread.Post(() =>
             {
+                if (version != _stopVersion || !IsPaused) return;
                 var locVm = LocalsViewModel.Current;
                 if (locVm == null) return;
                 locVm.Variables.Clear();
@@ -165,9 +192,12 @@ public partial class DebugToolbarViewModel : ObservableObject
                 // Find all open views and call SetCurrentExecutionLine
                 foreach (var entry in MainWindowViewModel.Instance.Views)
                 {
-                    var view = entry.Value;
-                    var setLine = view?.GetType().GetMethod("SetCurrentExecutionLine");
-                    setLine?.Invoke(view, new object[] { line });
+                    if (entry.Value is DocumentView view)
+                    {
+                        bool matches = string.Equals(view.Document?.FilePath, filePath,
+                            StringComparison.OrdinalIgnoreCase);
+                        view.SetCurrentExecutionLine(matches ? line : -1);
+                    }
                 }
             }
             else
@@ -187,42 +217,18 @@ public partial class DebugToolbarViewModel : ObservableObject
     // ── Commands ──────────────────────────────────────────────────────────
 
     [RelayCommand(CanExecute = nameof(CanContinue))]
-    private async Task Continue()
-    {
-        IsPaused   = false;
-        StatusText = "Running…";
-        NotifyEditorExecutionLine(string.Empty, -1);
-        await DebuggerService.Instance.ContinueAsync();
-    }
+    private Task Continue() => DebuggerService.Instance.ContinueAsync();
     private bool CanContinue() => IsDebugging && IsPaused;
 
     [RelayCommand(CanExecute = nameof(CanStep))]
-    private async Task StepOver()
-    {
-        IsPaused = false;
-        StatusText = "Stepping…";
-        NotifyEditorExecutionLine(string.Empty, -1);
-        await DebuggerService.Instance.StepOverAsync();
-    }
+    private Task StepOver() => DebuggerService.Instance.StepOverAsync();
     private bool CanStep() => IsDebugging && IsPaused;
 
     [RelayCommand(CanExecute = nameof(CanStep))]
-    private async Task StepInto()
-    {
-        IsPaused = false;
-        StatusText = "Stepping…";
-        NotifyEditorExecutionLine(string.Empty, -1);
-        await DebuggerService.Instance.StepInAsync();
-    }
+    private Task StepInto() => DebuggerService.Instance.StepInAsync();
 
     [RelayCommand(CanExecute = nameof(CanStep))]
-    private async Task StepOut()
-    {
-        IsPaused = false;
-        StatusText = "Stepping…";
-        NotifyEditorExecutionLine(string.Empty, -1);
-        await DebuggerService.Instance.StepOutAsync();
-    }
+    private Task StepOut() => DebuggerService.Instance.StepOutAsync();
 
     [RelayCommand(CanExecute = nameof(IsDebugging))]
     private void Stop() => DebuggerService.Instance.StopDebugging();

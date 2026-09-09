@@ -146,11 +146,8 @@ public partial class ToolbarView : UserControl
     private async void Continue_Click(object? sender, RoutedEventArgs e)
         => await _dbg.ContinueAsync();
 
-    private void Pause_Click(object? sender, RoutedEventArgs e)
-    {
-        // Pause via DAP "pause" request — optional enhancement
-        BuildOutputService.Instance.AppendLine("[Debugger] Pause not yet implemented.");
-    }
+    private async void Pause_Click(object? sender, RoutedEventArgs e)
+        => await _dbg.PauseAsync();
 
     private async void StepOver_Click(object? sender, RoutedEventArgs e)
         => await _dbg.StepOverAsync();

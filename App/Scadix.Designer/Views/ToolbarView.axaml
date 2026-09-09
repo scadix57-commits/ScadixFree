@@ -30,7 +30,7 @@
 					</StackPanel>
 				</Border>
 
-				<TextBlock Text="Workspace ready."
+				<TextBlock Text="{Binding BuildStatus}"
 						   Foreground="#888888"
 						   FontSize="11"
 						   VerticalAlignment="Center"
@@ -91,6 +91,12 @@
 						Command="{Binding RunCommand}"
 						Classes="toolbar-btn run"
 						ToolTip.Tip="Run Startup Project (Ctrl+F5)"/>
+                <Button Content="Cancel"
+                        Command="{Binding CancelBuildCommand}"
+                        IsVisible="{Binding IsBuildRunning}"
+                        Classes="toolbar-btn"
+                        ToolTip.Tip="Cancel Build / Run"/>
+
 
 				<Rectangle Width="1" Fill="#D0D0D0" Margin="4,6"/>
 
