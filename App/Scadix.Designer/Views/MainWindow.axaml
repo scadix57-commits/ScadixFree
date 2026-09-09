@@ -16,6 +16,8 @@ DragDrop.AllowDrop="True">
 		<KeyBinding Command="{Binding New}"                 Gesture="Ctrl+N" />
 		<KeyBinding Command="{Binding Open}"                Gesture="Ctrl+O" />
 		<KeyBinding Command="{Binding SaveCurrentDocument}" Gesture="Ctrl+S" />
+		<KeyBinding Command="{Binding CurrentDocument.UndoCommand}" Gesture="Ctrl+Z" />
+		<KeyBinding Command="{Binding CurrentDocument.RedoCommand}" Gesture="Ctrl+Y" />
 		<KeyBinding Command="{Binding BuildCommand}"   Gesture="F6" />
 		<KeyBinding Command="{Binding BuildCommand}"   Gesture="Ctrl+Shift+B" />
 		<KeyBinding Command="{Binding RebuildCommand}" Gesture="Ctrl+Shift+R" />
@@ -53,8 +55,8 @@ DragDrop.AllowDrop="True">
 				<MenuItem Header="E_xit" Command="{Binding Exit}" />
 			</MenuItem>
 			<MenuItem Header="_Edit">
-				<MenuItem Header="_Undo"    Command="{Binding CurrentDocument.DesignSurface.Undo}" />
-				<MenuItem Header="_Redo"    Command="{Binding CurrentDocument.DesignSurface.Redo}" />
+				<MenuItem Header="_Undo"    Command="{Binding CurrentDocument.UndoCommand}" InputGesture="Ctrl+Z" />
+				<MenuItem Header="_Redo"    Command="{Binding CurrentDocument.RedoCommand}" InputGesture="Ctrl+Y" />
 				<Separator />
 				<MenuItem Header="Cu_t"     Command="{Binding CurrentDocument.DesignSurface.Cut}" />
 				<MenuItem Header="_Copy"    Command="{Binding CurrentDocument.DesignSurface.Copy}" />

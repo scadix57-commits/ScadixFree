@@ -42,6 +42,23 @@ namespace Scadix.Designer
 
 		string text;
 
+        internal Func<int, int, string, int, bool>? ApplySourceEdit { get; set; }
+        internal Action<bool>? ChangeSourceHistory { get; set; }
+
+        [RelayCommand]
+        private void Undo()
+        {
+            if (IsEditorVisible) ChangeSourceHistory?.Invoke(false);
+            else if (DesignSurface.CanUndo()) DesignSurface.Undo();
+        }
+
+        [RelayCommand]
+        private void Redo()
+        {
+            if (IsEditorVisible) ChangeSourceHistory?.Invoke(true);
+            else if (DesignSurface.CanRedo()) DesignSurface.Redo();
+        }
+
 		public string Text {
 			get {
 				return text;
@@ -331,6 +348,9 @@ namespace Scadix.Designer
 
                 settings.CustomServiceRegisterFunctions.Add(
                     context => {
+                        if (IsSplitMode)
+                            context.Services.AddService(typeof(Scadix.AxamlDesign.PropertyGrid.IPropertyEditorFactory),
+                                new Services.SplitPropertyEditorFactory(this));
                         context.Services.AddService(typeof(IEventHandlerService), new Services.EventHandlerService());
                         context.Services.AddService(typeof(XamlLoadSettings), settings);
                     });

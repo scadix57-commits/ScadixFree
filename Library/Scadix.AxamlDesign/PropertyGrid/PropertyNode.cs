@@ -369,8 +369,9 @@ namespace Scadix.AxamlDesign.PropertyGrid
 
 			this.Properties = new ReadOnlyCollection<DesignItemProperty>(properties);
 
-			if (Editor == null)
-				Editor = EditorManager.CreateEditor(FirstProperty);
+			Editor = Services.GetService<IPropertyEditorFactory>()?.CreateEditor(this)
+				?? EditorManager.CreateEditor(FirstProperty);
+			RaisePropertyChanged(nameof(Editor));
 
 			foreach (var property in properties) {
 				property.ValueChanged += new EventHandler(property_ValueChanged);

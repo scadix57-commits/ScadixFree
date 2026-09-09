@@ -84,7 +84,11 @@ public partial class PropertiesToolView : UserControl
     private void UpdateEditingState()
     {
         var grid = this.FindControl<PropertyGridView>("uxPropertyGridView");
-        if (grid != null) grid.IsReadOnly = _document?.IsDesignerInteractive != true;
+        if (grid != null)
+        {
+            grid.IsReadOnly = _document?.IsDesignerInteractive != true && _document?.IsPreviewSelectable != true;
+            grid.AllowAdvancedEditing = _document?.IsDesignerInteractive == true;
+        }
     }
 
     // ── Selection wiring ─────────────────────────────────────────────────

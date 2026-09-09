@@ -40,6 +40,11 @@ public partial class DocumentView : UserControl
         DetachedFromVisualTree += (_, _) =>
         {
             _previewTimer.Stop();
+            if (Document != null)
+            {
+                Document.ApplySourceEdit = null;
+                Document.ChangeSourceHistory = null;
+            }
             if (Document != null && _subscribed) Document.PropertyChanged -= DocumentChanged;
             _subscribed = false;
             if (uxXamlEditor.Editor != null)
@@ -73,6 +78,13 @@ public partial class DocumentView : UserControl
         if (Document == null || _subscribed) return;
         Document.PropertyChanged += DocumentChanged;
         _subscribed = true;
+        Document.ApplySourceEdit = ApplySourceEdit;
+        Document.ChangeSourceHistory = redo =>
+        {
+            if (uxXamlEditor.Editor is not { } editor) return;
+            if (redo) editor.Document.UndoStack.Redo();
+            else editor.Document.UndoStack.Undo();
+        };
         if (uxXamlEditor.Editor != null)
         {
             uxXamlEditor.Editor.TextArea.Caret.PositionChanged += SourceCaretChanged;
@@ -124,6 +136,20 @@ public partial class DocumentView : UserControl
         if (alreadySelected) NavigateToPreviewSelection();
     }
 
+    private bool ApplySourceEdit(int start, int length, string replacement, int elementStart)
+    {
+        if (Document?.IsPreviewSelectable != true || uxXamlEditor.Editor is not { } editor) return false;
+        _syncingSelection = true;
+        try
+        {
+            using (editor.Document.RunUpdate())
+                editor.Document.Replace(start, length, replacement);
+            editor.Select(elementStart, 0);
+        }
+        finally { _syncingSelection = false; }
+        return true;
+    }
+
     private void SubscribeSelection(ISelectionService? selection)
     {
         if (ReferenceEquals(_selection, selection)) return;
@@ -137,13 +163,13 @@ public partial class DocumentView : UserControl
     private void RebuildSourceControls()
     {
         _sourceControls.Clear();
-        if (Document?.IsPreviewSelectable != true || uxXamlEditor.Editor is not { } editor) return;
+        if (_selection == null || Document?.IsPreviewSelectable != true || uxXamlEditor.Editor is not { } editor) return;
         // Match source locations only to controls belonging to this rendered document.
         var context = Document.DesignContext;
         var root = context.RootItem?.View;
         if (root == null) return;
         var models = OutlineItems(Document.OutlineRoot).OfType<XamlDesignItem>().Distinct()
-            .Where(i => i.XamlObject.PositionXmlElement.LineNumber > 0)
+            .Where(i => i.View is Control && i.XamlObject.PositionXmlElement.HasLineInfo() && i.XamlObject.PositionXmlElement.LineNumber > 0)
             .GroupBy(i => (i.XamlObject.PositionXmlElement.LineNumber, i.XamlObject.PositionXmlElement.LinePosition))
             .ToDictionary(g => g.Key, g => (DesignItem)g.First());
         var stack = new Stack<(int Start, DesignItem? Item)>();
@@ -215,7 +241,7 @@ public partial class DocumentView : UserControl
             return;
         var editor = uxXamlEditor.Editor;
         var element = item.XamlObject.PositionXmlElement;
-        if (editor == null || element.LineNumber < 1 || element.LineNumber > editor.Document.LineCount) return;
+        if (editor == null || !element.HasLineInfo() || element.LineNumber < 1 || element.LineNumber > editor.Document.LineCount) return;
         var offset = editor.Document.GetOffset(element.LineNumber, element.LinePosition);
         // XML line positions point at the element name, immediately after '<'.
         var start = Document.Text.LastIndexOf('<', Math.Min(offset, Document.Text.Length - 1));

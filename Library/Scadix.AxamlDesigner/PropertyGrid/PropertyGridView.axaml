@@ -340,6 +340,7 @@
                                        FontSize="11" Foreground="#555555" Text="Name:" />
                             <Border Grid.Column="2" Grid.Row="1"
                                     IsEnabled="{Binding !IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border IsEnabled="{Binding AllowAdvancedEditing, RelativeSource={RelativeSource TemplatedParent}}">
                             <controls:ClearableTextBox
                                 x:Name="NameTextBox"
                                 Margin="0,2,0,2"
@@ -349,6 +350,7 @@
                                 BorderThickness="1"
                                 IsEnabled="{Binding IsNameEnabled}"
                                 Text="{Binding Name}" />
+                            </Border>
                             </Border>
 
                             <!-- Filter -->

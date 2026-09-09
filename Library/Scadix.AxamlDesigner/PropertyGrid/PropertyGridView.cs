@@ -47,6 +47,15 @@ namespace Scadix.AxamlDesigner.PropertyGrid
             set => SetValue(IsReadOnlyProperty, value);
         }
 
+        public static readonly StyledProperty<bool> AllowAdvancedEditingProperty =
+            AvaloniaProperty.Register<PropertyGridView, bool>(nameof(AllowAdvancedEditing), true);
+
+        public bool AllowAdvancedEditing
+        {
+            get => GetValue(AllowAdvancedEditingProperty);
+            set => SetValue(AllowAdvancedEditingProperty, value);
+        }
+
 		public static readonly StyledProperty<double> FirstColumnWidthProperty =
 			AvaloniaProperty.Register<PropertyGridView, double>("FirstColumnWidth", 120.0);
 
@@ -74,7 +83,7 @@ namespace Scadix.AxamlDesigner.PropertyGrid
 		protected override void OnPointerReleased(PointerReleasedEventArgs e)
 		{
 			base.OnPointerReleased(e);
-			if (!IsReadOnly && e.InitialPressMouseButton == MouseButton.Right) {
+			if (!IsReadOnly && AllowAdvancedEditing && e.InitialPressMouseButton == MouseButton.Right) {
 				var ancestors = (e.Source as AvaloniaObject).GetVisualAncestors();
 				Border row = ancestors.OfType<Border>().FirstOrDefault(b => b.Name == "uxPropertyNodeRow");
 				if (row == null) return;
