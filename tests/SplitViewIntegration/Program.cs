@@ -43,6 +43,11 @@ internal static class Program
                 Check(editor.IsVisible && doc.DesignSurface.IsEffectivelyVisible && splitter.IsVisible, "Editor and preview visible side by side");
                 var overlay = view.FindControl<Border>("PreviewSelectionOverlay");
                 Check(overlay is { IsVisible: true } && doc.SelectionService != null, "Split accepts preview selection");
+                if (Environment.GetCommandLineArgs().Contains("--snap-only"))
+                {
+                    await SplitSnapChecks.Run(doc, view);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--interaction-only"))
                 {
                     await SplitInteractionChecks.Run(doc, view);

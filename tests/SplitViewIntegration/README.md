@@ -32,6 +32,14 @@ Move checks cover center/body hit testing, Canvas coordinates, Grid margins and 
 
 Move handles sit above the drag body; Escape cancels both drag targets. Coordinates are converted to the parent's space on release, while overlay feedback follows the preview transform. Canvas coordinates absent from source start from the arranged position, including opposite anchors. Attached property elements remain protected. Grid controls aligned Right or Bottom now offer move handles and change the corresponding trailing margins. Tests also check centered movement against actual arranged displacement; missing local Margin starts from the effective styled value.
 
+Run the snap checklist separately:
+
+```powershell
+dotnet run --project tests/SplitViewIntegration/SplitViewIntegration.csproj -- --snap-only
+```
+
+Snap checks cover absolute Canvas positions from an off-grid origin, center/body drag, all eight resize handles, Alt bypass, readout visibility/content/layout, all arrow directions with and without Shift, Escape, single-operation Undo/Redo, runtime service settings, and Ctrl aspect-ratio preservation. They use synthetic Avalonia input in a real window and collect failures before exiting nonzero. The snap suite keeps snapping enabled; older unsnapped drag expectations are not a substitute for this suite.
+
 Run the expanded interaction checklist separately:
 
 ```powershell

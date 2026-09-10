@@ -165,7 +165,7 @@ namespace Scadix.AxamlDesign
 	}
 	#endregion
 	
-	#region ISplitResizeOverlayService
+#region ISplitResizeOverlayService
 	/// <summary>
 	/// Service for providing the split mode resize overlay canvas.
 	/// This allows resize thumbs to be rendered on a hit-testable surface in Split mode.
@@ -195,6 +195,20 @@ namespace Scadix.AxamlDesign
 
 		/// <summary>Refreshes selection immediately after a keyboard edit so the next key can edit it.</summary>
 		void RefreshAfterKeyboardEdit();
+
+		/// <summary>Gets or sets whether snap-to-grid is enabled during drag operations.</summary>
+		bool SnapEnabled { get; set; }
+
+		/// <summary>Gets or sets the snap grid size in pixels.</summary>
+		double SnapGridSize { get; set; }
+
+		/// <summary>Shows the snap readout at the specified position with current coordinates/size.</summary>
+		/// <param name="position">Position in overlay coordinates.</param>
+		/// <param name="size">Optional size for resize readout.</param>
+		void ShowSnapReadout(Point position, Size? size = null);
+
+		/// <summary>Hides the snap readout.</summary>
+		void HideSnapReadout();
 	}
 	#endregion
 

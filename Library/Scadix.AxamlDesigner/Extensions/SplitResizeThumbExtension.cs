@@ -73,6 +73,18 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         }
     }
 
+    private static Point Snap(Point p, double grid, bool enabled, KeyModifiers modifiers)
+    {
+        if (!enabled || grid <= 0 || modifiers.HasFlag(KeyModifiers.Alt)) return p;
+        return new Point(Math.Round(p.X / grid) * grid, Math.Round(p.Y / grid) * grid);
+    }
+
+    private static Size Snap(Size s, double grid, bool enabled, KeyModifiers modifiers)
+    {
+        if (!enabled || grid <= 0 || modifiers.HasFlag(KeyModifiers.Alt)) return s;
+        return new Size(Math.Round(s.Width / grid) * grid, Math.Round(s.Height / grid) * grid);
+    }
+
     private void AddResizeHandle(string name, int x, int y, StandardCursorType cursor)
     {
         var handle = new Border
@@ -98,7 +110,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             handle.Focus();
             e.Handled = true;
         };
-        handle.PointerMoved += (_, e) =>
+handle.PointerMoved += (_, e) =>
         {
             if (_pointer != e.Pointer || _isMoving) return;
             var delta = e.GetPosition(_view) - _start;
@@ -120,13 +132,22 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             {
                 w = Math.Clamp(w, _view!.MinWidth, Math.Max(_view.MinWidth, _view.MaxWidth));
                 h = Math.Clamp(h, _view.MinHeight, Math.Max(_view.MinHeight, _view.MaxHeight));
-
             }
+
+            // Apply snap to size
+            var grid = _service?.SnapGridSize ?? 8;
+            var snapEnabled = _service?.SnapEnabled ?? true;
+            var snappedSize = Snap(new Size(w, h), grid, snapEnabled, e.KeyModifiers);
+            w = snappedSize.Width; h = snappedSize.Height;
+
             // Use the final constrained size, including proportional resizing.
             _posDeltaX = _resizeX == -1 ? _oldSize.Width - w : 0;
             _posDeltaY = _resizeY == -1 ? _oldSize.Height - h : 0;
             _size = new Size(w, h);
             UpdatePositions();
+            
+            // Show snap readout
+            _service?.ShowSnapReadout(e.GetPosition(_overlay), _size);
             e.Handled = true;
         };
         handle.PointerReleased += (_, e) =>
@@ -138,6 +159,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             var posX = _posDeltaX;
             var posY = _posDeltaY;
             EndDrag();
+            _service?.HideSnapReadout();
             if (size != old || posX != 0 || posY != 0)
             {
                 _overlay!.Focus();
@@ -145,7 +167,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             }
             e.Handled = true;
         };
-        handle.PointerCaptureLost += (_, _) => EndDrag();
+        handle.PointerCaptureLost += (_, _) => { EndDrag(); _service?.HideSnapReadout(); };
         handle.KeyDown += (_, e) =>
         {
             if (e.Key == Key.Escape && IsResizing) { EndDrag(); e.Handled = true; }
@@ -179,8 +201,16 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         {
             if (_pointer != e.Pointer || !_isMoving) return;
             var delta = e.GetPosition(_view) - _start;
-            _oldPos = new Point(delta.X, delta.Y);
+            
+            // Apply snap to position
+            var grid = _service?.SnapGridSize ?? 8;
+            var snapEnabled = _service?.SnapEnabled ?? true;
+            _oldPos = Snap(delta, grid, snapEnabled, e.KeyModifiers);
+            
             UpdatePositions();
+            
+            // Show snap readout
+            _service?.ShowSnapReadout(e.GetPosition(_overlay));
             e.Handled = true;
         };
         _moveHandle.PointerReleased += (_, e) =>
@@ -189,10 +219,11 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             var commit = _moveCommit;
             var pos = _oldPos;
             EndDrag();
+            _service?.HideSnapReadout();
             CommitMove(commit, pos);
             e.Handled = true;
         };
-        _moveHandle.PointerCaptureLost += (_, _) => EndDrag();
+        _moveHandle.PointerCaptureLost += (_, _) => { EndDrag(); _service?.HideSnapReadout(); };
         _moveHandle.KeyDown += (_, e) =>
         {
             if (e.Key == Key.Escape && IsMoving) { EndDrag(); e.Handled = true; }
@@ -228,8 +259,16 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         {
             if (_pointer != e.Pointer || !_isMoving) return;
             var delta = e.GetPosition(_view) - _start;
-            _oldPos = new Point(delta.X, delta.Y);
+            
+            // Apply snap to position
+            var grid = _service?.SnapGridSize ?? 8;
+            var snapEnabled = _service?.SnapEnabled ?? true;
+            _oldPos = Snap(delta, grid, snapEnabled, e.KeyModifiers);
+            
             UpdatePositions();
+            
+            // Show snap readout
+            _service?.ShowSnapReadout(e.GetPosition(_overlay));
             e.Handled = true;
         };
         _borderDrag.PointerReleased += (_, e) =>
@@ -238,10 +277,11 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             var commit = _moveCommit;
             var pos = _oldPos;
             EndDrag();
+            _service?.HideSnapReadout();
             CommitMove(commit, pos);
             e.Handled = true;
         };
-        _borderDrag.PointerCaptureLost += (_, _) => EndDrag();
+        _borderDrag.PointerCaptureLost += (_, _) => { EndDrag(); _service?.HideSnapReadout(); };
         _borderDrag.KeyDown += (_, e) =>
         {
             if (e.Key == Key.Escape && IsMoving) { EndDrag(); e.Handled = true; }

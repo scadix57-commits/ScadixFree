@@ -30,6 +30,10 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     private bool _syncingSelection;
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
 
+    // Snap settings
+    public bool SnapEnabled { get; set; } = true;
+    public double SnapGridSize { get; set; } = 8;
+
     // ISplitResizeOverlayService implementation
     public Canvas? OverlayCanvas => SplitResizeOverlay;
     public Control? DesignRoot => Document?.DesignContext?.RootItem?.View as Control;
@@ -45,11 +49,28 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
         => Document?.IsPreviewSelectable == true
             ? new SplitPropertyEditorFactory(Document).CreateMoveCommit(item) : null;
 
-    public void RefreshAfterKeyboardEdit()
+public void RefreshAfterKeyboardEdit()
     {
         _previewTimer.Stop();
         Document?.RefreshPreview();
         Document?.DesignSurface.UpdateLayout();
+    }
+
+    public void ShowSnapReadout(Point position, Size? size = null)
+    {
+        if (SnapReadout == null || SnapReadoutText == null) return;
+        var text = size.HasValue
+            ? $"W: {size.Value.Width:0}  H: {size.Value.Height:0}"
+            : $"X: {position.X:0}  Y: {position.Y:0}";
+        SnapReadoutText.Text = text;
+        Canvas.SetLeft(SnapReadout, position.X + 12);
+        Canvas.SetTop(SnapReadout, position.Y + 12);
+        SnapReadout.IsVisible = true;
+    }
+
+    public void HideSnapReadout()
+    {
+        if (SnapReadout != null) SnapReadout.IsVisible = false;
     }
 
     public DocumentView()
