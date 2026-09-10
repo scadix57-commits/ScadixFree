@@ -183,10 +183,18 @@ namespace Scadix.AxamlDesign
 		Control? DesignRoot { get; }
 
 		/// <summary>Creates a guarded source edit for a resize, or null for protected dimensions.</summary>
-		Func<double?, double?, bool>? CreateResizeCommit(DesignItem item);
+		/// <param name="item">The design item to resize.</param>
+		/// <returns>
+		/// A function accepting (newWidth, newHeight, deltaX, deltaY) where deltaX/deltaY
+		/// are position adjustments for left/top edge resizing. Returns true if applied.
+		/// </returns>
+		Func<double?, double?, double?, double?, bool>? CreateResizeCommit(DesignItem item);
 
 		/// <summary>Creates a guarded source edit for a move, or null for unsupported panels.</summary>
 		Func<double, double, bool>? CreateMoveCommit(DesignItem item);
+
+		/// <summary>Refreshes selection immediately after a keyboard edit so the next key can edit it.</summary>
+		void RefreshAfterKeyboardEdit();
 	}
 	#endregion
 

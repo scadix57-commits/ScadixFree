@@ -37,7 +37,7 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     // ISplitModeService implementation
     public bool IsSplitMode => Document?.IsSplitMode == true;
 
-    public Func<double?, double?, bool>? CreateResizeCommit(DesignItem item)
+    public Func<double?, double?, double?, double?, bool>? CreateResizeCommit(DesignItem item)
         => Document?.IsPreviewSelectable == true
             ? new SplitPropertyEditorFactory(Document).CreateResizeCommit(item) : null;
 
@@ -45,6 +45,12 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
         => Document?.IsPreviewSelectable == true
             ? new SplitPropertyEditorFactory(Document).CreateMoveCommit(item) : null;
 
+    public void RefreshAfterKeyboardEdit()
+    {
+        _previewTimer.Stop();
+        Document?.RefreshPreview();
+        Document?.DesignSurface.UpdateLayout();
+    }
 
     public DocumentView()
     {
@@ -151,6 +157,7 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
         Document.SelectionService!.SetSelectedComponents(selected == null
             ? Array.Empty<DesignItem>() : new[] { selected }, SelectionTypes.Replace);
         if (alreadySelected) NavigateToPreviewSelection();
+        if (selected != null) SplitResizeOverlay.Focus();
     }
 
     private bool ApplySourceEdit(int start, int length, string replacement, int elementStart)

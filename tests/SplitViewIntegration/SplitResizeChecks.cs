@@ -65,7 +65,7 @@ internal static class SplitResizeChecks
         Check(doc.Text == source.Replace("'120'", "'140'"), "Edge resize changes only its own dimension");
         await Load(source);
         Drag("SplitResizeTopLeft", new Vector(-20, -10));
-        Check(doc.Text == resized, "Top-left resize uses reversed deltas");
+        Check(doc.Text == resized.Replace("<Button", "<Button Canvas.Top=\"-10\" Canvas.Left=\"-20\""), "Top-left resize updates dimensions and position (actual: " + doc.Text + ")");
         await Load(source);
         Drag("SplitResizeBottomRight", new Vector(20, 10), cancel: true);
         Check(doc.Text == source && overlay.Children.OfType<Control>().Count(c => c.Name?.StartsWith("SplitResize") == true) == 8, "Escape cancels resize and retains handles");
@@ -74,11 +74,11 @@ internal static class SplitResizeChecks
         Check(doc.Text == source && !editor.Document.UndoStack.CanUndo, "Click without dragging creates no source undo entry");
         foreach (var (name, delta, expected) in new[]
         {
-            ("Top", new Vector(0, -10), source.Replace("'60'", "'70'")),
+            ("Top", new Vector(0, -10), source.Replace("'60'", "'70'").Replace("<Button", "<Button Canvas.Top=\"-10\"")),
             ("Bottom", new Vector(0, 10), source.Replace("'60'", "'70'")),
-            ("Left", new Vector(-20, 0), source.Replace("'120'", "'140'")),
-            ("TopRight", new Vector(20, -10), resized),
-            ("BottomLeft", new Vector(-20, 10), resized)
+            ("Left", new Vector(-20, 0), source.Replace("'120'", "'140'").Replace("<Button", "<Button Canvas.Left=\"-20\"")),
+            ("TopRight", new Vector(20, -10), resized.Replace("<Button", "<Button Canvas.Top=\"-10\"")),
+            ("BottomLeft", new Vector(-20, 10), resized.Replace("<Button", "<Button Canvas.Left=\"-20\""))
         })
         {
             await Load(source);

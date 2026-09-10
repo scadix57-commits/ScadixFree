@@ -63,7 +63,7 @@
                                   IsEnabled="{Binding IsDesignerInteractive}" />
                   <Border x:Name="PreviewSelectionOverlay" Background="Transparent"
                           IsVisible="{Binding IsSplitMode}" PointerPressed="PreviewPointerPressed" />
-                  <Canvas x:Name="SplitResizeOverlay"
+                  <Canvas x:Name="SplitResizeOverlay" Focusable="True"
                           IsVisible="{Binding IsSplitMode}"
                           IsHitTestVisible="True" />
                 </Grid>

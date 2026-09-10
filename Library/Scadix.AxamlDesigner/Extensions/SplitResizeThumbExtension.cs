@@ -21,7 +21,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
     private Canvas? _overlay;
     private Control? _view;
     private ISplitResizeOverlayService? _service;
-    private Func<double?, double?, bool>? _resizeCommit;
+    private Func<double?, double?, double?, double?, bool>? _resizeCommit;
     private Func<double, double, bool>? _moveCommit;
     private IPointer? _pointer;
     private Point _start;
@@ -30,6 +30,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
     private Point _oldPos;
     private bool _isMoving;
     private bool _removed;
+    private double _posDeltaX, _posDeltaY;
 
     public bool IsResizing => _pointer != null && !_isMoving;
     public bool IsMoving => _pointer != null && _isMoving;
@@ -62,6 +63,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             _moveCommit = moveCommit;
             AddMoveHandle();
             AddBorderDrag();
+            _overlay.KeyDown += OverlayKeyDown;
         }
 
         if (_resizeCommit != null || _moveCommit != null)
@@ -87,6 +89,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             _resizeCommit = _service?.CreateResizeCommit(ExtendedItem);
             if (_resizeCommit == null) return;
             _resizeX = x; _resizeY = y;
+            _posDeltaX = 0; _posDeltaY = 0;
             _start = e.GetPosition(_view);
             _oldSize = _size = _view!.Bounds.Size;
             _pointer = e.Pointer;
@@ -100,6 +103,10 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             if (_pointer != e.Pointer || _isMoving) return;
             var delta = e.GetPosition(_view) - _start;
             double w = _oldSize.Width + delta.X * _resizeX, h = _oldSize.Height + delta.Y * _resizeY;
+
+            // Position adjustment for left/top edge resize (VS-style)
+            _posDeltaX = 0; _posDeltaY = 0;
+
             if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && _resizeX != 0 && _resizeY != 0 && _oldSize.Width > 0 && _oldSize.Height > 0)
             {
                 var scale = Math.Abs(delta.X / _oldSize.Width) >= Math.Abs(delta.Y / _oldSize.Height)
@@ -113,7 +120,11 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             {
                 w = Math.Clamp(w, _view!.MinWidth, Math.Max(_view.MinWidth, _view.MaxWidth));
                 h = Math.Clamp(h, _view.MinHeight, Math.Max(_view.MinHeight, _view.MaxHeight));
+
             }
+            // Use the final constrained size, including proportional resizing.
+            _posDeltaX = _resizeX == -1 ? _oldSize.Width - w : 0;
+            _posDeltaY = _resizeY == -1 ? _oldSize.Height - h : 0;
             _size = new Size(w, h);
             UpdatePositions();
             e.Handled = true;
@@ -124,8 +135,14 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             var commit = _resizeCommit;
             var size = _size;
             var old = _oldSize;
+            var posX = _posDeltaX;
+            var posY = _posDeltaY;
             EndDrag();
-            if (size != old) commit?.Invoke(_resizeX == 0 ? null : size.Width, _resizeY == 0 ? null : size.Height);
+            if (size != old || posX != 0 || posY != 0)
+            {
+                _overlay!.Focus();
+                commit?.Invoke(_resizeX == 0 ? null : size.Width, _resizeY == 0 ? null : size.Height, _resizeX == -1 ? posX : null, _resizeY == -1 ? posY : null);
+            }
             e.Handled = true;
         };
         handle.PointerCaptureLost += (_, _) => EndDrag();
@@ -231,12 +248,38 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         };
     }
 
+    private void OverlayKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled || _removed || (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta)) != 0) return;
+
+        var step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 10.0 : 1.0;
+        double deltaX = 0, deltaY = 0;
+
+        switch (e.Key)
+        {
+            case Key.Left: deltaX = -step; break;
+            case Key.Right: deltaX = step; break;
+            case Key.Up: deltaY = -step; break;
+            case Key.Down: deltaY = step; break;
+            default: return;
+        }
+        // A drag owns its transaction until release or Escape.
+        e.Handled = true;
+        if (_pointer != null) return;
+        var commit = _service?.CreateMoveCommit(ExtendedItem);
+        if (commit == null) return;
+        // The overlay survives preview reloads, unlike the selected control's handles.
+        _overlay!.Focus();
+        if (commit(deltaX, deltaY)) _service?.RefreshAfterKeyboardEdit();
+    }
+
     private void CommitMove(Func<double, double, bool>? commit, Point delta)
     {
         if (delta == default || _view?.GetVisualParent() is not Visual parent) return;
         var transform = _view.TransformToVisual(parent);
         if (!transform.HasValue) return;
         var displacement = transform.Value.Transform(delta) - transform.Value.Transform(default(Point));
+        _overlay!.Focus();
         commit?.Invoke(displacement.X, displacement.Y);
     }
 
@@ -247,6 +290,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         _isMoving = false;
         _resizeCommit = null;
         _moveCommit = null;
+        _posDeltaX = 0; _posDeltaY = 0;
         pointer?.Capture(null);
         UpdatePositions();
     }
@@ -259,7 +303,8 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         var transform = _view.TransformToVisual(_overlay);
         if (!transform.HasValue) return;
         var size = IsResizing ? _size : _view.Bounds.Size;
-        var offset = IsMoving ? transform.Value.Transform(_oldPos) - transform.Value.Transform(default(Point)) : default(Vector);
+        var localOffset = IsMoving ? _oldPos : IsResizing ? new Point(_posDeltaX, _posDeltaY) : default;
+        var offset = transform.Value.Transform(localOffset) - transform.Value.Transform(default(Point));
 
         foreach (var (handle, x, y) in _resizeHandles)
         {
@@ -272,10 +317,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         if (_moveHandle != null)
         {
             var centerPoint = transform.Value.Transform(new Point(size.Width / 2, size.Height / 2));
-            if (IsMoving)
-            {
-                centerPoint += offset;
-            }
+            centerPoint += offset;
             Canvas.SetLeft(_moveHandle, centerPoint.X - 6);
             Canvas.SetTop(_moveHandle, centerPoint.Y - 6);
         }
@@ -297,6 +339,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         if (_overlay != null)
         {
             _overlay.LayoutUpdated -= LayoutUpdated;
+            _overlay.KeyDown -= OverlayKeyDown;
             foreach (var entry in _resizeHandles) _overlay.Children.Remove(entry.Handle);
             if (_moveHandle != null) _overlay.Children.Remove(_moveHandle);
             if (_borderDrag != null) _overlay.Children.Remove(_borderDrag);

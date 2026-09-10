@@ -164,7 +164,7 @@ internal static class SplitMoveChecks
         foreach (var alignment in new[] { "HorizontalAlignment='Right'", "VerticalAlignment='Bottom'" })
         {
             await Load(gridSource.Replace("<Button", "<Button " + alignment));
-            Check(!overlay.Children.OfType<Control>().Any(c => c.Name is "SplitMoveHandle" or "SplitBorderDrag"), "Grid protects fixed trailing margin for " + alignment);
+            Check(overlay.Children.OfType<Control>().Any(c => c.Name == "SplitMoveHandle"), "Grid allows moving trailing alignment for " + alignment);
         }
         Console.WriteLine("TOTAL MOVE FAILURES: " + failures);
         if (failures > 0) throw new Exception("Move regression checks failed: " + failures);

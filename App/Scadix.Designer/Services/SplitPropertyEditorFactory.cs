@@ -107,12 +107,12 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
         return field;
     }
 
-    public Func<double?, double?, bool>? CreateResizeCommit(DesignItem item)
+    public Func<double?, double?, double?, double?, bool>? CreateResizeCommit(DesignItem item)
     {
         var width = FindTarget(item.Properties["Width"]);
         var height = FindTarget(item.Properties["Height"]);
         if (width == null || height == null) return null;
-        return (w, h) =>
+        return (w, h, deltaX, deltaY) =>
         {
             if (_document.Text != _source || !_document.IsPreviewSelectable ||
                 !ReferenceEquals(_document.SelectionService?.PrimarySelection, item)) return false;
@@ -126,6 +126,83 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
             }
             Add(width, "Width", w);
             Add(height, "Height", h);
+
+            // Handle position adjustments for left/top resize (Canvas only)
+            var isCanvas = item.Parent?.Component is Canvas;
+            var isGrid = item.Parent?.Component is Grid;
+
+            if ((isCanvas || isGrid) && item.View is Control view)
+            {
+                if (isCanvas)
+                {
+                    if (deltaX != null)
+                    {
+                        var leftTarget = FindAttachedTarget(item, "Canvas.Left");
+                        if (leftTarget == null && deltaX != 0) return false;
+                        if (leftTarget != null)
+                        {
+                            var currentLeft = double.TryParse(leftTarget.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var l) ? l : view.Bounds.X - view.Margin.Left;
+                            var newLeft = currentLeft + deltaX.Value;
+                            var text = newLeft.ToString("0.###", CultureInfo.InvariantCulture);
+                            edits.Add((leftTarget, leftTarget.IsNew ? $" Canvas.Left=\"{text}\"" : text));
+                        }
+                    }
+                    if (deltaY != null)
+                    {
+                        var topTarget = FindAttachedTarget(item, "Canvas.Top");
+                        if (topTarget == null && deltaY != 0) return false;
+                        if (topTarget != null)
+                        {
+                            var currentTop = double.TryParse(topTarget.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var t) ? t : view.Bounds.Y - view.Margin.Top;
+                            var newTop = currentTop + deltaY.Value;
+                            var text = newTop.ToString("0.###", CultureInfo.InvariantCulture);
+                            edits.Add((topTarget, topTarget.IsNew ? $" Canvas.Top=\"{text}\"" : text));
+                        }
+                    }
+                }
+                else if (isGrid)
+                {
+                    var marginTarget = FindTarget(item.Properties["Margin"]);
+                    if (marginTarget != null)
+                    {
+                        var currentMargin = marginTarget.IsNew ? view.Margin : Thickness.Parse(marginTarget.Value!);
+                        var newMargin = currentMargin;
+                        var hAlign = view.HorizontalAlignment;
+                        var vAlign = view.VerticalAlignment;
+
+                        if (w != null)
+                        {
+                            var shrink = view.Bounds.Width - w.Value;
+                            var desired = deltaX ?? 0;
+                            if (hAlign == Avalonia.Layout.HorizontalAlignment.Left)
+                                newMargin = new Thickness(currentMargin.Left + desired, currentMargin.Top, currentMargin.Right, currentMargin.Bottom);
+                            else if (hAlign == Avalonia.Layout.HorizontalAlignment.Right)
+                                newMargin = new Thickness(currentMargin.Left, currentMargin.Top, currentMargin.Right + shrink - desired, currentMargin.Bottom);
+                            else if (hAlign == Avalonia.Layout.HorizontalAlignment.Center)
+                                newMargin = new Thickness(currentMargin.Left + desired * 2 - shrink, currentMargin.Top, currentMargin.Right, currentMargin.Bottom);
+                            else
+                                newMargin = new Thickness(currentMargin.Left + desired, currentMargin.Top, currentMargin.Right, currentMargin.Bottom);
+                        }
+                        if (h != null)
+                        {
+                            var shrink = view.Bounds.Height - h.Value;
+                            var desired = deltaY ?? 0;
+                            if (vAlign == Avalonia.Layout.VerticalAlignment.Top)
+                                newMargin = new Thickness(newMargin.Left, newMargin.Top + desired, newMargin.Right, newMargin.Bottom);
+                            else if (vAlign == Avalonia.Layout.VerticalAlignment.Bottom)
+                                newMargin = new Thickness(newMargin.Left, newMargin.Top, newMargin.Right, newMargin.Bottom + shrink - desired);
+                            else if (vAlign == Avalonia.Layout.VerticalAlignment.Center)
+                                newMargin = new Thickness(newMargin.Left, newMargin.Top + desired * 2 - shrink, newMargin.Right, newMargin.Bottom);
+                            else
+                                newMargin = new Thickness(newMargin.Left, newMargin.Top + desired, newMargin.Right, newMargin.Bottom);
+                        }
+
+                        var text = newMargin.ToString();
+                        edits.Add((marginTarget, marginTarget.IsNew ? $" Margin=\"{text}\"" : text));
+                    }
+                }
+            }
+
             if (edits.Count == 0) return false;
             var start = edits.Min(e => e.Target.Start);
             var end = edits.Max(e => e.Target.Start + e.Target.Length);
@@ -149,9 +226,6 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
         var isGrid = parent.Component is Grid;
 
         if (!isCanvas && !isGrid) return null;
-        // Moving a trailing-aligned child requires changing the protected Right/Bottom margins.
-        if (isGrid && (view.HorizontalAlignment == Avalonia.Layout.HorizontalAlignment.Right ||
-                       view.VerticalAlignment == Avalonia.Layout.VerticalAlignment.Bottom)) return null;
 
         Target? leftTarget = null;
         Target? topTarget = null;
@@ -164,7 +238,7 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
         else if (isGrid)
         {
             leftTarget = FindTarget(item.Properties["Margin"]);
-            // For Margin, we need to handle it specially since it's a single Thickness
+            // For Margin, we handle all four sides via the single Thickness
         }
 
         if (leftTarget == null && topTarget == null) return null;
@@ -195,16 +269,34 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
             }
             else if (isGrid)
             {
-                // For Grid, Margin is a Thickness - we need to update Left/Top while preserving Right/Bottom
-                var marginTarget = leftTarget; // This is actually the Margin target
+                // For Grid, Margin is a Thickness - update based on alignment
+                var marginTarget = leftTarget;
                 if (marginTarget != null)
                 {
                     var currentMargin = marginTarget.IsNew ? view.Margin : Thickness.Parse(marginTarget.Value!);
-                    var newMargin = new Thickness(
-                        currentMargin.Left + deltaX * (view.HorizontalAlignment == Avalonia.Layout.HorizontalAlignment.Center ? 2 : 1),
-                        currentMargin.Top + deltaY * (view.VerticalAlignment == Avalonia.Layout.VerticalAlignment.Center ? 2 : 1),
-                        currentMargin.Right,
-                        currentMargin.Bottom);
+                    var newMargin = currentMargin;
+
+                    var hAlign = view.HorizontalAlignment;
+                    var vAlign = view.VerticalAlignment;
+
+                    if (hAlign == Avalonia.Layout.HorizontalAlignment.Left)
+                        newMargin = new Thickness(currentMargin.Left + deltaX, currentMargin.Top, currentMargin.Right, currentMargin.Bottom);
+                    else if (hAlign == Avalonia.Layout.HorizontalAlignment.Right)
+                        newMargin = new Thickness(currentMargin.Left, currentMargin.Top, currentMargin.Right - deltaX, currentMargin.Bottom);
+                    else if (hAlign == Avalonia.Layout.HorizontalAlignment.Center)
+                        newMargin = new Thickness(currentMargin.Left + deltaX * 2, currentMargin.Top, currentMargin.Right, currentMargin.Bottom);
+                    else // Stretch
+                        newMargin = new Thickness(currentMargin.Left + deltaX, currentMargin.Top, currentMargin.Right, currentMargin.Bottom);
+
+                    if (vAlign == Avalonia.Layout.VerticalAlignment.Top)
+                        newMargin = new Thickness(newMargin.Left, newMargin.Top + deltaY, newMargin.Right, newMargin.Bottom);
+                    else if (vAlign == Avalonia.Layout.VerticalAlignment.Bottom)
+                        newMargin = new Thickness(newMargin.Left, newMargin.Top, newMargin.Right, newMargin.Bottom - deltaY);
+                    else if (vAlign == Avalonia.Layout.VerticalAlignment.Center)
+                        newMargin = new Thickness(newMargin.Left, newMargin.Top + deltaY * 2, newMargin.Right, newMargin.Bottom);
+                    else // Stretch
+                        newMargin = new Thickness(newMargin.Left, newMargin.Top + deltaY, newMargin.Right, newMargin.Bottom);
+
                     var text = newMargin.ToString();
                     edits.Add((marginTarget, marginTarget.IsNew ? $" Margin=\"{text}\"" : text));
                 }
