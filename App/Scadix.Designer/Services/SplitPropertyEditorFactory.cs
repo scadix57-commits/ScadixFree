@@ -107,6 +107,155 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
         return field;
     }
 
+    public Func<double?, double?, bool>? CreateResizeCommit(DesignItem item)
+    {
+        var width = FindTarget(item.Properties["Width"]);
+        var height = FindTarget(item.Properties["Height"]);
+        if (width == null || height == null) return null;
+        return (w, h) =>
+        {
+            if (_document.Text != _source || !_document.IsPreviewSelectable ||
+                !ReferenceEquals(_document.SelectionService?.PrimarySelection, item)) return false;
+            var edits = new List<(Target Target, string Text)>();
+            void Add(Target target, string name, double? value)
+            {
+                if (value == null) return;
+                if (!double.IsFinite(value.Value) || value < 0) throw new ArgumentOutOfRangeException(name);
+                var text = value.Value.ToString("0.###", CultureInfo.InvariantCulture);
+                edits.Add((target, target.IsNew ? $" {name}=\"{text}\"" : text));
+            }
+            Add(width, "Width", w);
+            Add(height, "Height", h);
+            if (edits.Count == 0) return false;
+            var start = edits.Min(e => e.Target.Start);
+            var end = edits.Max(e => e.Target.Start + e.Target.Length);
+            var replacement = _source.Substring(start, end - start);
+            foreach (var edit in edits.OrderByDescending(e => e.Target.Start))
+                replacement = replacement.Remove(edit.Target.Start - start, edit.Target.Length).Insert(edit.Target.Start - start, edit.Text);
+            if (replacement == _source.Substring(start, end - start)) return true;
+            return _document.ApplySourceEdit?.Invoke(start, end - start, replacement, width.ElementStart) == true;
+        };
+    }
+
+    public Func<double, double, bool>? CreateMoveCommit(DesignItem item)
+    {
+        if (item.View is not Control view) return null;
+        var parent = item.Parent;
+        if (parent == null) return null;
+
+        // Check if parent is Canvas - use Canvas.Left/Canvas.Top
+        var isCanvas = parent.Component is Canvas;
+        // Check if parent is Grid - use Margin
+        var isGrid = parent.Component is Grid;
+
+        if (!isCanvas && !isGrid) return null;
+        // Moving a trailing-aligned child requires changing the protected Right/Bottom margins.
+        if (isGrid && (view.HorizontalAlignment == Avalonia.Layout.HorizontalAlignment.Right ||
+                       view.VerticalAlignment == Avalonia.Layout.VerticalAlignment.Bottom)) return null;
+
+        Target? leftTarget = null;
+        Target? topTarget = null;
+
+        if (isCanvas)
+        {
+            leftTarget = FindAttachedTarget(item, "Canvas.Left");
+            topTarget = FindAttachedTarget(item, "Canvas.Top");
+        }
+        else if (isGrid)
+        {
+            leftTarget = FindTarget(item.Properties["Margin"]);
+            // For Margin, we need to handle it specially since it's a single Thickness
+        }
+
+        if (leftTarget == null && topTarget == null) return null;
+
+        return (deltaX, deltaY) =>
+        {
+            if (_document.Text != _source || !_document.IsPreviewSelectable ||
+                !ReferenceEquals(_document.SelectionService?.PrimarySelection, item)) return false;
+
+            var edits = new List<(Target Target, string Text)>();
+
+            if (isCanvas)
+            {
+                if (leftTarget != null)
+                {
+                    var currentLeft = double.TryParse(leftTarget.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var l) ? l : view.Bounds.X - view.Margin.Left;
+                    var newLeft = currentLeft + deltaX;
+                    var text = newLeft.ToString("0.###", CultureInfo.InvariantCulture);
+                    edits.Add((leftTarget, leftTarget.IsNew ? $" Canvas.Left=\"{text}\"" : text));
+                }
+                if (topTarget != null)
+                {
+                    var currentTop = double.TryParse(topTarget.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var t) ? t : view.Bounds.Y - view.Margin.Top;
+                    var newTop = currentTop + deltaY;
+                    var text = newTop.ToString("0.###", CultureInfo.InvariantCulture);
+                    edits.Add((topTarget, topTarget.IsNew ? $" Canvas.Top=\"{text}\"" : text));
+                }
+            }
+            else if (isGrid)
+            {
+                // For Grid, Margin is a Thickness - we need to update Left/Top while preserving Right/Bottom
+                var marginTarget = leftTarget; // This is actually the Margin target
+                if (marginTarget != null)
+                {
+                    var currentMargin = marginTarget.IsNew ? view.Margin : Thickness.Parse(marginTarget.Value!);
+                    var newMargin = new Thickness(
+                        currentMargin.Left + deltaX * (view.HorizontalAlignment == Avalonia.Layout.HorizontalAlignment.Center ? 2 : 1),
+                        currentMargin.Top + deltaY * (view.VerticalAlignment == Avalonia.Layout.VerticalAlignment.Center ? 2 : 1),
+                        currentMargin.Right,
+                        currentMargin.Bottom);
+                    var text = newMargin.ToString();
+                    edits.Add((marginTarget, marginTarget.IsNew ? $" Margin=\"{text}\"" : text));
+                }
+            }
+
+            if (edits.Count == 0) return false;
+            var start = edits.Min(e => e.Target.Start);
+            var end = edits.Max(e => e.Target.Start + e.Target.Length);
+            var replacement = _source.Substring(start, end - start);
+            foreach (var edit in edits.OrderByDescending(e => e.Target.Start))
+                replacement = replacement.Remove(edit.Target.Start - start, edit.Target.Length).Insert(edit.Target.Start - start, edit.Text);
+            if (replacement == _source.Substring(start, end - start)) return true;
+            return _document.ApplySourceEdit?.Invoke(start, end - start, replacement, leftTarget?.ElementStart ?? topTarget?.ElementStart ?? 0) == true;
+        };
+    }
+
+    private Target? FindAttachedTarget(DesignItem item, string propertyName)
+    {
+        if (item.View is not Control || item is not XamlDesignItem xamlItem) return null;
+        var location = xamlItem.XamlObject.PositionXmlElement;
+        if (!location.HasLineInfo()) return null;
+        var element = _xml.Descendants().FirstOrDefault(e =>
+            ((IXmlLineInfo)e).LineNumber == location.LineNumber && ((IXmlLineInfo)e).LinePosition == location.LinePosition);
+        if (element == null) return null;
+
+        var attribute = element.Attribute(propertyName);
+        if (element.Elements().Any(e => e.Name.LocalName == propertyName)) return null;
+        if (attribute != null && attribute.Value.TrimStart().StartsWith('{') && !attribute.Value.StartsWith("{}", StringComparison.Ordinal)) return null;
+
+        var start = _text.GetOffset(location.LineNumber, location.LinePosition) - 1;
+        var end = start;
+        char quote = '\0';
+        for (; end < _source.Length; end++)
+        {
+            var c = _source[end];
+            if (quote != '\0') { if (c == quote) quote = '\0'; }
+            else if (c is '\'' or '"') quote = c;
+            else if (c == '>') break;
+        }
+        foreach (Match match in Attributes.Matches(_source.Substring(start, end - start)))
+        {
+            if (match.Groups["name"].Value != propertyName) continue;
+            var value = match.Groups["value"];
+            return new Target(start + value.Index, value.Length, match.Groups["quote"].Value[0], start, attribute!.Value);
+        }
+        // Insert after the element name
+        var insertion = start + 1;
+        while (insertion < end && !char.IsWhiteSpace(_source[insertion]) && _source[insertion] != '/') insertion++;
+        return new Target(insertion, 0, '"', start, null, true);
+    }
+
     private sealed record Target(int Start, int Length, char Quote, int ElementStart, string? Value, bool IsNew = false);
 
     private Target? FindTarget(DesignItemProperty property)

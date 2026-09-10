@@ -165,6 +165,44 @@ namespace Scadix.AxamlDesign
 	}
 	#endregion
 	
+	#region ISplitResizeOverlayService
+	/// <summary>
+	/// Service for providing the split mode resize overlay canvas.
+	/// This allows resize thumbs to be rendered on a hit-testable surface in Split mode.
+	/// </summary>
+	public interface ISplitResizeOverlayService
+	{
+		/// <summary>
+		/// Gets the overlay canvas for rendering resize thumbs in Split mode.
+		/// </summary>
+		Canvas? OverlayCanvas { get; }
+
+		/// <summary>
+		/// Gets the root element of the design surface (for coordinate transformations).
+		/// </summary>
+		Control? DesignRoot { get; }
+
+		/// <summary>Creates a guarded source edit for a resize, or null for protected dimensions.</summary>
+		Func<double?, double?, bool>? CreateResizeCommit(DesignItem item);
+
+		/// <summary>Creates a guarded source edit for a move, or null for unsupported panels.</summary>
+		Func<double, double, bool>? CreateMoveCommit(DesignItem item);
+	}
+	#endregion
+
+	#region ISplitModeService
+	/// <summary>
+	/// Service to check if the designer is in Split mode (XAML editor + Design preview).
+	/// </summary>
+	public interface ISplitModeService
+	{
+		/// <summary>
+		/// Gets whether the designer is currently in Split mode.
+		/// </summary>
+		bool IsSplitMode { get; }
+	}
+	#endregion
+
 	#region IComponentPropertyService
 	/// <summary>
 	/// Used to get properties for a Design Item.

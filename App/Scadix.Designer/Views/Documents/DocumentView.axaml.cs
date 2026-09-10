@@ -18,7 +18,7 @@ using System.Xml;
 
 namespace Scadix.Designer;
 
-public partial class DocumentView : UserControl
+public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISplitModeService
 {
     public Document? Document { get; private set; }
     private readonly DispatcherTimer _previewTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
@@ -29,6 +29,21 @@ public partial class DocumentView : UserControl
     private ISelectionService? _selection;
     private bool _syncingSelection;
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
+
+    // ISplitResizeOverlayService implementation
+    public Canvas? OverlayCanvas => SplitResizeOverlay;
+    public Control? DesignRoot => Document?.DesignContext?.RootItem?.View as Control;
+
+    // ISplitModeService implementation
+    public bool IsSplitMode => Document?.IsSplitMode == true;
+
+    public Func<double?, double?, bool>? CreateResizeCommit(DesignItem item)
+        => Document?.IsPreviewSelectable == true
+            ? new SplitPropertyEditorFactory(Document).CreateResizeCommit(item) : null;
+
+    public Func<double, double, bool>? CreateMoveCommit(DesignItem item)
+        => Document?.IsPreviewSelectable == true
+            ? new SplitPropertyEditorFactory(Document).CreateMoveCommit(item) : null;
 
 
     public DocumentView()
@@ -69,6 +84,7 @@ public partial class DocumentView : UserControl
         Document.Mode = Document.IsXamlFile
             ? DocumentMode.Design
             : DocumentMode.Xaml;
+
         Subscribe();
         UpdateLayoutMode();
     }
@@ -76,6 +92,7 @@ public partial class DocumentView : UserControl
     private void Subscribe()
     {
         if (Document == null || _subscribed) return;
+        uxXamlEditor.AttachDocument(Document);
         Document.PropertyChanged += DocumentChanged;
         _subscribed = true;
         Document.ApplySourceEdit = ApplySourceEdit;
@@ -152,8 +169,17 @@ public partial class DocumentView : UserControl
 
     private void SubscribeSelection(ISelectionService? selection)
     {
+        if (Document?.DesignContext is { } context)
+        {
+            context.Services.AddOrReplaceService(typeof(ISplitResizeOverlayService), this);
+            context.Services.AddOrReplaceService(typeof(ISplitModeService), this);
+        }
         if (ReferenceEquals(_selection, selection)) return;
-        if (_selection != null) _selection.SelectionChanged -= PreviewSelectionChanged;
+        if (_selection != null)
+        {
+            _selection.SelectionChanged -= PreviewSelectionChanged;
+            _selection.SetSelectedComponents(Array.Empty<DesignItem>(), SelectionTypes.Replace);
+        }
         _selection = selection;
         if (_selection != null) _selection.SelectionChanged += PreviewSelectionChanged;
         RebuildSourceControls();

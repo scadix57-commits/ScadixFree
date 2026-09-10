@@ -43,6 +43,17 @@ internal static class Program
                 Check(editor.IsVisible && doc.DesignSurface.IsEffectivelyVisible && splitter.IsVisible, "Editor and preview visible side by side");
                 var overlay = view.FindControl<Border>("PreviewSelectionOverlay");
                 Check(overlay is { IsVisible: true } && doc.SelectionService != null, "Split accepts preview selection");
+                if (Environment.GetCommandLineArgs().Contains("--move-only"))
+                {
+                    await SplitMoveChecks.Run(doc, view);
+                    return;
+                }
+                if (Environment.GetCommandLineArgs().Contains("--resize-only"))
+                {
+                    await SplitResizeChecks.Run(doc, view);
+                    Console.WriteLine("TOTAL FAILURES: 0");
+                    return;
+                }
                 var label = doc.DesignSurface.GetVisualDescendants().OfType<TextBlock>().First(t => t.Text == "Initial");
                 void Click(Control target)
                 {
@@ -271,6 +282,7 @@ internal static class Program
                     Check(code.Mode == DocumentMode.Xaml && code.Text == "class Example {}", "Non-XAML document remains editor only");
                 }
                 finally { File.Delete(codePath); }
+                await SplitResizeChecks.Run(doc, view);
                 Console.WriteLine("TOTAL FAILURES: 0");
             }
             catch (Exception ex) { Console.WriteLine(ex); failed = true; }

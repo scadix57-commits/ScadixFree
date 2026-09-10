@@ -150,6 +150,7 @@ public partial class XamlEditorView : UserControl
     /// <summary>Attach to a Document — called from DocumentView.Loaded.</summary>
     public void AttachDocument(Document doc)
     {
+        if (ReferenceEquals(_document, doc)) return;
         UnsubscribeDocument();
         _document = doc;
 
@@ -161,7 +162,7 @@ public partial class XamlEditorView : UserControl
             var ext = System.IO.Path.GetExtension(doc.FilePath ?? "").ToLowerInvariant();
             _isXmlFolding = ext is ".xaml" or ".axaml" or ".csproj" or ".slnx" or ".xml" or ".sln";
             _updatingEditor = true;
-            _editor.Text    = doc.Text;
+            if (_editor.Text != doc.Text) _editor.Text = doc.Text;
             _updatingEditor = false;
             UpdateFolding();
 

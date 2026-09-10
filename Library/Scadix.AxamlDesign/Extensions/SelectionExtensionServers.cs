@@ -174,6 +174,20 @@
 	}
 	
 	/// <summary>
+	/// Applies an extension to the primary selection when in Split mode (XAML + Design preview).
+	/// </summary>
+	public class SplitModeExtensionServer : PrimarySelectionExtensionServer
+	{
+		public override bool ShouldApplyExtensions(DesignItem extendedItem)
+		{
+			var splitModeService = extendedItem.Context?.Services?.GetService<ISplitModeService>();
+			return Services.Selection.PrimarySelection == extendedItem
+				&& splitModeService != null
+				&& splitModeService.IsSplitMode;
+		}
+	}
+
+	/// <summary>
 	/// Applies an extension to the parent of the primary selection.
 	/// </summary>
 	public class PrimarySelectionParentExtensionServer : DefaultExtensionServer
