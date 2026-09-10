@@ -25,6 +25,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
     private Func<double, double, bool>? _moveCommit;
     private IPointer? _pointer;
     private Point _start;
+    private Point _oldBoundsPosition;
     private Size _oldSize, _size;
     private int _resizeX, _resizeY;
     private Point _oldPos;
@@ -85,6 +86,12 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         return new Size(Math.Round(s.Width / grid) * grid, Math.Round(s.Height / grid) * grid);
     }
 
+    private Point SnapMoveDelta(Vector delta, double grid, bool enabled, KeyModifiers modifiers)
+    {
+        var target = Snap(_oldBoundsPosition + delta, grid, enabled, modifiers);
+        return target - _oldBoundsPosition;
+    }
+
     private void AddResizeHandle(string name, int x, int y, StandardCursorType cursor)
     {
         var handle = new Border
@@ -103,6 +110,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             _resizeX = x; _resizeY = y;
             _posDeltaX = 0; _posDeltaY = 0;
             _start = e.GetPosition(_view);
+            _oldBoundsPosition = _view.Bounds.Position;
             _oldSize = _size = _view!.Bounds.Size;
             _pointer = e.Pointer;
             _isMoving = false;
@@ -134,11 +142,30 @@ handle.PointerMoved += (_, e) =>
                 h = Math.Clamp(h, _view.MinHeight, Math.Max(_view.MinHeight, _view.MaxHeight));
             }
 
-            // Apply snap to size
+            // Snap only dimensions controlled by this handle. For proportional corner
+            // resizing, snap the dominant dimension and derive the other from the ratio.
             var grid = _service?.SnapGridSize ?? 8;
             var snapEnabled = _service?.SnapEnabled ?? true;
-            var snappedSize = Snap(new Size(w, h), grid, snapEnabled, e.KeyModifiers);
-            w = snappedSize.Width; h = snappedSize.Height;
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && _resizeX != 0 && _resizeY != 0 && _oldSize.Width > 0 && _oldSize.Height > 0)
+            {
+                var ratio = _oldSize.Width / _oldSize.Height;
+                if (Math.Abs(delta.X / _oldSize.Width) >= Math.Abs(delta.Y / _oldSize.Height))
+                {
+                    w = Snap(new Size(w, h), grid, snapEnabled, e.KeyModifiers).Width;
+                    h = w / ratio;
+                }
+                else
+                {
+                    h = Snap(new Size(w, h), grid, snapEnabled, e.KeyModifiers).Height;
+                    w = h * ratio;
+                }
+            }
+            else
+            {
+                var snappedSize = Snap(new Size(w, h), grid, snapEnabled, e.KeyModifiers);
+                if (_resizeX != 0) w = snappedSize.Width;
+                if (_resizeY != 0) h = snappedSize.Height;
+            }
 
             // Use the final constrained size, including proportional resizing.
             _posDeltaX = _resizeX == -1 ? _oldSize.Width - w : 0;
@@ -190,6 +217,7 @@ handle.PointerMoved += (_, e) =>
             _moveCommit = _service?.CreateMoveCommit(ExtendedItem);
             if (_moveCommit == null) return;
             _start = e.GetPosition(_view);
+            _oldBoundsPosition = _view.Bounds.Position;
             _oldPos = new Point(0, 0);
             _pointer = e.Pointer;
             _isMoving = true;
@@ -205,12 +233,12 @@ handle.PointerMoved += (_, e) =>
             // Apply snap to position
             var grid = _service?.SnapGridSize ?? 8;
             var snapEnabled = _service?.SnapEnabled ?? true;
-            _oldPos = Snap(delta, grid, snapEnabled, e.KeyModifiers);
+            _oldPos = SnapMoveDelta(delta, grid, snapEnabled, e.KeyModifiers);
             
             UpdatePositions();
             
             // Show snap readout
-            _service?.ShowSnapReadout(e.GetPosition(_overlay));
+            _service?.ShowSnapReadout(_oldBoundsPosition + (Vector)_oldPos);
             e.Handled = true;
         };
         _moveHandle.PointerReleased += (_, e) =>
@@ -248,6 +276,7 @@ handle.PointerMoved += (_, e) =>
             _moveCommit = _service?.CreateMoveCommit(ExtendedItem);
             if (_moveCommit == null) return;
             _start = e.GetPosition(_view);
+            _oldBoundsPosition = _view.Bounds.Position;
             _oldPos = new Point(0, 0);
             _pointer = e.Pointer;
             _isMoving = true;
@@ -263,12 +292,12 @@ handle.PointerMoved += (_, e) =>
             // Apply snap to position
             var grid = _service?.SnapGridSize ?? 8;
             var snapEnabled = _service?.SnapEnabled ?? true;
-            _oldPos = Snap(delta, grid, snapEnabled, e.KeyModifiers);
+            _oldPos = SnapMoveDelta(delta, grid, snapEnabled, e.KeyModifiers);
             
             UpdatePositions();
             
             // Show snap readout
-            _service?.ShowSnapReadout(e.GetPosition(_overlay));
+            _service?.ShowSnapReadout(_oldBoundsPosition + (Vector)_oldPos);
             e.Handled = true;
         };
         _borderDrag.PointerReleased += (_, e) =>

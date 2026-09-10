@@ -17,6 +17,7 @@ internal static class SplitInteractionChecks
         bool Near(double a, double b) => Math.Abs(a - b) < .1;
         var editor = view.GetVisualDescendants().OfType<XamlEditorView>().Single().Editor!;
         var overlay = view.FindControl<Canvas>("SplitResizeOverlay")!;
+        doc.DesignContext!.Services.GetService<Scadix.AxamlDesign.ISplitResizeOverlayService>()!.SnapEnabled = false;
         const string source = "<UserControl xmlns='https://github.com/avaloniaui' Width='400' Height='300'>\r\n<!-- keep -->\r\n<Canvas><Button Content='Test' Width='120' Height='60' Canvas.Left='40' Canvas.Top='50' /></Canvas></UserControl>";
         async Task Load(string text)
         {

@@ -16,6 +16,7 @@ internal static class SplitResizeChecks
     {
         var editor = view.GetVisualDescendants().OfType<XamlEditorView>().Single().Editor!;
         var overlay = view.FindControl<Canvas>("SplitResizeOverlay")!;
+        doc.DesignContext!.Services.GetService<Scadix.AxamlDesign.ISplitResizeOverlayService>()!.SnapEnabled = false;
         const string source = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\">\r\n<!-- keep -->\r\n<Canvas><Button Content='Resize' Width = '120' Height='60' /></Canvas></UserControl>";
         async Task Load(string text)
         {

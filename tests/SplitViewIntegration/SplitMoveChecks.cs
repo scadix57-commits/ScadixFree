@@ -17,6 +17,7 @@ internal static class SplitMoveChecks
         }
         var editor = view.GetVisualDescendants().OfType<XamlEditorView>().Single().Editor!;
         var overlay = view.FindControl<Canvas>("SplitResizeOverlay")!;
+        doc.DesignContext!.Services.GetService<Scadix.AxamlDesign.ISplitResizeOverlayService>()!.SnapEnabled = false;
         const string source = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\">\r\n<!-- keep -->\r\n<Canvas><Button Content='Move' Width='120' Height='60' Canvas.Left='10.5' Canvas.Top='20.5' /></Canvas></UserControl>";
         async Task Load(string text)
         {
