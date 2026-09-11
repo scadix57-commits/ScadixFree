@@ -48,6 +48,11 @@ internal static class Program
                     await SplitSnapChecks.Run(doc, view);
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--alignment-only"))
+                {
+                    await SplitAlignmentGuideChecks.Run(doc, view);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--interaction-only"))
                 {
                     await SplitInteractionChecks.Run(doc, view);

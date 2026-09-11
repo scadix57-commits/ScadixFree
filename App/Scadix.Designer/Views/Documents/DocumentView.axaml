@@ -59,13 +59,15 @@
                            IsVisible="{Binding HasPreviewError}" Margin="8" Foreground="DarkOrange" />
 <Grid>
                   <ContentPresenter Content="{Binding DesignSurface}"
-                                   IsHitTestVisible="{Binding IsDesignerInteractive}"
-                                   IsEnabled="{Binding IsDesignerInteractive}" />
+                                    IsHitTestVisible="{Binding IsDesignerInteractive}"
+                                    IsEnabled="{Binding IsDesignerInteractive}" />
                   <Border x:Name="PreviewSelectionOverlay" Background="Transparent"
                           IsVisible="{Binding IsSplitMode}" PointerPressed="PreviewPointerPressed" />
                   <Canvas x:Name="SplitResizeOverlay" Focusable="True"
                           IsVisible="{Binding IsSplitMode}"
                           IsHitTestVisible="True" />
+                  <Canvas x:Name="AlignmentGuidesOverlay" IsVisible="{Binding IsSplitMode}"
+                          IsHitTestVisible="False" />
                   <Canvas IsVisible="{Binding IsSplitMode}" IsHitTestVisible="False">
                       <Border x:Name="SnapReadout" IsVisible="False"
                               Background="#CC000000" CornerRadius="4" Padding="6,2"

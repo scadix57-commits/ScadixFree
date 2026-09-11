@@ -1,17 +1,22 @@
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 using Scadix.AxamlDesigner.Services;
 using Scadix.Designer.Services;
 using Scadix.Designer.ViewModels.Tools;
-using Avalonia.Input;
 using Scadix.AxamlDesign;
 using Scadix.AxamlDesigner.Xaml;
 using Avalonia;
-using Avalonia.VisualTree;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -33,6 +38,10 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     // Snap settings
     public bool SnapEnabled { get; set; } = true;
     public double SnapGridSize { get; set; } = 8;
+
+    // Alignment guides settings
+    public double AlignmentGuideThreshold { get; set; } = 4;
+    public GuideExtent AlignmentGuideExtent { get; set; } = GuideExtent.BetweenControls;
 
     // ISplitResizeOverlayService implementation
     public Canvas? OverlayCanvas => SplitResizeOverlay;
@@ -71,6 +80,53 @@ public void RefreshAfterKeyboardEdit()
     public void HideSnapReadout()
     {
         if (SnapReadout != null) SnapReadout.IsVisible = false;
+    }
+
+    public void ShowAlignmentGuides(IEnumerable<LineGuide> guides)
+    {
+        if (AlignmentGuidesOverlay == null) return;
+        AlignmentGuidesOverlay.Children.Clear();
+
+        IBrush brush = this.FindResource("SystemAccentColor") is Color accentColor
+            ? new SolidColorBrush(accentColor)
+            : Brushes.DodgerBlue;
+
+        // High contrast fallback
+        if (Application.Current?.ActualThemeVariant == ThemeVariant.Dark)
+        {
+            brush = this.FindResource("SystemAltHighColor") is Color highColor
+                ? new SolidColorBrush(highColor)
+                : Brushes.Yellow;
+        }
+
+        foreach (var guide in guides)
+        {
+            var line = new Line
+            {
+                Stroke = brush,
+                StrokeThickness = 1,
+                StrokeDashArray = new AvaloniaList<double> { 4, 2 },
+                IsHitTestVisible = false
+            };
+
+            if (guide.Orientation == Orientation.Vertical)
+            {
+                line.StartPoint = new Point(guide.Position, guide.Start);
+                line.EndPoint = new Point(guide.Position, guide.End);
+            }
+            else
+            {
+                line.StartPoint = new Point(guide.Start, guide.Position);
+                line.EndPoint = new Point(guide.End, guide.Position);
+            }
+
+            AlignmentGuidesOverlay.Children.Add(line);
+        }
+    }
+
+    public void HideAlignmentGuides()
+    {
+        if (AlignmentGuidesOverlay != null) AlignmentGuidesOverlay.Children.Clear();
     }
 
     public DocumentView()
@@ -175,8 +231,11 @@ public void RefreshAfterKeyboardEdit()
             }
         }
         var alreadySelected = selected != null && ReferenceEquals(Document.SelectionService!.PrimarySelection, selected);
+        var selectionType = e.KeyModifiers.HasFlag(KeyModifiers.Control)
+            ? SelectionTypes.Toggle
+            : SelectionTypes.Replace;
         Document.SelectionService!.SetSelectedComponents(selected == null
-            ? Array.Empty<DesignItem>() : new[] { selected }, SelectionTypes.Replace);
+            ? Array.Empty<DesignItem>() : new[] { selected }, selectionType);
         if (alreadySelected) NavigateToPreviewSelection();
         if (selected != null) SplitResizeOverlay.Focus();
     }

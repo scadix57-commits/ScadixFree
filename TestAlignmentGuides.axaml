@@ -1,0 +1,71 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Alignment Guides Test" Width="800" Height="600">
+    <TabControl>
+        <!-- Canvas Test -->
+        <TabItem Header="Canvas Test">
+            <Canvas Background="#F5F5F5">
+                <!-- Reference buttons -->
+                <Button Canvas.Left="100" Canvas.Top="100" Content="Ref Left-Top" Width="120" Height="40" Background="LightBlue"/>
+                <Button Canvas.Left="400" Canvas.Top="100" Content="Ref Right-Top" Width="120" Height="40" Background="LightBlue"/>
+                <Button Canvas.Left="100" Canvas.Top="400" Content="Ref Left-Bottom" Width="120" Height="40" Background="LightBlue"/>
+                <Button Canvas.Left="400" Canvas.Top="400" Content="Ref Right-Bottom" Width="120" Height="40" Background="LightBlue"/>
+                <Button Canvas.Left="250" Canvas.Top="250" Content="Ref Center" Width="120" Height="40" Background="LightGreen"/>
+                
+                <!-- Draggable test button -->
+                <Button Canvas.Left="200" Canvas.Top="200" Content="DRAG ME" Width="100" Height="35" Background="Orange" FontWeight="Bold"/>
+            </Canvas>
+        </TabItem>
+        
+        <!-- Grid Test -->
+        <TabItem Header="Grid Test">
+            <Grid Background="#F5F5F5" ShowGridLines="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Reference buttons with different alignments -->
+                <Button Grid.Row="0" Grid.Column="0" 
+                        HorizontalAlignment="Left" VerticalAlignment="Top" 
+                        Margin="20,20,0,0" Content="Left-Top" Width="100" Height="35" Background="LightBlue"/>
+                <Button Grid.Row="0" Grid.Column="2" 
+                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                        Margin="0,20,20,0" Content="Right-Top" Width="100" Height="35" Background="LightBlue"/>
+                <Button Grid.Row="2" Grid.Column="0" 
+                        HorizontalAlignment="Left" VerticalAlignment="Bottom" 
+                        Margin="20,0,0,20" Content="Left-Bottom" Width="100" Height="35" Background="LightBlue"/>
+                <Button Grid.Row="2" Grid.Column="2" 
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+                        Margin="0,0,20,20" Content="Right-Bottom" Width="100" Height="35" Background="LightBlue"/>
+                <Button Grid.Row="1" Grid.Column="1" 
+                        HorizontalAlignment="Center" VerticalAlignment="Center" 
+                        Margin="0" Content="Center" Width="100" Height="35" Background="LightGreen"/>
+                
+                <!-- Draggable test button - Stretch alignment -->
+                <Button Grid.Row="1" Grid.Column="1" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                        Margin="150,150,150,150" Content="DRAG ME (Stretch)" Background="Orange" FontWeight="Bold"/>
+            </Grid>
+        </TabItem>
+        
+        <!-- Multi-select Test -->
+        <TabItem Header="Multi-Select Test">
+            <Canvas Background="#F5F5F5">
+                <Button Canvas.Left="100" Canvas.Top="100" Content="Ref 1" Width="80" Height="30" Background="LightBlue"/>
+                <Button Canvas.Left="300" Canvas.Top="100" Content="Ref 2" Width="80" Height="30" Background="LightBlue"/>
+                <Button Canvas.Left="100" Canvas.Top="300" Content="Ref 3" Width="80" Height="30" Background="LightBlue"/>
+                
+                <!-- Two buttons to multi-select -->
+                <Button Canvas.Left="200" Canvas.Top="200" Content="Multi-1" Width="80" Height="30" Background="Orange" Name="Multi1"/>
+                <Button Canvas.Left="400" Canvas.Top="200" Content="Multi-2" Width="80" Height="30" Background="Orange" Name="Multi2"/>
+            </Canvas>
+        </TabItem>
+    </TabControl>
+</Window>

@@ -3,6 +3,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Scadix.AxamlDesign.Interfaces;
 using System.ComponentModel;
 
@@ -209,6 +210,31 @@ namespace Scadix.AxamlDesign
 
 		/// <summary>Hides the snap readout.</summary>
 		void HideSnapReadout();
+
+		/// <summary>Gets or sets the alignment guide threshold in pixels.</summary>
+		double AlignmentGuideThreshold { get; set; }
+
+		/// <summary>Gets or sets the alignment guide extent mode.</summary>
+		GuideExtent AlignmentGuideExtent { get; set; }
+
+		/// <summary>Shows alignment guides at the specified positions.</summary>
+		/// <param name="guides">Collection of line guides in overlay coordinates.</param>
+		void ShowAlignmentGuides(IEnumerable<LineGuide> guides);
+
+		/// <summary>Hides all alignment guides.</summary>
+		void HideAlignmentGuides();
+	}
+
+	/// <summary>Represents a single alignment guide line.</summary>
+	public record LineGuide(Orientation Orientation, double Position, double Start, double End);
+
+	/// <summary>Defines how far alignment guides extend.</summary>
+	public enum GuideExtent
+	{
+		/// <summary>Guides span only between the two aligning controls.</summary>
+		BetweenControls,
+		/// <summary>Guides span the full design surface.</summary>
+		FullSurface
 	}
 	#endregion
 
