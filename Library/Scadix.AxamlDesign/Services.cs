@@ -194,6 +194,9 @@ namespace Scadix.AxamlDesign
 		/// <summary>Creates a guarded source edit for a move, or null for unsupported panels.</summary>
 		Func<double, double, bool>? CreateMoveCommit(DesignItem item);
 
+		/// <summary>Creates a guarded source edit for multiple items, or null when any item is unsupported.</summary>
+		Func<IReadOnlyList<Rect>, bool>? CreateGroupCommit(IReadOnlyList<DesignItem> items, bool includeSize);
+
 		/// <summary>Refreshes selection immediately after a keyboard edit so the next key can edit it.</summary>
 		void RefreshAfterKeyboardEdit();
 

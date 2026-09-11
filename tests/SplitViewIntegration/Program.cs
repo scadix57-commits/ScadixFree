@@ -72,6 +72,12 @@ internal static class Program
                     Console.WriteLine("TOTAL FAILURES: 0");
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--group-source-only"))
+                {
+                    await SplitGroupSourceChecks.Run(doc, view);
+                    Console.WriteLine("TOTAL FAILURES: 0");
+                    return;
+                }
                 var label = doc.DesignSurface.GetVisualDescendants().OfType<TextBlock>().First(t => t.Text == "Initial");
                 void Click(Control target)
                 {

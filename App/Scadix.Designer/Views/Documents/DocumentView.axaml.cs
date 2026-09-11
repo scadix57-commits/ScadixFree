@@ -58,6 +58,10 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
         => Document?.IsPreviewSelectable == true
             ? new SplitPropertyEditorFactory(Document).CreateMoveCommit(item) : null;
 
+    public Func<IReadOnlyList<Rect>, bool>? CreateGroupCommit(IReadOnlyList<DesignItem> items, bool includeSize)
+        => Document?.IsPreviewSelectable == true
+            ? new SplitPropertyEditorFactory(Document).CreateGroupCommit(items, includeSize) : null;
+
 public void RefreshAfterKeyboardEdit()
     {
         _previewTimer.Stop();

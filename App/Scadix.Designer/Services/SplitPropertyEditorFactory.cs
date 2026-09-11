@@ -10,6 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using AvaloniaEdit.Document;
 using Scadix.AxamlDesign;
@@ -312,6 +313,175 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
             return _document.ApplySourceEdit?.Invoke(start, end - start, replacement, leftTarget?.ElementStart ?? topTarget?.ElementStart ?? 0) == true;
         };
     }
+
+    public Func<IReadOnlyList<Rect>, bool>? CreateGroupCommit(IReadOnlyList<DesignItem> items, bool includeSize)
+    {
+        var revision = _document.Text;
+        var targets = ResolveGroupTargets(items, includeSize);
+        if (targets == null) return null;
+        return bounds => bounds.Count == targets.Count
+            && _document.Text == revision
+            && ApplyGroupEdits(targets, bounds, includeSize);
+    }
+
+    private IReadOnlyList<GroupTarget>? ResolveGroupTargets(IReadOnlyList<DesignItem> items, bool includeSize)
+    {
+        if (items.Count == 0 || items.Distinct().Count() != items.Count) return null;
+        var parent = items[0].Parent;
+        if (parent == null) return null;
+        var isCanvas = parent.Component is Canvas;
+        var isGrid = parent.Component is Grid;
+        if (!isCanvas && !isGrid) return null;
+
+        var targets = new List<GroupTarget>(items.Count);
+        foreach (var item in items)
+        {
+            if (!ReferenceEquals(item.Parent, parent) || item.View is not Control view) return null;
+
+            Target? horizontal;
+            Target? vertical;
+            if (isCanvas)
+            {
+                horizontal = FindAttachedTarget(item, "Canvas.Left");
+                vertical = FindAttachedTarget(item, "Canvas.Top");
+            }
+            else
+            {
+                horizontal = FindTarget(item.Properties["Margin"]);
+                vertical = horizontal;
+            }
+            if (horizontal == null || vertical == null) return null;
+
+            Target? width = null;
+            Target? height = null;
+            if (includeSize)
+            {
+                width = FindTarget(item.Properties["Width"]);
+                height = FindTarget(item.Properties["Height"]);
+                if (width == null || height == null) return null;
+            }
+            targets.Add(new GroupTarget(view, isCanvas, horizontal, vertical, width, height));
+        }
+        return targets;
+    }
+
+    private bool ApplyGroupEdits(IReadOnlyList<GroupTarget> targets, IReadOnlyList<Rect> bounds, bool includeSize)
+    {
+        var edits = new List<(Target Target, string Text)>();
+        for (var index = 0; index < targets.Count; index++)
+        {
+            var target = targets[index];
+            var bound = bounds[index];
+            if (!double.IsFinite(bound.X) || !double.IsFinite(bound.Y) ||
+                !double.IsFinite(bound.Width) || !double.IsFinite(bound.Height) ||
+                bound.Width < 0 || bound.Height < 0) return false;
+
+            if (target.IsCanvas)
+            {
+                AddEdit(edits, target.Horizontal, "Canvas.Left", bound.X);
+                AddEdit(edits, target.Vertical, "Canvas.Top", bound.Y);
+            }
+            else
+            {
+                Thickness margin;
+                try { margin = target.Horizontal.IsNew ? target.View.Margin : Thickness.Parse(target.Horizontal.Value!); }
+                catch (FormatException) { return false; }
+
+                var deltaX = bound.X - target.View.Bounds.X;
+                var deltaY = bound.Y - target.View.Bounds.Y;
+                var newMargin = ApplyGridMargin(margin, target.View, deltaX, deltaY,
+                    includeSize ? bound.Width : null, includeSize ? bound.Height : null);
+                var text = newMargin.ToString();
+                edits.Add((target.Horizontal, target.Horizontal.IsNew ? $" Margin=\"{text}\"" : text));
+            }
+
+            if (includeSize)
+            {
+                AddEdit(edits, target.Width!, "Width", bound.Width);
+                AddEdit(edits, target.Height!, "Height", bound.Height);
+            }
+        }
+
+        return ApplyEdits(edits, targets[0].Horizontal.ElementStart);
+    }
+
+    private static Thickness ApplyGridMargin(Thickness margin, Control view, double deltaX, double deltaY, double? width, double? height)
+    {
+        var result = margin;
+        if (width != null)
+        {
+            var shrink = view.Bounds.Width - width.Value;
+            result = view.HorizontalAlignment switch
+            {
+                HorizontalAlignment.Left => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom),
+                HorizontalAlignment.Right => new Thickness(margin.Left, margin.Top, margin.Right + shrink - deltaX, margin.Bottom),
+                HorizontalAlignment.Center => new Thickness(margin.Left + deltaX * 2 - shrink, margin.Top, margin.Right, margin.Bottom),
+                _ => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom)
+            };
+        }
+        else
+        {
+            result = view.HorizontalAlignment switch
+            {
+                HorizontalAlignment.Left => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom),
+                HorizontalAlignment.Right => new Thickness(margin.Left, margin.Top, margin.Right - deltaX, margin.Bottom),
+                HorizontalAlignment.Center => new Thickness(margin.Left + deltaX * 2, margin.Top, margin.Right, margin.Bottom),
+                _ => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom)
+            };
+        }
+
+        if (height != null)
+        {
+            var shrink = view.Bounds.Height - height.Value;
+            return view.VerticalAlignment switch
+            {
+                VerticalAlignment.Top => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom),
+                VerticalAlignment.Bottom => new Thickness(result.Left, margin.Top, result.Right, margin.Bottom + shrink - deltaY),
+                VerticalAlignment.Center => new Thickness(result.Left, margin.Top + deltaY * 2 - shrink, result.Right, margin.Bottom),
+                _ => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom)
+            };
+        }
+
+        return view.VerticalAlignment switch
+        {
+            VerticalAlignment.Top => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom),
+            VerticalAlignment.Bottom => new Thickness(result.Left, margin.Top, result.Right, margin.Bottom - deltaY),
+            VerticalAlignment.Center => new Thickness(result.Left, margin.Top + deltaY * 2, result.Right, margin.Bottom),
+            _ => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom)
+        };
+    }
+
+    private static void AddEdit(List<(Target Target, string Text)> edits, Target target, string name, double value)
+    {
+        var text = value.ToString("0.###", CultureInfo.InvariantCulture);
+        edits.Add((target, target.IsNew ? $" {name}=\"{text}\"" : text));
+    }
+
+    private bool ApplyEdits(IReadOnlyList<(Target Target, string Text)> edits, int elementStart)
+    {
+        if (edits.Count == 0) return false;
+        var replacements = new List<(Target Target, string Text)>();
+        foreach (var group in edits.GroupBy(edit => (edit.Target.Start, edit.Target.Length)))
+        {
+            if (group.Count() == 1)
+            {
+                replacements.Add(group.Single());
+                continue;
+            }
+            if (group.Key.Length != 0 || group.Any(edit => !edit.Target.IsNew)) return false;
+            replacements.Add((group.First().Target, string.Concat(group.Select(edit => edit.Text))));
+        }
+
+        var start = replacements.Min(edit => edit.Target.Start);
+        var end = replacements.Max(edit => edit.Target.Start + edit.Target.Length);
+        var replacement = _source.Substring(start, end - start);
+        foreach (var edit in replacements.OrderByDescending(edit => edit.Target.Start))
+            replacement = replacement.Remove(edit.Target.Start - start, edit.Target.Length).Insert(edit.Target.Start - start, edit.Text);
+        if (replacement == _source.Substring(start, end - start)) return true;
+        return _document.ApplySourceEdit?.Invoke(start, end - start, replacement, elementStart) == true;
+    }
+
+    private sealed record GroupTarget(Control View, bool IsCanvas, Target Horizontal, Target Vertical, Target? Width, Target? Height);
 
     private Target? FindAttachedTarget(DesignItem item, string propertyName)
     {
