@@ -18,6 +18,9 @@ internal static class Program
     [STAThread]
     static int Main()
     {
+        if (Environment.GetCommandLineArgs().Contains("--group-geometry-only"))
+            return SplitGroupGeometryChecks.Run();
+
         AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().SetupWithoutStarting();
         using var stop = new CancellationTokenSource();
         var failed = false;
