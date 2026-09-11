@@ -19,12 +19,14 @@ namespace Scadix.AxamlDesigner.Extensions;
 public sealed class SplitResizeThumbExtension : DefaultExtension
 {
     private readonly List<(Border Handle, int X, int Y)> _resizeHandles = new();
+    private readonly List<(Border Handle, int X, int Y)> _groupResizeHandles = new();
     private readonly List<LineGuide> _lastAlignmentGuides = new();
     private Border? _moveHandle;
     private Border? _borderDrag;
     private Border? _groupMoveHandle;
     private Border? _groupBorderDrag;
     private GroupSnapshot? _groupDragSnapshot;
+    private Rect _groupResizeUnion;
     private Func<IReadOnlyList<Rect>, bool>? _groupCommit;
     private Canvas? _overlay;
     private Control? _view;
@@ -88,7 +90,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         UpdatePositions();
     }
 
-    private GroupSnapshot? TryCreateGroupSnapshot(out Func<IReadOnlyList<Rect>, bool>? commit)
+    private GroupSnapshot? TryCreateGroupSnapshot(out Func<IReadOnlyList<Rect>, bool>? commit, bool includeSize = false)
     {
         commit = null;
         if (_selectionService?.PrimarySelection != ExtendedItem || _selectionService.SelectionCount < 2) return null;
@@ -107,7 +109,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
                 || bound.Width <= 0 || bound.Height <= 0) return null;
             bounds[i] = bound;
         }
-        commit = _service?.CreateGroupCommit(items, false);
+        commit = _service?.CreateGroupCommit(items, includeSize);
         return commit == null ? null : new GroupSnapshot(items, bounds, SplitGroupGeometry.Union(bounds), parent);
     }
 
@@ -135,6 +137,14 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         };
         _overlay!.Children.Insert(0, _groupBorderDrag);
         _overlay.Children.Add(_groupMoveHandle);
+        AddGroupResizeHandle("TopLeft", -1, -1, StandardCursorType.TopLeftCorner);
+        AddGroupResizeHandle("Top", 0, -1, StandardCursorType.TopSide);
+        AddGroupResizeHandle("TopRight", 1, -1, StandardCursorType.TopRightCorner);
+        AddGroupResizeHandle("Left", -1, 0, StandardCursorType.LeftSide);
+        AddGroupResizeHandle("Right", 1, 0, StandardCursorType.RightSide);
+        AddGroupResizeHandle("BottomLeft", -1, 1, StandardCursorType.BottomLeftCorner);
+        AddGroupResizeHandle("Bottom", 0, 1, StandardCursorType.BottomSide);
+        AddGroupResizeHandle("BottomRight", 1, 1, StandardCursorType.BottomRightCorner);
         foreach (var handle in new[] { _groupBorderDrag, _groupMoveHandle })
         {
             handle.PointerPressed += (_, e) =>
@@ -196,6 +206,105 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         if (transform.HasValue)
             UpdateAlignmentGuides(new Rect(snapshot.UnionBounds.Position + delta, snapshot.UnionBounds.Size)
                 .TransformToAABB(transform.Value), modifiers, isGroupUnion: true);
+    }
+
+    private void AddGroupResizeHandle(string name, int x, int y, StandardCursorType cursor)
+    {
+        var handle = new Border
+        {
+            Name = "SplitGroupResize" + name, Width = 8, Height = 8,
+            Background = Brushes.White, BorderBrush = Brushes.DodgerBlue,
+            BorderThickness = new Thickness(1), Cursor = new Cursor(cursor), Focusable = true
+        };
+        _groupResizeHandles.Add((handle, x, y));
+        _overlay!.Children.Add(handle);
+        handle.PointerPressed += (_, e) =>
+        {
+            if (_removed || _pointer != null || !e.GetCurrentPoint(handle).Properties.IsLeftButtonPressed) return;
+            var snapshot = TryCreateGroupSnapshot(out var commit, includeSize: true);
+            if (snapshot == null) return;
+            _groupDragSnapshot = snapshot;
+            _groupCommit = commit;
+            _groupResizeUnion = snapshot.UnionBounds;
+            _resizeX = x;
+            _resizeY = y;
+            _start = e.GetPosition(snapshot.Parent);
+            _pointer = e.Pointer;
+            _isMoving = false;
+            e.Pointer.Capture(handle);
+            handle.Focus();
+            e.Handled = true;
+        };
+        handle.PointerMoved += (_, e) =>
+        {
+            if (_pointer != e.Pointer || _isMoving || _groupDragSnapshot is not { } snapshot) return;
+            var delta = e.GetPosition(snapshot.Parent) - _start;
+            var original = snapshot.UnionBounds;
+            var edge = new Point((_resizeX < 0 ? original.Left : original.Right) + delta.X,
+                (_resizeY < 0 ? original.Top : original.Bottom) + delta.Y);
+            edge = Snap(edge, _service?.SnapGridSize ?? 8, _service?.SnapEnabled ?? true, e.KeyModifiers);
+            var width = _resizeX == 0 ? original.Width : _resizeX < 0 ? original.Right - edge.X : edge.X - original.Left;
+            var height = _resizeY == 0 ? original.Height : _resizeY < 0 ? original.Bottom - edge.Y : edge.Y - original.Top;
+            // Constraints win over snapping. Apply one scale to every child, then derive
+            // the moving edge from that scale so the opposite union edge stays fixed.
+            var scaleX = _resizeX == 0 ? 1 : ConstrainGroupScale(snapshot, width / original.Width, horizontal: true);
+            var scaleY = _resizeY == 0 ? 1 : ConstrainGroupScale(snapshot, height / original.Height, horizontal: false);
+            if (!scaleX.HasValue || !scaleY.HasValue)
+            {
+                EndDrag();
+                e.Handled = true;
+                return;
+            }
+            width = original.Width * scaleX.Value;
+            height = original.Height * scaleY.Value;
+            _groupResizeUnion = new Rect(_resizeX < 0 ? original.Right - width : original.Left,
+                _resizeY < 0 ? original.Bottom - height : original.Top, width, height);
+            UpdatePositions();
+            var transform = snapshot.Parent.TransformToVisual(_overlay);
+            if (transform.HasValue)
+                UpdateAlignmentGuides(_groupResizeUnion.TransformToAABB(transform.Value), e.KeyModifiers, isGroupUnion: true);
+            _service?.ShowSnapReadout(e.GetPosition(_overlay), _groupResizeUnion.Size);
+            e.Handled = true;
+        };
+        handle.PointerReleased += (_, e) =>
+        {
+            if (_pointer != e.Pointer || _isMoving || _groupDragSnapshot is not { } snapshot) return;
+            var commit = _groupCommit;
+            var union = _groupResizeUnion;
+            EndDrag();
+            if (union != snapshot.UnionBounds)
+            {
+                _overlay.Focus();
+                if (commit?.Invoke(SplitGroupGeometry.Scale(snapshot.ParentBounds, union)) == true)
+                    _service?.RefreshAfterKeyboardEdit();
+            }
+            e.Handled = true;
+        };
+        handle.PointerCaptureLost += (_, _) => EndDrag();
+        handle.KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape && _groupDragSnapshot != null)
+            {
+                EndDrag();
+                e.Handled = true;
+            }
+        };
+    }
+
+    private static double? ConstrainGroupScale(GroupSnapshot snapshot, double scale, bool horizontal)
+    {
+        var minScale = 0.0;
+        var maxScale = double.PositiveInfinity;
+        for (var i = 0; i < snapshot.Items.Count; i++)
+        {
+            var control = (Control)snapshot.Items[i].View;
+            var size = horizontal ? snapshot.ParentBounds[i].Width : snapshot.ParentBounds[i].Height;
+            var min = horizontal ? control.MinWidth : control.MinHeight;
+            var max = horizontal ? control.MaxWidth : control.MaxHeight;
+            minScale = Math.Max(minScale, min / size);
+            maxScale = Math.Min(maxScale, max / size);
+        }
+        return minScale > maxScale || !double.IsFinite(scale) ? null : Math.Clamp(scale, minScale, maxScale);
     }
 
     private static Point Snap(Point p, double grid, bool enabled, KeyModifiers modifiers)
@@ -751,20 +860,27 @@ handle.PointerMoved += (_, e) =>
         if (snapshot != null && _groupBorderDrag == null) AddGroupHandles();
         if (_groupMoveHandle != null) _groupMoveHandle.IsVisible = snapshot != null;
         if (_groupBorderDrag != null) _groupBorderDrag.IsVisible = snapshot != null;
+        var canResizeGroup = snapshot != null && (IsResizing || _service?.CreateGroupCommit(snapshot.Items, true) != null);
+        foreach (var entry in _groupResizeHandles) entry.Handle.IsVisible = canResizeGroup;
         if (isGroup)
         {
             if (snapshot == null) return;
             var parentTransform = snapshot.Parent.TransformToVisual(_overlay);
             if (!parentTransform.HasValue) return;
             var delta = _groupDragSnapshot != null ? (Vector)_oldPos : default;
-            var union = new Rect(snapshot.UnionBounds.Position + delta, snapshot.UnionBounds.Size)
-                .TransformToAABB(parentTransform.Value);
+            var union = (_groupDragSnapshot != null && IsResizing ? _groupResizeUnion
+                : new Rect(snapshot.UnionBounds.Position + delta, snapshot.UnionBounds.Size)).TransformToAABB(parentTransform.Value);
             Canvas.SetLeft(_groupBorderDrag!, union.X);
             Canvas.SetTop(_groupBorderDrag!, union.Y);
             _groupBorderDrag!.Width = union.Width;
             _groupBorderDrag.Height = union.Height;
             Canvas.SetLeft(_groupMoveHandle!, union.Center.X - 6);
             Canvas.SetTop(_groupMoveHandle!, union.Center.Y - 6);
+            foreach (var (handle, x, y) in _groupResizeHandles)
+            {
+                Canvas.SetLeft(handle, union.X + (x + 1) * union.Width / 2 - 4);
+                Canvas.SetTop(handle, union.Y + (y + 1) * union.Height / 2 - 4);
+            }
             return;
         }
         var transform = _view.TransformToVisual(_overlay);
@@ -809,11 +925,13 @@ handle.PointerMoved += (_, e) =>
             _overlay.LayoutUpdated -= LayoutUpdated;
             _overlay.KeyDown -= OverlayKeyDown;
             foreach (var entry in _resizeHandles) _overlay.Children.Remove(entry.Handle);
+            foreach (var entry in _groupResizeHandles) _overlay.Children.Remove(entry.Handle);
             if (_moveHandle != null) _overlay.Children.Remove(_moveHandle);
             if (_borderDrag != null) _overlay.Children.Remove(_borderDrag);
             if (_groupMoveHandle != null) _overlay.Children.Remove(_groupMoveHandle);
             if (_groupBorderDrag != null) _overlay.Children.Remove(_groupBorderDrag);
         }
         _resizeHandles.Clear();
+        _groupResizeHandles.Clear();
     }
 }

@@ -72,6 +72,11 @@ internal static class Program
                     Console.WriteLine("TOTAL FAILURES: 0");
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--group-resize-only"))
+                {
+                    await SplitGroupInteractionChecks.Run(doc, view, resizeOnly: true);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--group-interaction-only"))
                 {
                     await SplitGroupInteractionChecks.Run(doc, view);

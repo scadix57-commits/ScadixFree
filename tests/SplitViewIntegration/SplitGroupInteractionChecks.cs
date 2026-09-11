@@ -7,7 +7,7 @@ using Scadix.Designer;
 
 internal static class SplitGroupInteractionChecks
 {
-    public static async Task Run(Document doc, DocumentView view)
+    public static async Task Run(Document doc, DocumentView view, bool resizeOnly = false)
     {
         if (doc.Mode != DocumentMode.Split)
         {
@@ -79,6 +79,117 @@ internal static class SplitGroupInteractionChecks
         void Positions(double ax, double ay, double bx, double by, string label)
             => Check(Near(Button("A").Bounds.X, ax) && Near(Button("A").Bounds.Y, ay)
                 && Near(Button("B").Bounds.X, bx) && Near(Button("B").Bounds.Y, by), label);
+
+        void Bounds(Rect a, Rect b, string label)
+        {
+            var actualA = Button("A").Bounds;
+            var actualB = Button("B").Bounds;
+            bool Matches(Rect actual, Rect expected) => Near(actual.X, expected.X) && Near(actual.Y, expected.Y)
+                && Near(actual.Width, expected.Width) && Near(actual.Height, expected.Height);
+            Check(Matches(actualA, a) && Matches(actualB, b), label + $" (A: {actualA}; B: {actualB})");
+        }
+        // Check fractional transforms independently of Avalonia's pixel rounding at arrange time.
+        var resizeSource = source.Replace("<UserControl", "<UserControl UseLayoutRounding='False'");
+        foreach (var (direction, delta, a, b) in new[]
+        {
+            ("TopLeft", new Vector(-104, -56), new Rect(-64, -8, 80, 48), new Rect(80, 56, 64, 48)),
+            ("Top", new Vector(17, -56), new Rect(40, -8, 40, 48), new Rect(112, 56, 32, 48)),
+            ("TopRight", new Vector(104, -56), new Rect(40, -8, 80, 48), new Rect(184, 56, 64, 48)),
+            ("Left", new Vector(-104, 17), new Rect(-64, 48, 80, 24), new Rect(80, 80, 64, 24)),
+            ("Right", new Vector(104, 17), new Rect(40, 48, 80, 24), new Rect(184, 80, 64, 24)),
+            ("BottomLeft", new Vector(-104, 56), new Rect(-64, 48, 80, 48), new Rect(80, 112, 64, 48)),
+            ("Bottom", new Vector(17, 56), new Rect(40, 48, 40, 48), new Rect(112, 112, 32, 48)),
+            ("BottomRight", new Vector(104, 56), new Rect(40, 48, 80, 48), new Rect(184, 112, 64, 48))
+        })
+        {
+            await Load(resizeSource);
+            var original = doc.Text;
+            var first = Button("A");
+            var second = Button("B");
+            var beforeA = first.Bounds;
+            var beforeB = second.Bounds;
+            var name = "SplitGroupResize" + direction;
+            Check(overlay.Children.OfType<Control>().Count(c => c.IsVisible && c.Name?.StartsWith("SplitGroupResize") == true) == 8,
+                direction + " has exactly eight group resize handles");
+            Drag(name, delta, during: () =>
+            {
+                Check(doc.Text == original && first.Bounds == beforeA && second.Bounds == beforeB
+                    && first.Width == 40 && second.Width == 32 && !editor.Document.UndoStack.CanUndo,
+                    name + " previews without source or runtime mutation");
+                var union = a.Union(b);
+                var preview = Handle("SplitGroupBorderDrag")!;
+                var point = first.GetVisualParent()!.TranslatePoint(union.Position, overlay)!.Value;
+                Check(Near(Canvas.GetLeft(preview), point.X) && Near(Canvas.GetTop(preview), point.Y)
+                    && Near(preview.Width, union.Width) && Near(preview.Height, union.Height), name + " previews constrained union");
+                Check(readout.IsVisible, name + " displays a size readout");
+            });
+            await Task.Delay(100);
+            Bounds(a, b, name + " proportionally transforms every child and fixes the opposite edge");
+            Check(!readout.IsVisible && guides.Children.Count == 0, name + " clears feedback");
+            Check(doc.SelectionService!.SelectionCount == 2 && Equals(((Button)doc.SelectionService.PrimarySelection.Component).Content, "A"),
+                name + " retains group and primary");
+            var changed = doc.Text;
+            Check(changed != original, name + " commits on release");
+            doc.UndoCommand.Execute(null);
+            Check(doc.Text == original && !editor.Document.UndoStack.CanUndo, name + " uses one Undo entry");
+            await Task.Delay(750);
+            doc.RedoCommand.Execute(null);
+            Check(doc.Text == changed, name + " supports one-step Redo");
+            await Task.Delay(750);
+        }
+
+        await Load(resizeSource);
+        var resizeOriginal = doc.Text;
+        Drag("SplitGroupResizeTopLeft", new Vector(-104, -56), cancel: true, during: () => Key(Avalonia.Input.Key.Right));
+        Check(doc.Text == resizeOriginal && !editor.Document.UndoStack.CanUndo, "Escape cancels group resize and drag blocks arrow commits");
+        Bounds(new Rect(40, 48, 40, 24), new Rect(112, 80, 32, 24), "Escape preserves all child bounds");
+        Check(!readout.IsVisible && guides.Children.Count == 0, "Escape clears group resize feedback");
+        Drag("SplitGroupResizeBottomRight", default);
+        Check(doc.Text == resizeOriginal && !editor.Document.UndoStack.CanUndo, "No-op group resize writes nothing");
+
+        // An off-grid inactive axis must retain its exact original dimensions and position.
+        var offGrid = resizeSource.Replace("Height='24'", "Height='25'").Replace("Canvas.Top='48'", "Canvas.Top='49'");
+        await Load(offGrid);
+        Drag("SplitGroupResizeRight", new Vector(11, 31));
+        Bounds(new Rect(40, 49, 43.08, 25), new Rect(117.54, 80, 34.46, 25), "Group resize snaps only the active union edge");
+        await Load(offGrid);
+        Drag("SplitGroupResizeTop", new Vector(31, -11));
+        Bounds(new Rect(40, 40, 40, 29.02), new Rect(112, 75.98, 32, 29.02), "Top resize snaps active edge and fixes opposite bottom");
+        await Load(resizeSource);
+        Drag("SplitGroupResizeRight", new Vector(11, 31), KeyModifiers.Alt,
+            during: () => Check(guides.Children.Count == 0, "Alt hides group resize guides"));
+        Bounds(new Rect(40, 48, 44.23, 24), new Rect(119.62, 80, 35.38, 24), "Alt bypasses group resize snapping");
+
+        await Load(resizeSource.Replace("Content='B'", "Content='B' MinWidth='24' MinHeight='18'"));
+        Drag("SplitGroupResizeTopLeft", new Vector(300, 300));
+        Bounds(new Rect(66, 62, 30, 18), new Rect(120, 86, 24, 18), "All child minima clamp scaling after snap and fix opposite corner");
+        await Load(resizeSource.Replace("Content='B'", "Content='B' MaxWidth='48' MaxHeight='36'"));
+        Drag("SplitGroupResizeTopLeft", new Vector(-300, -300));
+        Bounds(new Rect(-12, 20, 60, 36), new Rect(96, 68, 48, 36), "All child maxima clamp scaling and fix opposite corner");
+
+        await Load(source.Replace("Content='A'", "Content='A' MinWidth='40.1' MaxWidth='40.1'")
+            .Replace("Content='B'", "Content='B' MinWidth='32.1' MaxWidth='32.1'"));
+        var constrainedSource = doc.Text;
+        Drag("SplitGroupResizeRight", new Vector(104, 0));
+        Check(doc.Text == constrainedSource && !editor.Document.UndoStack.CanUndo,
+            "Incompatible child scale constraints reject atomically instead of violating a maximum");
+
+        await Load(resizeSource.Replace("Width='32'", "Width='{Binding ProtectedWidth}'"));
+        var protectedSource = doc.Text;
+        Check(Handle("SplitGroupResizeRight") == null, "Protected child size rejects all group resize handles");
+        Check(doc.Text == protectedSource && !editor.Document.UndoStack.CanUndo, "Protected child resize rejection is atomic");
+
+        await Load(source.Replace("Width='40'", "Width='0'").Replace("Width='32'", "Width='0'"));
+        // Select zero-width controls through the selection service because they cannot be hit-tested.
+        var components = doc.DesignContext!.Services.Component;
+        doc.SelectionService!.SetSelectedComponents(new[] { components.GetDesignItem(Button("A")), components.GetDesignItem(Button("B")) }, SelectionTypes.Replace);
+        Check(Handle("SplitGroupResizeRight") == null, "Zero-sized child axis cannot start an invalid group resize");
+        if (resizeOnly)
+        {
+            Console.WriteLine("TOTAL GROUP RESIZE FAILURES: " + failures);
+            if (failures > 0) throw new Exception("Group resize checks failed: " + failures);
+            return;
+        }
 
         await Load();
         Check(doc.SelectionService!.SelectionCount == 2, "Ctrl+Click selects two siblings");
