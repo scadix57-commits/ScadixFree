@@ -34,6 +34,7 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     private ISelectionService? _selection;
     private bool _syncingSelection;
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
+    private (int[] Items, int Primary, string Source)? _pendingGroupSelection;
 
     // Snap settings
     public bool SnapEnabled { get; set; } = true;
@@ -136,6 +137,10 @@ public void RefreshAfterKeyboardEdit()
     public DocumentView()
     {
         InitializeComponent();
+        SplitResizeOverlay.PointerPressed += (_, e) =>
+        {
+            if (!e.Handled && e.KeyModifiers.HasFlag(KeyModifiers.Control)) PreviewPointerPressed(this, e);
+        };
         this.Loaded += DocumentView_Loaded;
         _previewTimer.Tick += (_, _) => { _previewTimer.Stop(); Document?.RefreshPreview(); };
         AttachedToVisualTree += (_, _) => Subscribe();
@@ -247,6 +252,16 @@ public void RefreshAfterKeyboardEdit()
     private bool ApplySourceEdit(int start, int length, string replacement, int elementStart)
     {
         if (Document?.IsPreviewSelectable != true || uxXamlEditor.Editor is not { } editor) return false;
+        // Attribute edits keep control order stable, even when preceding attributes change length.
+        // Capture before the text notification clears the old preview selection.
+        if (_selection is { SelectionCount: > 1 })
+        {
+            var controls = _sourceControls.OrderBy(entry => entry.Start).Select(entry => entry.Item).ToList();
+            var selected = _selection.SelectedItems.Select(item => controls.IndexOf(item)).ToArray();
+            var primary = controls.IndexOf(_selection.PrimarySelection);
+            if (primary >= 0 && selected.All(index => index >= 0))
+                _pendingGroupSelection = (selected, primary, editor.Text.Remove(start, length).Insert(start, replacement));
+        }
         _syncingSelection = true;
         try
         {
@@ -274,6 +289,23 @@ public void RefreshAfterKeyboardEdit()
         _selection = selection;
         if (_selection != null) _selection.SelectionChanged += PreviewSelectionChanged;
         RebuildSourceControls();
+        if (_selection != null && _pendingGroupSelection is { } pending)
+        {
+            _pendingGroupSelection = null;
+            var controls = _sourceControls.OrderBy(entry => entry.Start).Select(entry => entry.Item).ToArray();
+            if (Document?.Text == pending.Source && pending.Items.All(index => index < controls.Length)
+                && pending.Primary < controls.Length)
+            {
+                _syncingSelection = true;
+                try
+                {
+                    _selection.SetSelectedComponents(new[] { controls[pending.Primary] }, SelectionTypes.Replace);
+                    _selection.SetSelectedComponents(pending.Items.Select(index => controls[index]).ToArray(), SelectionTypes.Replace);
+                }
+                finally { _syncingSelection = false; }
+                return;
+            }
+        }
         SourceCaretChanged(this, EventArgs.Empty);
     }
 

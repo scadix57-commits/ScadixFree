@@ -22,6 +22,10 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
     private readonly List<LineGuide> _lastAlignmentGuides = new();
     private Border? _moveHandle;
     private Border? _borderDrag;
+    private Border? _groupMoveHandle;
+    private Border? _groupBorderDrag;
+    private GroupSnapshot? _groupDragSnapshot;
+    private Func<IReadOnlyList<Rect>, bool>? _groupCommit;
     private Canvas? _overlay;
     private Control? _view;
     private ISplitResizeOverlayService? _service;
@@ -40,6 +44,12 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
 
     public bool IsResizing => _pointer != null && !_isMoving;
     public bool IsMoving => _pointer != null && _isMoving;
+
+    private sealed record GroupSnapshot(
+        IReadOnlyList<DesignItem> Items,
+        IReadOnlyList<Rect> ParentBounds,
+        Rect UnionBounds,
+        Visual Parent);
 
     protected override void OnInitialized()
     {
@@ -70,14 +80,122 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             _moveCommit = moveCommit;
             AddMoveHandle();
             AddBorderDrag();
-            _overlay.KeyDown += OverlayKeyDown;
         }
 
-        if (_resizeCommit != null || _moveCommit != null)
+        _overlay.KeyDown += OverlayKeyDown;
+        _overlay.LayoutUpdated += LayoutUpdated;
+        if (_selectionService != null) _selectionService.SelectionChanged += SelectionChanged;
+        UpdatePositions();
+    }
+
+    private GroupSnapshot? TryCreateGroupSnapshot(out Func<IReadOnlyList<Rect>, bool>? commit)
+    {
+        commit = null;
+        if (_selectionService?.PrimarySelection != ExtendedItem || _selectionService.SelectionCount < 2) return null;
+        var items = _selectionService.SelectedItems.ToArray();
+        var parentItem = items[0].Parent;
+        if (parentItem?.View is not Panel parent || parent is not (Canvas or Grid)) return null;
+        var bounds = new Rect[items.Length];
+        for (var i = 0; i < items.Length; i++)
         {
-            _overlay.LayoutUpdated += LayoutUpdated;
-            UpdatePositions();
+            if (items[i].Parent != parentItem || items[i].View is not Control control
+                || control.GetVisualParent() != parent) return null;
+            var bound = control.Bounds;
+            if (!double.IsFinite(bound.X) || !double.IsFinite(bound.Y)
+                || !double.IsFinite(bound.Right) || !double.IsFinite(bound.Bottom)
+                || !double.IsFinite(bound.Width) || !double.IsFinite(bound.Height)
+                || bound.Width <= 0 || bound.Height <= 0) return null;
+            bounds[i] = bound;
         }
+        commit = _service?.CreateGroupCommit(items, false);
+        return commit == null ? null : new GroupSnapshot(items, bounds, SplitGroupGeometry.Union(bounds), parent);
+    }
+
+    private void SelectionChanged(object? sender, DesignItemCollectionEventArgs e)
+    {
+        if (_removed) return;
+        if (_pointer != null) EndDrag();
+        else UpdatePositions();
+    }
+
+    private void AddGroupHandles()
+    {
+        _groupBorderDrag = new Border
+        {
+            Name = "SplitGroupBorderDrag", Background = Brushes.Transparent,
+            BorderBrush = Brushes.DodgerBlue, BorderThickness = new Thickness(1),
+            Cursor = new Cursor(StandardCursorType.SizeAll), Focusable = true
+        };
+        _groupMoveHandle = new Border
+        {
+            Name = "SplitGroupMoveHandle", Width = 12, Height = 12,
+            Background = Brushes.DodgerBlue, BorderBrush = Brushes.White,
+            BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(6),
+            Cursor = new Cursor(StandardCursorType.SizeAll), Focusable = true
+        };
+        _overlay!.Children.Insert(0, _groupBorderDrag);
+        _overlay.Children.Add(_groupMoveHandle);
+        foreach (var handle in new[] { _groupBorderDrag, _groupMoveHandle })
+        {
+            handle.PointerPressed += (_, e) =>
+            {
+                if (_removed || _pointer != null || e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                    || !e.GetCurrentPoint(handle).Properties.IsLeftButtonPressed) return;
+                var snapshot = TryCreateGroupSnapshot(out var commit);
+                if (snapshot == null) return;
+                _groupDragSnapshot = snapshot;
+                _groupCommit = commit;
+                _start = e.GetPosition(snapshot.Parent);
+                _oldBoundsPosition = snapshot.UnionBounds.Position;
+                _oldPos = default;
+                _pointer = e.Pointer;
+                _isMoving = true;
+                e.Pointer.Capture(handle);
+                handle.Focus();
+                e.Handled = true;
+            };
+            handle.PointerMoved += (_, e) =>
+            {
+                if (_pointer != e.Pointer || _groupDragSnapshot is not { } snapshot) return;
+                var delta = e.GetPosition(snapshot.Parent) - _start;
+                _oldPos = SnapMoveDelta(delta, _service?.SnapGridSize ?? 8, _service?.SnapEnabled ?? true, e.KeyModifiers);
+                UpdatePositions();
+                ShowGroupAlignmentGuides(snapshot, (Vector)_oldPos, e.KeyModifiers);
+                _service?.ShowSnapReadout(snapshot.UnionBounds.Position + (Vector)_oldPos);
+                e.Handled = true;
+            };
+            handle.PointerReleased += (_, e) =>
+            {
+                if (_pointer != e.Pointer || _groupDragSnapshot is not { } snapshot) return;
+                var commit = _groupCommit;
+                var delta = (Vector)_oldPos;
+                EndDrag();
+                if (delta != default)
+                {
+                    _overlay.Focus();
+                    if (commit?.Invoke(SplitGroupGeometry.Translate(snapshot.ParentBounds, delta)) == true)
+                        _service?.RefreshAfterKeyboardEdit();
+                }
+                e.Handled = true;
+            };
+            handle.PointerCaptureLost += (_, _) => EndDrag();
+            handle.KeyDown += (_, e) =>
+            {
+                if (e.Key == Key.Escape && _groupDragSnapshot != null)
+                {
+                    EndDrag();
+                    e.Handled = true;
+                }
+            };
+        }
+    }
+
+    private void ShowGroupAlignmentGuides(GroupSnapshot snapshot, Vector delta, KeyModifiers modifiers)
+    {
+        var transform = snapshot.Parent.TransformToVisual(_overlay!);
+        if (transform.HasValue)
+            UpdateAlignmentGuides(new Rect(snapshot.UnionBounds.Position + delta, snapshot.UnionBounds.Size)
+                .TransformToAABB(transform.Value), modifiers, isGroupUnion: true);
     }
 
     private static Point Snap(Point p, double grid, bool enabled, KeyModifiers modifiers)
@@ -110,7 +228,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         _overlay!.Children.Add(handle);
         handle.PointerPressed += (_, e) =>
         {
-            if (_removed || !e.GetCurrentPoint(handle).Properties.IsLeftButtonPressed || _pointer != null) return;
+            if (_removed || _selectionService?.SelectionCount > 1 || !e.GetCurrentPoint(handle).Properties.IsLeftButtonPressed || _pointer != null) return;
             _resizeCommit = _service?.CreateResizeCommit(ExtendedItem);
             if (_resizeCommit == null) return;
             _resizeX = x; _resizeY = y;
@@ -230,7 +348,8 @@ handle.PointerMoved += (_, e) =>
         _overlay!.Children.Add(_moveHandle);
         _moveHandle.PointerPressed += (_, e) =>
         {
-            if (_removed || !e.GetCurrentPoint(_moveHandle).Properties.IsLeftButtonPressed || _pointer != null) return;
+            if (_removed || _selectionService?.SelectionCount > 1 || e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                || !e.GetCurrentPoint(_moveHandle).Properties.IsLeftButtonPressed || _pointer != null) return;
             _moveCommit = _service?.CreateMoveCommit(ExtendedItem);
             if (_moveCommit == null) return;
             _start = e.GetPosition(_view);
@@ -302,7 +421,8 @@ handle.PointerMoved += (_, e) =>
         _overlay!.Children.Insert(0, _borderDrag);
         _borderDrag.PointerPressed += (_, e) =>
         {
-            if (_removed || !e.GetCurrentPoint(_borderDrag).Properties.IsLeftButtonPressed || _pointer != null) return;
+            if (_removed || _selectionService?.SelectionCount > 1 || e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                || !e.GetCurrentPoint(_borderDrag).Properties.IsLeftButtonPressed || _pointer != null) return;
             _moveCommit = _service?.CreateMoveCommit(ExtendedItem);
             if (_moveCommit == null) return;
             _start = e.GetPosition(_view);
@@ -362,7 +482,8 @@ handle.PointerMoved += (_, e) =>
 
     private void OverlayKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Handled || _removed || (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta)) != 0) return;
+        if (e.Handled || _removed || _selectionService?.PrimarySelection != ExtendedItem
+            || (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta)) != 0) return;
 
         var step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 10.0 : 1.0;
         double deltaX = 0, deltaY = 0;
@@ -378,6 +499,21 @@ handle.PointerMoved += (_, e) =>
         // A drag owns its transaction until release or Escape.
         e.Handled = true;
         if (_pointer != null) return;
+        if (_selectionService.SelectionCount > 1)
+        {
+            var snapshot = TryCreateGroupSnapshot(out var groupCommit);
+            if (snapshot == null) return;
+            var delta = new Vector(deltaX, deltaY);
+            _overlay!.Focus();
+            ShowGroupAlignmentGuides(snapshot, delta, e.KeyModifiers);
+            var groupGuides = _lastAlignmentGuides.ToArray();
+            if (groupCommit!(SplitGroupGeometry.Translate(snapshot.ParentBounds, delta)))
+            {
+                _service?.RefreshAfterKeyboardEdit();
+                if (groupGuides.Length > 0) _service?.ShowAlignmentGuides(groupGuides);
+            }
+            return;
+        }
         var commit = _service?.CreateMoveCommit(ExtendedItem);
         if (commit == null) return;
         // The overlay survives preview reloads, unlike the selected control's handles.
@@ -418,15 +554,19 @@ handle.PointerMoved += (_, e) =>
         _isMoving = false;
         _resizeCommit = null;
         _moveCommit = null;
+        _groupDragSnapshot = null;
+        _groupCommit = null;
         _posDeltaX = 0; _posDeltaY = 0;
         pointer?.Capture(null);
+        _service?.HideSnapReadout();
         _service?.HideAlignmentGuides();
         _lastAlignmentGuides.Clear();
         UpdatePositions();
     }
 
-    private void UpdateAlignmentGuides(Rect movingBounds, KeyModifiers modifiers)
+    private void UpdateAlignmentGuides(Rect movingBounds, KeyModifiers modifiers, bool isGroupUnion = false)
     {
+        _lastAlignmentGuides.Clear();
         if (_service == null || _overlay == null || _view == null || _selectionService == null) return;
 
         if (modifiers.HasFlag(KeyModifiers.Alt))
@@ -452,7 +592,7 @@ handle.PointerMoved += (_, e) =>
         var activeView = _selectionService.PrimarySelection?.View as Control ?? _view;
         var currentPrimaryBounds = GetBoundsInOverlay(activeView);
         Rect unionBounds;
-        if (selectedItems.Count == 1)
+        if (isGroupUnion || selectedItems.Count == 1)
         {
             unionBounds = movingBounds;
         }
@@ -603,6 +743,30 @@ handle.PointerMoved += (_, e) =>
     private void UpdatePositions()
     {
         if (_removed || _view == null || _overlay == null) return;
+        var isGroup = _selectionService?.SelectionCount > 1;
+        foreach (var entry in _resizeHandles) entry.Handle.IsVisible = !isGroup;
+        if (_moveHandle != null) _moveHandle.IsVisible = !isGroup;
+        if (_borderDrag != null) _borderDrag.IsVisible = !isGroup;
+        var snapshot = isGroup ? _groupDragSnapshot ?? TryCreateGroupSnapshot(out _) : null;
+        if (snapshot != null && _groupBorderDrag == null) AddGroupHandles();
+        if (_groupMoveHandle != null) _groupMoveHandle.IsVisible = snapshot != null;
+        if (_groupBorderDrag != null) _groupBorderDrag.IsVisible = snapshot != null;
+        if (isGroup)
+        {
+            if (snapshot == null) return;
+            var parentTransform = snapshot.Parent.TransformToVisual(_overlay);
+            if (!parentTransform.HasValue) return;
+            var delta = _groupDragSnapshot != null ? (Vector)_oldPos : default;
+            var union = new Rect(snapshot.UnionBounds.Position + delta, snapshot.UnionBounds.Size)
+                .TransformToAABB(parentTransform.Value);
+            Canvas.SetLeft(_groupBorderDrag!, union.X);
+            Canvas.SetTop(_groupBorderDrag!, union.Y);
+            _groupBorderDrag!.Width = union.Width;
+            _groupBorderDrag.Height = union.Height;
+            Canvas.SetLeft(_groupMoveHandle!, union.Center.X - 6);
+            Canvas.SetTop(_groupMoveHandle!, union.Center.Y - 6);
+            return;
+        }
         var transform = _view.TransformToVisual(_overlay);
         if (!transform.HasValue) return;
         var size = IsResizing ? _size : _view.Bounds.Size;
@@ -639,6 +803,7 @@ handle.PointerMoved += (_, e) =>
     {
         _removed = true;
         EndDrag();
+        if (_selectionService != null) _selectionService.SelectionChanged -= SelectionChanged;
         if (_overlay != null)
         {
             _overlay.LayoutUpdated -= LayoutUpdated;
@@ -646,6 +811,8 @@ handle.PointerMoved += (_, e) =>
             foreach (var entry in _resizeHandles) _overlay.Children.Remove(entry.Handle);
             if (_moveHandle != null) _overlay.Children.Remove(_moveHandle);
             if (_borderDrag != null) _overlay.Children.Remove(_borderDrag);
+            if (_groupMoveHandle != null) _overlay.Children.Remove(_groupMoveHandle);
+            if (_groupBorderDrag != null) _overlay.Children.Remove(_groupBorderDrag);
         }
         _resizeHandles.Clear();
     }
