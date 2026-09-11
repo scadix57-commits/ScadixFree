@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 # Local debugger test output
 /artifacts/
+/.worktrees/
