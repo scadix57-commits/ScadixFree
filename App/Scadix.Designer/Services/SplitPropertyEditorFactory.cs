@@ -378,8 +378,8 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
 
             if (target.IsCanvas)
             {
-                AddEdit(edits, target.Horizontal, "Canvas.Left", bound.X);
-                AddEdit(edits, target.Vertical, "Canvas.Top", bound.Y);
+                AddEdit(edits, target.Horizontal, "Canvas.Left", bound.X - target.View.Margin.Left);
+                AddEdit(edits, target.Vertical, "Canvas.Top", bound.Y - target.View.Margin.Top);
             }
             else
             {

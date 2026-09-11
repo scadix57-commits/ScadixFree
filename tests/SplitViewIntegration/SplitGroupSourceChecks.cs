@@ -38,6 +38,18 @@ internal static class SplitGroupSourceChecks
         doc.UndoCommand.Execute(null);
         Check(doc.Text == original, "Canvas group commit is one undo entry");
 
+        const string canvasMargins = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\"><Canvas><Button Content='A' Width='40' Height='20' Margin='3,4,0,0' Canvas.Left='10' Canvas.Top='20' /><Button Content='B' Width='30' Height='30' Margin='5,6,0,0' Canvas.Left='50' Canvas.Top='30' /></Canvas></UserControl>";
+        items = await Load(canvasMargins);
+        commit = service.CreateGroupCommit(items, includeSize: false)!;
+        Check(commit(new[] { new Rect(21, 32, 40, 20), new Rect(75, 46, 30, 30) }), "Canvas margin group move accepted");
+        Check(doc.Text.Contains("Canvas.Left='18' Canvas.Top='28'") && doc.Text.Contains("Canvas.Left='70' Canvas.Top='40'"), "Canvas group move subtracts leading margins from final bounds");
+
+        items = await Load(canvasMargins);
+        commit = service.CreateGroupCommit(items, includeSize: true)!;
+        Check(commit(new[] { new Rect(28, 35, 50, 25), new Rect(80, 55, 35, 35) }), "Canvas margin group resize accepted");
+        Check(doc.Text.Contains("Width='50' Height='25' Margin='3,4,0,0' Canvas.Left='25' Canvas.Top='31'") &&
+              doc.Text.Contains("Width='35' Height='35' Margin='5,6,0,0' Canvas.Left='75' Canvas.Top='49'"), "Canvas group resize preserves final positions with margins");
+
         const string missingCanvasProperties = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\"><Canvas><Button Content='A' /></Canvas></UserControl>";
         items = await Load(missingCanvasProperties);
         commit = service.CreateGroupCommit(items, includeSize: true)!;
