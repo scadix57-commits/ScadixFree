@@ -55,6 +55,17 @@
             <DockPanel Grid.Column="2" IsVisible="{Binding IsPreviewVisible}">
                 <TextBlock DockPanel.Dock="Top" Text="Preview - Click a control to inspect it"
                            IsVisible="{Binding IsSplitMode}" Margin="8,4" />
+                <StackPanel x:Name="SplitGroupCommandBar" DockPanel.Dock="Top"
+                            Orientation="Horizontal" IsVisible="False" Spacing="2" Margin="8,0,8,4">
+                    <Button x:Name="AlignLeftButton" ToolTip.Tip="Align left" Click="AlignLeft_Click" Content="L" />
+                    <Button x:Name="AlignHorizontalCenterButton" ToolTip.Tip="Align horizontal centers" Click="AlignHorizontalCenter_Click" Content="HC" />
+                    <Button x:Name="AlignRightButton" ToolTip.Tip="Align right" Click="AlignRight_Click" Content="R" />
+                    <Button x:Name="AlignTopButton" ToolTip.Tip="Align top" Click="AlignTop_Click" Content="T" />
+                    <Button x:Name="AlignVerticalCenterButton" ToolTip.Tip="Align vertical centers" Click="AlignVerticalCenter_Click" Content="VC" />
+                    <Button x:Name="AlignBottomButton" ToolTip.Tip="Align bottom" Click="AlignBottom_Click" Content="B" />
+                    <Button x:Name="DistributeHorizontalButton" ToolTip.Tip="Distribute horizontally" Click="DistributeHorizontal_Click" Content="H↔" />
+                    <Button x:Name="DistributeVerticalButton" ToolTip.Tip="Distribute vertically" Click="DistributeVertical_Click" Content="V↕" />
+                </StackPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{Binding PreviewError}" TextWrapping="Wrap"
                            IsVisible="{Binding HasPreviewError}" Margin="8" Foreground="DarkOrange" />
 <Grid>

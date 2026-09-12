@@ -32,6 +32,7 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     private bool _wasSplit;
     private bool _subscribed;
     private ISelectionService? _selection;
+    private SplitGroupCommandService? _groupCommands;
     private bool _syncingSelection;
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
     private (int[] Items, int Primary, string Source)? _pendingGroupSelection;
@@ -281,6 +282,8 @@ public void RefreshAfterKeyboardEdit()
             context.Services.AddOrReplaceService(typeof(ISplitModeService), this);
         }
         if (ReferenceEquals(_selection, selection)) return;
+        _groupCommands?.Dispose();
+        _groupCommands = null;
         if (_selection != null)
         {
             _selection.SelectionChanged -= PreviewSelectionChanged;
@@ -288,6 +291,12 @@ public void RefreshAfterKeyboardEdit()
         }
         _selection = selection;
         if (_selection != null) _selection.SelectionChanged += PreviewSelectionChanged;
+        if (_selection != null && Document?.DesignContext is { } commandContext)
+        {
+            _groupCommands = new SplitGroupCommandService(_selection, this, RefreshAfterKeyboardEdit);
+            commandContext.Services.AddOrReplaceService(typeof(ISplitGroupCommandService), _groupCommands);
+        }
+        UpdateGroupCommandBar();
         RebuildSourceControls();
         if (_selection != null && _pendingGroupSelection is { } pending)
         {
@@ -382,7 +391,33 @@ public void RefreshAfterKeyboardEdit()
     }
 
     private void PreviewSelectionChanged(object? sender, DesignItemCollectionEventArgs e)
-        => NavigateToPreviewSelection();
+    {
+        UpdateGroupCommandBar();
+        NavigateToPreviewSelection();
+    }
+
+    private void UpdateGroupCommandBar()
+    {
+        var canAlign = Document?.IsSplitMode == true && _groupCommands?.CanAlign == true;
+        var canDistribute = canAlign && _groupCommands?.CanDistribute == true;
+        SplitGroupCommandBar.IsVisible = canAlign;
+        foreach (var button in SplitGroupCommandBar.Children.OfType<Button>())
+        {
+            var enabled = button == DistributeHorizontalButton || button == DistributeVerticalButton
+                ? canDistribute : canAlign;
+            button.IsEnabled = enabled;
+            button.IsVisible = enabled;
+        }
+    }
+
+    private void AlignLeft_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Align(GroupAlignment.Left);
+    private void AlignHorizontalCenter_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Align(GroupAlignment.HorizontalCenter);
+    private void AlignRight_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Align(GroupAlignment.Right);
+    private void AlignTop_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Align(GroupAlignment.Top);
+    private void AlignVerticalCenter_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Align(GroupAlignment.VerticalCenter);
+    private void AlignBottom_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Align(GroupAlignment.Bottom);
+    private void DistributeHorizontal_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Distribute(GroupDistribution.Horizontal);
+    private void DistributeVertical_Click(object? sender, RoutedEventArgs e) => _groupCommands?.Distribute(GroupDistribution.Vertical);
 
     private void NavigateToPreviewSelection()
     {
@@ -418,6 +453,7 @@ public void RefreshAfterKeyboardEdit()
     private void UpdateLayoutMode()
     {
         if (Document == null) return;
+        UpdateGroupCommandBar();
         var columns = EditorLayout.ColumnDefinitions;
         if (_wasSplit)
         {

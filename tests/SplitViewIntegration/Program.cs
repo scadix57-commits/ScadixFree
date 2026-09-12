@@ -72,6 +72,11 @@ internal static class Program
                     Console.WriteLine("TOTAL FAILURES: 0");
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--group-command-only"))
+                {
+                    await SplitGroupCommandChecks.Run(doc, view);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--group-resize-only"))
                 {
                     await SplitGroupInteractionChecks.Run(doc, view, resizeOnly: true);
@@ -318,6 +323,7 @@ internal static class Program
                 finally { File.Delete(codePath); }
                 await SplitResizeChecks.Run(doc, view);
                 await SplitGroupInteractionChecks.Run(doc, view);
+                await SplitGroupCommandChecks.Run(doc, view);
                 Console.WriteLine("TOTAL FAILURES: 0");
             }
             catch (Exception ex) { Console.WriteLine(ex); failed = true; }
