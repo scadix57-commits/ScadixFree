@@ -106,7 +106,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             if (!double.IsFinite(bound.X) || !double.IsFinite(bound.Y)
                 || !double.IsFinite(bound.Right) || !double.IsFinite(bound.Bottom)
                 || !double.IsFinite(bound.Width) || !double.IsFinite(bound.Height)
-                || bound.Width <= 0 || bound.Height <= 0) return null;
+                || bound.Width < 0 || bound.Height < 0) return null;
             bounds[i] = bound;
         }
         commit = _service?.CreateGroupCommit(items, includeSize);
@@ -222,7 +222,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         {
             if (_removed || _pointer != null || !e.GetCurrentPoint(handle).Properties.IsLeftButtonPressed) return;
             var snapshot = TryCreateGroupSnapshot(out var commit, includeSize: true);
-            if (snapshot == null) return;
+            if (snapshot == null || !CanResizeGroupAxes(snapshot, x, y)) return;
             _groupDragSnapshot = snapshot;
             _groupCommit = commit;
             _groupResizeUnion = snapshot.UnionBounds;
@@ -291,6 +291,9 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
         };
     }
 
+    private static bool CanResizeGroupAxes(GroupSnapshot snapshot, int x, int y)
+        => (x == 0 || snapshot.UnionBounds.Width > 0) && (y == 0 || snapshot.UnionBounds.Height > 0);
+
     private static double? ConstrainGroupScale(GroupSnapshot snapshot, double scale, bool horizontal)
     {
         var minScale = 0.0;
@@ -301,6 +304,13 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
             var size = horizontal ? snapshot.ParentBounds[i].Width : snapshot.ParentBounds[i].Height;
             var min = horizontal ? control.MinWidth : control.MinHeight;
             var max = horizontal ? control.MaxWidth : control.MaxHeight;
+            // Proportional scaling leaves a zero-sized child axis at zero. It places
+            // no restriction on the scale unless its minimum requires a positive size.
+            if (size == 0)
+            {
+                if (min > 0) return null;
+                continue;
+            }
             minScale = Math.Max(minScale, min / size);
             maxScale = Math.Min(maxScale, max / size);
         }
@@ -861,7 +871,8 @@ handle.PointerMoved += (_, e) =>
         if (_groupMoveHandle != null) _groupMoveHandle.IsVisible = snapshot != null;
         if (_groupBorderDrag != null) _groupBorderDrag.IsVisible = snapshot != null;
         var canResizeGroup = snapshot != null && (IsResizing || _service?.CreateGroupCommit(snapshot.Items, true) != null);
-        foreach (var entry in _groupResizeHandles) entry.Handle.IsVisible = canResizeGroup;
+        foreach (var entry in _groupResizeHandles)
+            entry.Handle.IsVisible = canResizeGroup && CanResizeGroupAxes(snapshot!, entry.X, entry.Y);
         if (isGroup)
         {
             if (snapshot == null) return;

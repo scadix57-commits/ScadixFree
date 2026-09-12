@@ -179,11 +179,55 @@ internal static class SplitGroupInteractionChecks
         Check(Handle("SplitGroupResizeRight") == null, "Protected child size rejects all group resize handles");
         Check(doc.Text == protectedSource && !editor.Document.UndoStack.CanUndo, "Protected child resize rejection is atomic");
 
-        await Load(source.Replace("Width='40'", "Width='0'").Replace("Width='32'", "Width='0'"));
-        // Select zero-width controls through the selection service because they cannot be hit-tested.
-        var components = doc.DesignContext!.Services.Component;
-        doc.SelectionService!.SetSelectedComponents(new[] { components.GetDesignItem(Button("A")), components.GetDesignItem(Button("B")) }, SelectionTypes.Replace);
-        Check(Handle("SplitGroupResizeRight") == null, "Zero-sized child axis cannot start an invalid group resize");
+        foreach (var (label, fixture, direction, delta, expectedUnion, expectedA, expectedB, enabled) in new[]
+        {
+            ("Zero-width union", resizeSource.Replace("Width='40'", "Width='0'").Replace("Width='32'", "Width='0'")
+                .Replace("Canvas.Left='112'", "Canvas.Left='40'"), "Top", new Vector(31, -56),
+                new Rect(40, -8, 0, 112), new Rect(40, -8, 0, 48), new Rect(40, 56, 0, 48), new[] { "Top", "Bottom" }),
+            ("Zero-height union", resizeSource.Replace("Height='24'", "Height='0'").Replace("Canvas.Top='80'", "Canvas.Top='48'"),
+                "Left", new Vector(-104, 31), new Rect(-64, 48, 208, 0), new Rect(-64, 48, 80, 0), new Rect(80, 48, 64, 0),
+                new[] { "Left", "Right" }),
+            ("Zero-sized child in nondegenerate union", resizeSource.Replace("Content='B' Width='32' Height='24' Canvas.Left='112' Canvas.Top='80'",
+                "Content='B' Width='0' Height='0' MaxWidth='0' MaxHeight='0' Canvas.Left='56' Canvas.Top='56'"),
+                "BottomRight", new Vector(40, 24), new Rect(40, 48, 80, 48), new Rect(40, 48, 80, 48), new Rect(72, 64, 0, 0),
+                new[] { "TopLeft", "Top", "TopRight", "Left", "Right", "BottomLeft", "Bottom", "BottomRight" })
+        })
+        {
+            await Load(fixture);
+            // Zero-sized controls are selected through the same service used by the outline.
+            var components = doc.DesignContext!.Services.Component;
+            doc.SelectionService!.SetSelectedComponents(new[] { components.GetDesignItem(Button("A")), components.GetDesignItem(Button("B")) }, SelectionTypes.Replace);
+            var first = Button("A");
+            var second = Button("B");
+            var beforeA = first.Bounds;
+            var beforeB = second.Bounds;
+            var original = doc.Text;
+            Check(doc.SelectionService.SelectionCount == 2, label + " selects both children");
+            Check(overlay.Children.OfType<Control>().Where(c => c.IsVisible && c.Name?.StartsWith("SplitGroupResize") == true)
+                .Select(c => c.Name!["SplitGroupResize".Length..]).OrderBy(n => n).SequenceEqual(enabled.OrderBy(n => n)),
+                label + " disables only handles that use a degenerate union axis");
+            Drag("SplitGroupResize" + direction, delta, cancel: true);
+            Check(doc.Text == original && !editor.Document.UndoStack.CanUndo, label + " Escape writes nothing");
+            Drag("SplitGroupResize" + direction, delta, during: () =>
+            {
+                Check(doc.Text == original && first.Bounds == beforeA && second.Bounds == beforeB && !editor.Document.UndoStack.CanUndo,
+                    label + " preview preserves source and runtime bounds");
+                var preview = Handle("SplitGroupBorderDrag")!;
+                var position = first.GetVisualParent()!.TranslatePoint(expectedUnion.Position, overlay)!.Value;
+                Check(Near(Canvas.GetLeft(preview), position.X) && Near(Canvas.GetTop(preview), position.Y)
+                    && Near(preview.Width, expectedUnion.Width) && Near(preview.Height, expectedUnion.Height),
+                    label + " previews the proportional union with its opposite edge fixed");
+            });
+            Bounds(expectedA, expectedB, label + " scales every child on the valid axis and retains zero extents");
+            var changed = doc.Text;
+            Check(changed != original, label + " commits the whole group on release");
+            doc.UndoCommand.Execute(null);
+            Check(doc.Text == original && !editor.Document.UndoStack.CanUndo, label + " is one Undo entry");
+            await Task.Delay(750);
+            doc.RedoCommand.Execute(null);
+            Check(doc.Text == changed, label + " supports one-step Redo");
+            await Task.Delay(750);
+        }
         if (resizeOnly)
         {
             Console.WriteLine("TOTAL GROUP RESIZE FAILURES: " + failures);

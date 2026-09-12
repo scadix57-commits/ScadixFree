@@ -39,17 +39,17 @@ public static class SplitGroupGeometry
         ValidateBounds(bounds);
         ValidateRect(targetUnion, nameof(targetUnion));
         var sourceUnion = Union(bounds);
-        if (sourceUnion.Width == 0 || sourceUnion.Height == 0)
-            throw new ArgumentException("The source union must have non-zero width and height.", nameof(bounds));
+        if ((sourceUnion.Width == 0 && targetUnion.Width != 0) || (sourceUnion.Height == 0 && targetUnion.Height != 0))
+            throw new ArgumentException("A zero-sized source axis cannot be expanded proportionally.", nameof(targetUnion));
 
         var scaled = new Rect[bounds.Count];
         for (var i = 0; i < bounds.Count; i++)
         {
             var bound = bounds[i];
-            var normalizedX = (bound.X - sourceUnion.X) / sourceUnion.Width;
-            var normalizedY = (bound.Y - sourceUnion.Y) / sourceUnion.Height;
-            var normalizedWidth = bound.Width / sourceUnion.Width;
-            var normalizedHeight = bound.Height / sourceUnion.Height;
+            var normalizedX = sourceUnion.Width == 0 ? 0 : (bound.X - sourceUnion.X) / sourceUnion.Width;
+            var normalizedY = sourceUnion.Height == 0 ? 0 : (bound.Y - sourceUnion.Y) / sourceUnion.Height;
+            var normalizedWidth = sourceUnion.Width == 0 ? 0 : bound.Width / sourceUnion.Width;
+            var normalizedHeight = sourceUnion.Height == 0 ? 0 : bound.Height / sourceUnion.Height;
             scaled[i] = new Rect(
                 targetUnion.X + normalizedX * targetUnion.Width,
                 targetUnion.Y + normalizedY * targetUnion.Height,
