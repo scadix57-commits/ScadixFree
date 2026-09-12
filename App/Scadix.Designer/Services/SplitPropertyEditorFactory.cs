@@ -426,7 +426,9 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
                 HorizontalAlignment.Left => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom),
                 HorizontalAlignment.Right => new Thickness(margin.Left, margin.Top, margin.Right - deltaX, margin.Bottom),
                 HorizontalAlignment.Center => new Thickness(margin.Left + deltaX * 2, margin.Top, margin.Right, margin.Bottom),
-                _ => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom)
+                // Translate the Stretch layout slot without changing its available width.
+                // This preserves auto sizes and moves explicitly sized (centered) controls by the full delta.
+                _ => new Thickness(margin.Left + deltaX, margin.Top, margin.Right - deltaX, margin.Bottom)
             };
         }
 
@@ -447,7 +449,7 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
             VerticalAlignment.Top => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom),
             VerticalAlignment.Bottom => new Thickness(result.Left, margin.Top, result.Right, margin.Bottom - deltaY),
             VerticalAlignment.Center => new Thickness(result.Left, margin.Top + deltaY * 2, result.Right, margin.Bottom),
-            _ => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom)
+            _ => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom - deltaY)
         };
     }
 

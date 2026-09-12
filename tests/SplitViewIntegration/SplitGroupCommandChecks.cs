@@ -126,6 +126,54 @@ internal static class SplitGroupCommandChecks
         await Load(gridSource.Replace("Margin='260,210,0,0'", "Margin='{Binding ProtectedMargin}'"));
         Check(!Service().CanAlign && !Service().CanDistribute, "Protected Grid margin rejects commands");
 
+        var stretchSource = gridSource.Replace("<UserControl", "<UserControl UseLayoutRounding='False'")
+            .Replace("HorizontalAlignment='Left'", "HorizontalAlignment='Stretch'")
+            .Replace("VerticalAlignment='Top'", "VerticalAlignment='Stretch'");
+        var autoStretchSource = stretchSource.Replace(" Width='40' Height='20'", "")
+            .Replace(" Width='60' Height='40'", "").Replace(" Width='20' Height='30'", "")
+            .Replace("Margin='20,24,0,0'", "Margin='20,24,340,256'")
+            .Replace("Margin='100,80,0,0'", "Margin='100,80,240,180'")
+            .Replace("Margin='260,210,0,0'", "Margin='260,210,120,60'");
+        foreach (var (label, fixture) in new[] { ("Explicit", stretchSource), ("Auto", autoStretchSource),
+            ("Protected auto", autoStretchSource.Replace("Content='C'", "Content='C' Width='{Binding ProtectedWidth}' Height='{Binding ProtectedHeight}'")) })
+        {
+            foreach (var alignment in Enum.GetValues<GroupAlignment>())
+            {
+                await Load(fixture);
+                var before = new[] { "A", "B", "C" }.Select(n => Control(n).Bounds).ToArray();
+                Check(Control("A").HorizontalAlignment == Avalonia.Layout.HorizontalAlignment.Stretch
+                    && Control("A").VerticalAlignment == Avalonia.Layout.VerticalAlignment.Stretch,
+                    label + " fixture uses actual Stretch alignment");
+                Check(Service().Align(alignment), label + " Stretch " + alignment + " commits");
+                double Edge(Rect r) => alignment switch
+                {
+                    GroupAlignment.Left => r.Left, GroupAlignment.HorizontalCenter => r.Center.X,
+                    GroupAlignment.Right => r.Right, GroupAlignment.Top => r.Top,
+                    GroupAlignment.VerticalCenter => r.Center.Y, _ => r.Bottom
+                };
+                var after = new[] { "A", "B", "C" }.Select(n => Control(n).Bounds).ToArray();
+                Check(after.All(r => Near(Edge(r), Edge(before[1]))) && after[1] == before[1]
+                    && after.Select((r, i) => Near(r.Width, before[i].Width) && Near(r.Height, before[i].Height)).All(x => x),
+                    label + " Stretch " + alignment + " aligns rendered bounds and preserves every size");
+            }
+            foreach (var direction in Enum.GetValues<GroupDistribution>())
+            {
+                await Load(fixture);
+                var before = new[] { "A", "B", "C" }.Select(n => Control(n).Bounds).ToArray();
+                Check(Service().Distribute(direction), label + " Stretch " + direction + " distribution commits");
+                var after = new[] { "A", "B", "C" }.Select(n => Control(n).Bounds).ToArray();
+                Check(after[0] == before[0] && after[2] == before[2]
+                    && Near(after[1].Width, before[1].Width) && Near(after[1].Height, before[1].Height)
+                    && (direction == GroupDistribution.Horizontal
+                        ? Near(after[1].Left - after[0].Right, after[2].Left - after[1].Right) && Near(after[1].Y, before[1].Y)
+                        : Near(after[1].Top - after[0].Bottom, after[2].Top - after[1].Bottom) && Near(after[1].X, before[1].X)),
+                    label + " Stretch " + direction + " equalizes rendered gaps and preserves sizes and outer controls");
+                if (label == "Protected auto")
+                    Check(doc.Text.Contains("Width='{Binding ProtectedWidth}' Height='{Binding ProtectedHeight}'"),
+                        "Stretch position command preserves protected size expressions");
+            }
+        }
+
         await Load();
         var staleService = Service();
         editor.Text = "<UserControl";
