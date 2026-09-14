@@ -76,7 +76,7 @@ internal static class SplitGroupInteractionChecks
             handle.RaiseEvent(new PointerReleasedEventArgs(handle, pointer, root, start + screenDelta, 2,
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), modifiers, MouseButton.Left));
         }
-        Pointer BeginGroupDrag(string name, Vector delta)
+        (Pointer Pointer, Control Handle, Visual Root, Point ReleasePosition) BeginGroupDrag(string name, Vector delta)
         {
             var handle = Handle(name);
             Check(handle != null, name + " exists for lifecycle cancellation");
@@ -90,7 +90,7 @@ internal static class SplitGroupInteractionChecks
                 new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None, 1));
             handle.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, handle, pointer, root, start + screenDelta, 1,
                 new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.Other), KeyModifiers.None));
-            return pointer;
+            return (pointer, handle, root, start + screenDelta);
         }
         bool NoGroupGestureFeedback() => !overlay.Children.OfType<Control>().Any(c => c.IsVisible && c.Name?.StartsWith("SplitGroup") == true)
             && guides.Children.Count == 0 && !readout.IsVisible;
@@ -325,7 +325,7 @@ internal static class SplitGroupInteractionChecks
         Positions(40, 48, 112, 80, "Escape leaves both runtime positions unchanged");
 
         await Load();
-        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)).Pointer)
         {
             var typedSource = source.Replace("Content='Reference'", "Content='Typed source'");
             editor.Text = typedSource;
@@ -335,7 +335,7 @@ internal static class SplitGroupInteractionChecks
         await Task.Delay(750);
 
         await Load();
-        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)).Pointer)
         {
             doc.Refresh();
             await Task.Delay(100);
@@ -344,17 +344,27 @@ internal static class SplitGroupInteractionChecks
         await Task.Delay(750);
 
         await Load();
-        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        var designGesture = BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8));
+        using (designGesture.Pointer)
         {
-            doc.Mode = DocumentMode.Xaml;
+            var designSource = doc.Text;
+            Check(ReferenceEquals(designGesture.Pointer.Captured, designGesture.Handle) && readout.IsVisible && guides.Children.Count > 0,
+                "Active group gesture captures its pointer and shows feedback before Design mode");
+            doc.Mode = DocumentMode.Design;
             await Task.Delay(100);
-            Check(NoGroupGestureFeedback(), "Mode change cancels an active group gesture and clears feedback");
+            Check(designGesture.Pointer.Captured == null && doc.Text == designSource && NoGroupGestureFeedback(),
+                "Design mode cancels an active group gesture and clears feedback without changing source");
+            designGesture.Handle.RaiseEvent(new PointerReleasedEventArgs(designGesture.Handle, designGesture.Pointer, designGesture.Root,
+                designGesture.ReleasePosition, 2, new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
+                KeyModifiers.None, MouseButton.Left));
+            Check(designGesture.Pointer.Captured == null && doc.Text == designSource && NoGroupGestureFeedback(),
+                "Late release after Design mode cannot commit a cancelled group gesture");
             doc.Mode = DocumentMode.Split;
         }
         await Task.Delay(750);
 
         await Load();
-        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)).Pointer)
         {
             var host = (Window)TopLevel.GetTopLevel(view)!;
             host.Content = null;
