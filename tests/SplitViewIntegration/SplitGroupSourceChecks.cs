@@ -35,8 +35,18 @@ internal static class SplitGroupSourceChecks
         Check(commit(new[] { new Rect(18, 28, 40, 20), new Rect(66, 36, 30, 30) }), "Canvas group commit accepted");
         Check(doc.Text.Contains("Canvas.Left='18'") && doc.Text.Contains("Canvas.Left='66'") &&
               doc.Text.Contains("Canvas.Top='28'") && doc.Text.Contains("Canvas.Top='36'"), "Every Canvas child moves");
+        var changed = doc.Text;
+        Check(changed == original.Replace("Canvas.Left='10'", "Canvas.Left='18'")
+            .Replace("Canvas.Top='20'", "Canvas.Top='28'")
+            .Replace("Canvas.Left='50'", "Canvas.Left='66'")
+            .Replace("Canvas.Top='30'", "Canvas.Top='36'"),
+            "Group commit changes only the expected attribute values");
         doc.UndoCommand.Execute(null);
         Check(doc.Text == original, "Canvas group commit is one undo entry");
+        await Task.Delay(750);
+        doc.RedoCommand.Execute(null);
+        Check(doc.Text == changed, "Canvas group commit supports one-step Redo");
+        await Task.Delay(750);
 
         const string canvasMargins = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\"><Canvas><Button Content='A' Width='40' Height='20' Margin='3,4,0,0' Canvas.Left='10' Canvas.Top='20' /><Button Content='B' Width='30' Height='30' Margin='5,6,0,0' Canvas.Left='50' Canvas.Top='30' /></Canvas></UserControl>";
         items = await Load(canvasMargins);
@@ -89,6 +99,20 @@ internal static class SplitGroupSourceChecks
         original = doc.Text;
         Check(service.CreateGroupCommit(items, includeSize: true) == null, "Bound group dimension prevents commit creation");
         Check(doc.Text == original, "Protected group source remains exact");
+
+        const string protectedLater = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\"><Canvas><Button Content='A' Width='40' Height='20' Canvas.Left='10' Canvas.Top='20' /><Button Content='B' Width='30' Height='30' Canvas.Left='50' Canvas.Top='{Binding ItemTop}' /></Canvas></UserControl>";
+        items = await Load(protectedLater);
+        original = doc.Text;
+        Check(service.CreateGroupCommit(items, includeSize: false) == null,
+            "Protected later group item prevents an atomic position commit");
+        Check(doc.Text == original, "Protected later item leaves every source byte intact");
+
+        items = await Load(canvas);
+        commit = service.CreateGroupCommit(items, includeSize: false)!;
+        var stale = doc.Text + "\r\n<!-- external source change -->";
+        editor.Text = stale;
+        Check(!commit(new[] { new Rect(18, 28, 40, 20), new Rect(66, 36, 30, 30) }) && doc.Text == stale,
+            "Stale group commit rejects atomically without overwriting newer source");
     }
 
     private static void Check(bool ok, string message)

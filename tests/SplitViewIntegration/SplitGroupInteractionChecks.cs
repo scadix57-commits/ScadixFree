@@ -76,6 +76,24 @@ internal static class SplitGroupInteractionChecks
             handle.RaiseEvent(new PointerReleasedEventArgs(handle, pointer, root, start + screenDelta, 2,
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), modifiers, MouseButton.Left));
         }
+        Pointer BeginGroupDrag(string name, Vector delta)
+        {
+            var handle = Handle(name);
+            Check(handle != null, name + " exists for lifecycle cancellation");
+            if (handle == null) throw new InvalidOperationException(name + " is unavailable");
+            var root = (Visual)TopLevel.GetTopLevel(handle)!;
+            var start = handle.TranslatePoint(new Point(4, 4), root)!.Value;
+            var parent = Button("A").GetVisualParent()!;
+            var screenDelta = parent.TranslatePoint(new Point(delta.X, delta.Y), root)!.Value - parent.TranslatePoint(default, root)!.Value;
+            var pointer = new Pointer(93, PointerType.Mouse, true);
+            handle.RaiseEvent(new PointerPressedEventArgs(handle, pointer, root, start, 0,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None, 1));
+            handle.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, handle, pointer, root, start + screenDelta, 1,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.Other), KeyModifiers.None));
+            return pointer;
+        }
+        bool NoGroupGestureFeedback() => !overlay.Children.OfType<Control>().Any(c => c.IsVisible && c.Name?.StartsWith("SplitGroup") == true)
+            && guides.Children.Count == 0 && !readout.IsVisible;
         void Positions(double ax, double ay, double bx, double by, string label)
             => Check(Near(Button("A").Bounds.X, ax) && Near(Button("A").Bounds.Y, ay)
                 && Near(Button("B").Bounds.X, bx) && Near(Button("B").Bounds.Y, by), label);
@@ -305,6 +323,46 @@ internal static class SplitGroupInteractionChecks
         Check(doc.Text == cancelledSource && !editor.Document.UndoStack.CanUndo, "Escape cancels the whole gesture and arrows cannot commit during drag");
         Check(!readout.IsVisible && guides.Children.Count == 0, "Escape clears union readout and guides");
         Positions(40, 48, 112, 80, "Escape leaves both runtime positions unchanged");
+
+        await Load();
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        {
+            var typedSource = source.Replace("Content='Reference'", "Content='Typed source'");
+            editor.Text = typedSource;
+            Check(doc.Text == typedSource && NoGroupGestureFeedback(),
+                "Typing cancels an active group gesture and clears feedback");
+        }
+        await Task.Delay(750);
+
+        await Load();
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        {
+            doc.Refresh();
+            await Task.Delay(100);
+            Check(NoGroupGestureFeedback(), "Preview reload cancels an active group gesture and clears feedback");
+        }
+        await Task.Delay(750);
+
+        await Load();
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        {
+            doc.Mode = DocumentMode.Xaml;
+            await Task.Delay(100);
+            Check(NoGroupGestureFeedback(), "Mode change cancels an active group gesture and clears feedback");
+            doc.Mode = DocumentMode.Split;
+        }
+        await Task.Delay(750);
+
+        await Load();
+        using (BeginGroupDrag("SplitGroupMoveHandle", new Vector(16, 8)))
+        {
+            var host = (Window)TopLevel.GetTopLevel(view)!;
+            host.Content = null;
+            await Task.Delay(100);
+            Check(NoGroupGestureFeedback(), "Document detach cancels an active group gesture and clears feedback");
+            host.Content = view;
+        }
+        await Task.Delay(750);
 
         await Load();
         overlay.Focus();
