@@ -31,11 +31,11 @@ internal static class SplitGroupInteractionChecks
         const string source = "<UserControl xmlns='https://github.com/avaloniaui' Width='400' Height='300'>\r\n<!-- keep -->\r\n<Canvas><Button Content='A' Width='40' Height='24' Canvas.Left='40' Canvas.Top='48' /><Button Content='B' Width='32' Height='24' Canvas.Left='112' Canvas.Top='80' /><Button Content='Reference' Width='56' Height='64' Canvas.Left='240' Canvas.Top='48' /></Canvas></UserControl>";
         Button Button(string name) => doc.DesignSurface.GetVisualDescendants().OfType<Button>().First(b => Equals(b.Content, name));
         Control? Handle(string name) => overlay.Children.OfType<Control>().SingleOrDefault(c => c.Name == name && c.IsVisible);
-        void Click(Control target, KeyModifiers modifiers = KeyModifiers.None, bool hitTest = false)
+        void Click(Control target, KeyModifiers modifiers = KeyModifiers.None, bool hitTest = false, Point? localPoint = null)
         {
-            var point = target.TranslatePoint(new Point(4, 4), selectionOverlay)!.Value;
+            var point = target.TranslatePoint(localPoint ?? new Point(4, 4), selectionOverlay)!.Value;
             var receiver = hitTest
-                ? (Control)view.InputHitTest(target.TranslatePoint(new Point(4, 4), view)!.Value)!
+                ? (Control)view.InputHitTest(target.TranslatePoint(localPoint ?? new Point(4, 4), view)!.Value)!
                 : selectionOverlay;
             using var pointer = new Pointer(91, PointerType.Mouse, true);
             receiver.RaiseEvent(new PointerPressedEventArgs(receiver, pointer, selectionOverlay, point, 0,
@@ -106,6 +106,24 @@ internal static class SplitGroupInteractionChecks
                 && Near(actual.Width, expected.Width) && Near(actual.Height, expected.Height);
             Check(Matches(actualA, a) && Matches(actualB, b), label + $" (A: {actualA}; B: {actualB})");
         }
+        if (!resizeOnly)
+        {
+            const string selectionFixture = "<UserControl xmlns='https://github.com/avaloniaui' Width='400' Height='300' Background='Transparent'><Canvas Width='360' Height='260' HorizontalAlignment='Left' VerticalAlignment='Top'><Button Content='A' Width='40' Height='24' Canvas.Left='40' Canvas.Top='48' /><Button Content='B' Width='32' Height='24' Canvas.Left='112' Canvas.Top='80' /><Canvas Width='100' Height='100' Canvas.Left='200'><Button Content='Other' Width='32' Height='24' /></Canvas></Canvas></UserControl>";
+            foreach (var label in new[] { "root", "ancestor", "different parent" })
+            {
+                await Load(selectionFixture);
+                var target = label switch
+                {
+                    "root" => (Control)doc.DesignContext!.RootItem.View,
+                    "ancestor" => (Control)Button("A").GetVisualParent()!,
+                    _ => Button("Other")
+                };
+                Click(target, KeyModifiers.Control, localPoint: label == "root" ? new Point(390, 290) : null);
+                Check(doc.SelectionService!.SelectionCount == 1 && ReferenceEquals(doc.SelectionService.PrimarySelection.Component, target),
+                    "Ctrl+Click " + label + " replaces selection (selected: " + doc.SelectionService.SelectionCount + ")");
+            }
+        }
+
         // Check fractional transforms independently of Avalonia's pixel rounding at arrange time.
         var resizeSource = source.Replace("<UserControl", "<UserControl UseLayoutRounding='False'");
         foreach (var (direction, delta, a, b) in new[]
@@ -246,6 +264,42 @@ internal static class SplitGroupInteractionChecks
             Check(doc.Text == changed, label + " supports one-step Redo");
             await Task.Delay(750);
         }
+        foreach (var (sizing, aAttributes, bAttributes) in new[]
+        {
+            ("explicit", "Width='40' Height='24' Margin='0,0,280,180'", "Width='32' Height='24' Margin='80,32,224,148'"),
+            ("auto", "Margin='40,48,320,228'", "Margin='112,80,256,196'")
+        })
+        {
+            var stretchGrid = "<UserControl xmlns='https://github.com/avaloniaui' Width='400' Height='300' UseLayoutRounding='False'><Grid>"
+                + $"<Button Content='A' {aAttributes} HorizontalAlignment='Stretch' VerticalAlignment='Stretch' />"
+                + $"<Button Content='B' {bAttributes} HorizontalAlignment='Stretch' VerticalAlignment='Stretch' /></Grid></UserControl>";
+            foreach (var (direction, delta, a, b) in new[]
+            {
+                ("TopLeft", new Vector(-104, -56), new Rect(-64, -8, 80, 48), new Rect(80, 56, 64, 48)),
+                ("BottomRight", new Vector(104, 56), new Rect(40, 48, 80, 48), new Rect(184, 112, 64, 48)),
+                ("TopLeft", new Vector(52, 28), new Rect(92, 76, 20, 12), new Rect(128, 92, 16, 12)),
+                ("BottomRight", new Vector(-52, -28), new Rect(40, 48, 20, 12), new Rect(76, 64, 16, 12))
+            })
+            {
+                await Load(stretchGrid);
+                var label = $"Grid Stretch {sizing} {direction} {delta}";
+                Bounds(new Rect(40, 48, 40, 24), new Rect(112, 80, 32, 24), label + " starts at expected bounds");
+                var original = doc.Text;
+                Drag("SplitGroupResize" + direction, delta, KeyModifiers.Alt);
+                await Task.Delay(100);
+                Bounds(a, b, label + " refresh fixes the opposite corner and preserves requested dimensions");
+                var changed = doc.Text;
+                Check(changed != original, label + " commits the group");
+                doc.UndoCommand.Execute(null);
+                Check(doc.Text == original && !editor.Document.UndoStack.CanUndo, label + " uses one Undo entry");
+                await Task.Delay(750);
+                Bounds(new Rect(40, 48, 40, 24), new Rect(112, 80, 32, 24), label + " Undo restores rendered bounds");
+                doc.RedoCommand.Execute(null);
+                Check(doc.Text == changed, label + " supports one-step Redo");
+                await Task.Delay(750);
+                Bounds(a, b, label + " Redo restores rendered bounds");
+            }
+        }
         if (resizeOnly)
         {
             Console.WriteLine("TOTAL GROUP RESIZE FAILURES: " + failures);
@@ -304,6 +358,22 @@ internal static class SplitGroupInteractionChecks
             doc.RedoCommand.Execute(null);
             Check(doc.Text == changed, name + " supports one-step Redo");
             await Task.Delay(750);
+        }
+
+        var nested = source.Replace("<Canvas>", "<Canvas><Canvas Width='400' Height='300' Canvas.Left='60' Canvas.Top='40' RenderTransformOrigin='0,0'><Canvas.RenderTransform><ScaleTransform ScaleX='1.25' ScaleY='1.25' /></Canvas.RenderTransform>")
+            .Replace("</Canvas>", "</Canvas></Canvas>");
+        foreach (var name in new[] { "SplitGroupMoveHandle", "SplitGroupBorderDrag", "SplitMoveHandle", "SplitBorderDrag" })
+        {
+            await Load(nested);
+            if (!name.StartsWith("SplitGroup")) Click(Button("A"));
+            Drag(name, new Vector(16, 8), during: () =>
+            {
+                var anchor = Button("A").GetVisualParent()!.TranslatePoint(new Point(56, 56), overlay)!.Value;
+                Check(readout.IsVisible && readoutText.Text == "X: 56  Y: 56", name + " retains parent-space readout values under nested scaling");
+                Check(Near(Canvas.GetLeft(readout), anchor.X + 12) && Near(Canvas.GetTop(readout), anchor.Y + 12),
+                    name + " places readout at the transformed union position under nested scaling"
+                    + $" (actual: {Canvas.GetLeft(readout)},{Canvas.GetTop(readout)}; anchor: {anchor})");
+            });
         }
 
         await Load();
@@ -407,6 +477,8 @@ internal static class SplitGroupInteractionChecks
         })
         {
             await Load(text);
+            var components = doc.DesignContext!.Services.Component;
+            doc.SelectionService!.SetSelectedComponents(new[] { components.GetDesignItem(Button("A")), components.GetDesignItem(Button("B")) }, SelectionTypes.Replace);
             var original = doc.Text;
             Check(doc.SelectionService!.SelectionCount == 2, label + " fixture has two selected controls");
             Check(Handle("SplitGroupBorderDrag") == null && Handle("SplitGroupMoveHandle") == null, label + " has no group editing overlay");

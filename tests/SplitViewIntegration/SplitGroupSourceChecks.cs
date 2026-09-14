@@ -92,7 +92,10 @@ internal static class SplitGroupSourceChecks
         var stretchButton = (Button)items.Single().Component;
         commit = service.CreateGroupCommit(items, includeSize: true)!;
         Check(commit(new[] { new Rect(stretchButton.Bounds.X + 8, stretchButton.Bounds.Y + 5, 50, 25) }), "Grid Stretch group commit accepted");
-        Check(doc.Text.Contains("Width='50' Height='25' Margin='11,9,5,6'"), "Grid Stretch updates leading margins only");
+        await Task.Delay(750);
+        var refreshedStretch = doc.DesignSurface.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "A"));
+        Check(refreshedStretch.Bounds == new Rect(147, 114, 50, 25),
+            "Grid Stretch resize refreshes to the requested position and dimensions (actual: " + refreshedStretch.Bounds + ")");
 
         const string protectedSize = "<UserControl xmlns=\"https://github.com/avaloniaui\" Width=\"320\" Height=\"240\"><Canvas><Button Content='A' Width='{Binding ItemWidth}' Height='20' Canvas.Left='10' Canvas.Top='20' /><Button Content='B' Width='30' Height='30' Canvas.Left='50' Canvas.Top='30' /></Canvas></UserControl>";
         items = await Load(protectedSize);

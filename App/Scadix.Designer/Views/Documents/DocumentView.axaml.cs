@@ -71,15 +71,16 @@ public void RefreshAfterKeyboardEdit()
         Document?.DesignSurface.UpdateLayout();
     }
 
-    public void ShowSnapReadout(Point position, Size? size = null)
+    public void ShowSnapReadout(Point position, Size? size = null, Point? overlayPosition = null)
     {
         if (SnapReadout == null || SnapReadoutText == null) return;
         var text = size.HasValue
             ? $"W: {size.Value.Width:0}  H: {size.Value.Height:0}"
             : $"X: {position.X:0}  Y: {position.Y:0}";
         SnapReadoutText.Text = text;
-        Canvas.SetLeft(SnapReadout, position.X + 12);
-        Canvas.SetTop(SnapReadout, position.Y + 12);
+        var anchor = overlayPosition ?? position;
+        Canvas.SetLeft(SnapReadout, anchor.X + 12);
+        Canvas.SetTop(SnapReadout, anchor.Y + 12);
         SnapReadout.IsVisible = true;
     }
 
@@ -241,7 +242,13 @@ public void RefreshAfterKeyboardEdit()
             }
         }
         var alreadySelected = selected != null && ReferenceEquals(Document.SelectionService!.PrimarySelection, selected);
-        var selectionType = e.KeyModifiers.HasFlag(KeyModifiers.Control)
+        var canToggle = selected?.Component is Control
+            && !ReferenceEquals(selected, context.RootItem)
+            && selected.Parent?.Component is Canvas or Grid
+            && Document.SelectionService!.SelectionCount > 0
+            && Document.SelectionService.SelectedItems.All(item => item.Component is Control
+                && ReferenceEquals(item.Parent, selected.Parent));
+        var selectionType = e.KeyModifiers.HasFlag(KeyModifiers.Control) && canToggle
             ? SelectionTypes.Toggle
             : SelectionTypes.Replace;
         Document.SelectionService!.SetSelectedComponents(selected == null

@@ -416,7 +416,9 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
                 HorizontalAlignment.Left => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom),
                 HorizontalAlignment.Right => new Thickness(margin.Left, margin.Top, margin.Right + shrink - deltaX, margin.Bottom),
                 HorizontalAlignment.Center => new Thickness(margin.Left + deltaX * 2 - shrink, margin.Top, margin.Right, margin.Bottom),
-                _ => new Thickness(margin.Left + deltaX, margin.Top, margin.Right, margin.Bottom)
+                // Preserve the slot's spare space: explicit Stretch children center inside it.
+                // Moving both edges also handles auto-sized children becoming explicitly sized.
+                _ => new Thickness(margin.Left + deltaX, margin.Top, margin.Right + shrink - deltaX, margin.Bottom)
             };
         }
         else
@@ -440,7 +442,7 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
                 VerticalAlignment.Top => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom),
                 VerticalAlignment.Bottom => new Thickness(result.Left, margin.Top, result.Right, margin.Bottom + shrink - deltaY),
                 VerticalAlignment.Center => new Thickness(result.Left, margin.Top + deltaY * 2 - shrink, result.Right, margin.Bottom),
-                _ => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom)
+                _ => new Thickness(result.Left, margin.Top + deltaY, result.Right, margin.Bottom + shrink - deltaY)
             };
         }
 

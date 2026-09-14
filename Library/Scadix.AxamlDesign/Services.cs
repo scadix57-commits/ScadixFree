@@ -206,10 +206,11 @@ namespace Scadix.AxamlDesign
 		/// <summary>Gets or sets the snap grid size in pixels.</summary>
 		double SnapGridSize { get; set; }
 
-		/// <summary>Shows the snap readout at the specified position with current coordinates/size.</summary>
-		/// <param name="position">Position in overlay coordinates.</param>
+		/// <summary>Shows the snap readout with current coordinates/size and an optional separate display anchor.</summary>
+		/// <param name="position">Position to display for a move, or the overlay anchor for a resize.</param>
 		/// <param name="size">Optional size for resize readout.</param>
-		void ShowSnapReadout(Point position, Size? size = null);
+		/// <param name="overlayPosition">Optional anchor in overlay coordinates when displaying a parent-space position.</param>
+		void ShowSnapReadout(Point position, Size? size = null, Point? overlayPosition = null);
 
 		/// <summary>Hides the snap readout.</summary>
 		void HideSnapReadout();

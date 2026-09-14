@@ -171,7 +171,7 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
                 _oldPos = SnapMoveDelta(delta, _service?.SnapGridSize ?? 8, _service?.SnapEnabled ?? true, e.KeyModifiers);
                 UpdatePositions();
                 ShowGroupAlignmentGuides(snapshot, (Vector)_oldPos, e.KeyModifiers);
-                _service?.ShowSnapReadout(snapshot.UnionBounds.Position + (Vector)_oldPos);
+                ShowMoveReadout(snapshot.UnionBounds.Position + (Vector)_oldPos, snapshot.Parent);
                 e.Handled = true;
             };
             handle.PointerReleased += (_, e) =>
@@ -198,6 +198,11 @@ public sealed class SplitResizeThumbExtension : DefaultExtension
                 }
             };
         }
+    }
+
+    private void ShowMoveReadout(Point position, Visual? parent)
+    {
+        _service?.ShowSnapReadout(position, overlayPosition: parent?.TranslatePoint(position, _overlay!));
     }
 
     private void ShowGroupAlignmentGuides(GroupSnapshot snapshot, Vector delta, KeyModifiers modifiers)
@@ -506,7 +511,7 @@ handle.PointerMoved += (_, e) =>
             }
 
             // Show snap readout
-            _service?.ShowSnapReadout(_oldBoundsPosition + (Vector)_oldPos);
+            ShowMoveReadout(_oldBoundsPosition + (Vector)_oldPos, _view?.GetVisualParent());
             e.Handled = true;
         };
         _moveHandle.PointerReleased += (_, e) =>
@@ -579,7 +584,7 @@ handle.PointerMoved += (_, e) =>
             }
 
             // Show snap readout
-            _service?.ShowSnapReadout(_oldBoundsPosition + (Vector)_oldPos);
+            ShowMoveReadout(_oldBoundsPosition + (Vector)_oldPos, _view?.GetVisualParent());
             e.Handled = true;
         };
         _borderDrag.PointerReleased += (_, e) =>
