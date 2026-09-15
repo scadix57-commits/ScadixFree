@@ -1,25 +1,31 @@
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Scadix.AxamlDesigner;
+using Scadix.AxamlDesigner.Services;
+using Scadix.AxamlDesign;
+using Scadix.AxamlDesigner.Xaml;
+using Scadix.AxamlDom;
+using Scadix.Designer;
+using Scadix.Designer.Services;
+using Scadix.Designer.ViewModels.Tools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Avalonia.Interactivity;
-using Avalonia.Input;
-using Scadix.AxamlDesigner.Services;
-using Scadix.Designer.Services;
-using Scadix.Designer.ViewModels.Tools;
-using Scadix.AxamlDesign;
-using Scadix.AxamlDesigner.Xaml;
-using Avalonia;
 using System.IO;
 using System.Linq;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
+using Avalonia.Interactivity;
 
 namespace Scadix.Designer;
 
@@ -36,6 +42,10 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     private bool _syncingSelection;
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
     private (int[] Items, int Primary, string Source)? _pendingGroupSelection;
+    private (int[] Starts, string Source)? _pendingClipboardSelection;
+    private string? _splitClipboardText;
+    private string[]? _splitClipboardPasteFragments;
+    private int? _splitClipboardParentStart;
 
     // Marquee selection
     private Border? _marqueeRect;
@@ -427,13 +437,261 @@ public void RefreshAfterKeyboardEdit()
         if (_isMarqueeing) EndMarquee();
     }
 
-    private void OnMarqueeKeyDown(object? sender, KeyEventArgs e)
+    private async void OnMarqueeKeyDown(object? sender, KeyEventArgs e)
     {
         if (_isMarqueeing && e.Key == Key.Escape)
         {
             EndMarquee();
             e.Handled = true;
+            return;
         }
+
+        if (Document?.IsPreviewSelectable != true || Document.DesignSurface == null)
+            return;
+
+        var designSurface = Document.DesignSurface;
+        var selection = Document.SelectionService;
+        var keyModifiers = e.KeyModifiers;
+
+        if (keyModifiers == KeyModifiers.Control)
+        {
+            switch (e.Key)
+            {
+                case Key.C when designSurface.CanCopy():
+                    e.Handled = await CopySelectionAsync(selection);
+                    break;
+                case Key.X when designSurface.CanCut():
+                    if (await CopySelectionAsync(selection) && DeleteSelection(selection))
+                    {
+                        RefreshAfterKeyboardEdit();
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.V:
+                    if (await PasteSelectionAsync(selection))
+                    {
+                        RefreshAfterKeyboardEdit();
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.D when designSurface.CanCopy():
+                    if (DuplicateSelection(selection))
+                    {
+                        RefreshAfterKeyboardEdit();
+                        e.Handled = true;
+                    }
+                    break;
+            }
+        }
+        else if (e.Key == Key.Delete && designSurface.CanDelete())
+        {
+            if (DeleteSelection(selection))
+            {
+                RefreshAfterKeyboardEdit();
+                e.Handled = true;
+            }
+        }
+    }
+
+    private bool DuplicateSelection(ISelectionService? selection)
+    {
+        var sourceSelection = GetSourceSelection(selection);
+        if (sourceSelection == null) return false;
+        var entries = sourceSelection.Value.Entries;
+        var insertion = entries.Max(entry => entry.End);
+        var separator = SourceSeparator(entries[0].Start);
+        var fragments = entries.Select(entry => OffsetFragment(
+            uxXamlEditor.Editor!.Text.Substring(entry.Start, entry.End - entry.Start), entry.Item)).ToArray();
+        var inserted = separator + string.Join(separator, fragments);
+        var starts = new int[fragments.Length];
+        var cursor = insertion + separator.Length;
+        for (var index = 0; index < fragments.Length; index++)
+        {
+            starts[index] = cursor;
+            cursor += fragments[index].Length + (index + 1 < fragments.Length ? separator.Length : 0);
+        }
+        return ApplyClipboardSourceEdit(insertion, 0, inserted, starts);
+    }
+
+    private bool DeleteSelection(ISelectionService? selection)
+    {
+        var sourceSelection = GetSourceSelection(selection);
+        if (sourceSelection == null) return false;
+        var entries = sourceSelection.Value.Entries;
+        var start = entries.Min(entry => entry.Start);
+        var end = entries.Max(entry => entry.End);
+        var replacement = uxXamlEditor.Editor!.Text.Substring(start, end - start);
+        foreach (var entry in entries.OrderByDescending(entry => entry.Start))
+            replacement = replacement.Remove(entry.Start - start, entry.End - entry.Start);
+        return ApplyClipboardSourceEdit(start, end - start, replacement, null);
+    }
+
+    private async Task<bool> CopySelectionAsync(ISelectionService? selection)
+    {
+        var sourceSelection = GetSourceSelection(selection);
+        if (sourceSelection == null || uxXamlEditor.Editor == null) return false;
+        const char delimiter = (char)0x7F;
+        var entries = sourceSelection.Value.Entries;
+        var fragments = entries.Select(entry => uxXamlEditor.Editor.Text
+            .Substring(entry.Start, entry.End - entry.Start)).ToArray();
+        _splitClipboardText = string.Join(delimiter, fragments) + delimiter;
+        _splitClipboardPasteFragments = entries
+            .Select((entry, index) => OffsetFragment(fragments[index], entry.Item)).ToArray();
+        _splitClipboardParentStart = _sourceControls
+            .FirstOrDefault(entry => ReferenceEquals(entry.Item, sourceSelection.Value.Parent)).Start;
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+        {
+            await clipboard.ClearAsync();
+            await clipboard.SetTextAsync(_splitClipboardText);
+        }
+        return true;
+    }
+
+    private async Task<bool> PasteSelectionAsync(ISelectionService? selection)
+    {
+        if (uxXamlEditor.Editor == null) return false;
+        const char delimiter = (char)0x7F;
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        var text = clipboard == null ? _splitClipboardText : await clipboard.GetTextAsync();
+        if (string.IsNullOrEmpty(text)) return false;
+        var isInternalClipboard = text == _splitClipboardText && _splitClipboardPasteFragments != null;
+        var fragments = isInternalClipboard
+            ? _splitClipboardPasteFragments
+            : text.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
+        if (fragments.Length == 0) return false;
+        if (!isInternalClipboard)
+        {
+            if (Document?.DesignContext is not XamlDesignContext xamlContext
+                || xamlContext.RootItem is not XamlDesignItem rootItem) return false;
+            try
+            {
+                if (fragments.Any(fragment => XamlParser.ParseSnippet(
+                        rootItem.XamlObject, fragment, xamlContext.ParserSettings) == null)) return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        DesignItem? parent = null;
+        var current = GetSourceSelection(selection);
+        if (current != null) parent = current.Value.Parent;
+        if (parent == null && _splitClipboardParentStart is { } parentStart)
+            parent = _sourceControls.FirstOrDefault(entry => entry.Start == parentStart).Item;
+        if (parent?.Component is not (Canvas or Grid)) return false;
+        var parentEntry = _sourceControls.FirstOrDefault(entry => ReferenceEquals(entry.Item, parent));
+        if (parentEntry.Item == null) return false;
+
+        var insertion = current != null
+            ? current.Value.Entries.Max(entry => entry.End)
+            : FindClosingTagStart(uxXamlEditor.Editor.Text, parentEntry.Start, parentEntry.End);
+        if (insertion < 0) return false;
+        var separator = SourceSeparator(current?.Entries[0].Start ?? insertion);
+        var inserted = separator + string.Join(separator, fragments);
+        var starts = new int[fragments.Length];
+        var cursor = insertion + separator.Length;
+        for (var index = 0; index < fragments.Length; index++)
+        {
+            starts[index] = cursor;
+            cursor += fragments[index].Length + (index + 1 < fragments.Length ? separator.Length : 0);
+        }
+        return ApplyClipboardSourceEdit(insertion, 0, inserted, starts);
+    }
+
+    private static int FindClosingTagStart(string source, int start, int end)
+    {
+        var index = source.LastIndexOf("</", Math.Min(end - 1, source.Length - 1), StringComparison.Ordinal);
+        return index >= start ? index : -1;
+    }
+
+    private (DesignItem Parent, (int Start, int End, DesignItem Item)[] Entries)? GetSourceSelection(ISelectionService? selection)
+    {
+        if (selection == null || selection.SelectionCount == 0 || uxXamlEditor.Editor == null) return null;
+        var selected = selection.SelectedItems.ToArray();
+        var parent = selected[0].Parent;
+        if (parent?.Component is not (Canvas or Grid)
+            || selected.Any(item => !ReferenceEquals(item.Parent, parent))) return null;
+        var entries = selected.Select(item => _sourceControls.SingleOrDefault(entry => ReferenceEquals(entry.Item, item))).ToArray();
+        if (entries.Any(entry => entry.Item == null)) return null;
+        return (parent, entries.OrderBy(entry => entry.Start).ToArray());
+    }
+
+    private bool ApplyClipboardSourceEdit(int start, int length, string replacement, int[]? selectedStarts)
+    {
+        if (Document?.IsPreviewSelectable != true || uxXamlEditor.Editor is not { } editor) return false;
+        var source = editor.Text.Remove(start, length).Insert(start, replacement);
+        _pendingGroupSelection = null;
+        _pendingClipboardSelection = selectedStarts == null ? null : (selectedStarts, source);
+        _syncingSelection = true;
+        try
+        {
+            using (editor.Document.RunUpdate())
+                editor.Document.Replace(start, length, replacement);
+            editor.Select(start, 0);
+        }
+        finally { _syncingSelection = false; }
+        return true;
+    }
+
+    private string SourceSeparator(int elementStart)
+    {
+        var source = uxXamlEditor.Editor!.Text;
+        var lineStart = source.LastIndexOf('\n', Math.Max(0, elementStart - 1));
+        lineStart = lineStart < 0 ? 0 : lineStart + 1;
+        var indent = source.Substring(lineStart, elementStart - lineStart);
+        if (indent.Any(character => !char.IsWhiteSpace(character))) return "";
+        return source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" + indent : "\n" + indent;
+    }
+
+    private static string OffsetFragment(string fragment, DesignItem item)
+    {
+        if (item.View is not Control control) return fragment;
+        if (item.Parent?.Component is Canvas)
+        {
+            fragment = SetRootAttribute(fragment, "Canvas.Left", control.Bounds.X + 8);
+            fragment = SetRootAttribute(fragment, "Canvas.Top", control.Bounds.Y + 8);
+        }
+        else if (item.Parent?.Component is Grid)
+        {
+            var margin = control.Margin;
+            var left = control.HorizontalAlignment switch
+            {
+                HorizontalAlignment.Right => margin.Left,
+                HorizontalAlignment.Center => margin.Left + 16,
+                _ => margin.Left + 8
+            };
+            var right = control.HorizontalAlignment is HorizontalAlignment.Right or HorizontalAlignment.Stretch
+                ? margin.Right - 8 : margin.Right;
+            var top = control.VerticalAlignment switch
+            {
+                VerticalAlignment.Bottom => margin.Top,
+                VerticalAlignment.Center => margin.Top + 16,
+                _ => margin.Top + 8
+            };
+            var bottom = control.VerticalAlignment is VerticalAlignment.Bottom or VerticalAlignment.Stretch
+                ? margin.Bottom - 8 : margin.Bottom;
+            fragment = SetRootAttribute(fragment, "Margin", FormattableString.Invariant($"{left:0.###},{top:0.###},{right:0.###},{bottom:0.###}"));
+        }
+        return fragment;
+    }
+
+    private static string SetRootAttribute(string fragment, string name, double value)
+        => SetRootAttribute(fragment, name, value.ToString("0.###", CultureInfo.InvariantCulture));
+
+    private static string SetRootAttribute(string fragment, string name, string value)
+    {
+        var tagEnd = TagEnd(fragment, 0);
+        var opening = fragment[..tagEnd];
+        var pattern = $"(?<prefix>\\b{Regex.Escape(name)}\\s*=\\s*(?<quote>['\"]))(?<value>.*?)(?<suffix>\\k<quote>)";
+        var match = Regex.Match(opening, pattern, RegexOptions.Singleline);
+        if (match.Success)
+            return fragment[..match.Groups["value"].Index] + value
+                + fragment[(match.Groups["value"].Index + match.Groups["value"].Length)..];
+        var nameEnd = 1;
+        while (nameEnd < opening.Length && !char.IsWhiteSpace(opening[nameEnd]) && opening[nameEnd] is not '/' and not '>') nameEnd++;
+        return fragment.Insert(nameEnd, $" {name}=\"{value}\"");
     }
 
     private void EndMarquee()
@@ -527,6 +785,23 @@ public void RefreshAfterKeyboardEdit()
         }
         UpdateGroupCommandBar();
         RebuildSourceControls();
+        if (_selection != null && _pendingClipboardSelection is { } clipboardPending)
+        {
+            _pendingClipboardSelection = null;
+            if (Document?.Text == clipboardPending.Source)
+            {
+                var items = clipboardPending.Starts
+                    .Select(start => _sourceControls.FirstOrDefault(entry => entry.Start == start).Item)
+                    .ToArray();
+                if (items.All(item => item != null))
+                {
+                    _syncingSelection = true;
+                    try { _selection.SetSelectedComponents(items.Cast<DesignItem>().ToArray(), SelectionTypes.Replace); }
+                    finally { _syncingSelection = false; }
+                    return;
+                }
+            }
+        }
         if (_selection != null && _pendingGroupSelection is { } pending)
         {
             _pendingGroupSelection = null;

@@ -56,6 +56,11 @@ internal static class Program
                     await SplitMultiPropertyChecks.Run(doc, view);
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--clipboard-only"))
+                {
+                    await SplitClipboardChecks.Run(doc, view);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--snap-only"))
                 {
                     await SplitSnapChecks.Run(doc, view);
