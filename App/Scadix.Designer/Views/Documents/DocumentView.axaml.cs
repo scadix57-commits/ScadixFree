@@ -37,6 +37,15 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
     private (int[] Items, int Primary, string Source)? _pendingGroupSelection;
 
+    // Marquee selection
+    private Border? _marqueeRect;
+    private Point _marqueeStart;
+    private bool _isMarqueePending;
+    private bool _isMarqueeing;
+    private IPointer? _marqueePointer;
+    private DesignItem[] _marqueeInitialSelection = Array.Empty<DesignItem>();
+    private DesignItem? _marqueeInitialPrimary;
+
     // Snap settings
     public bool SnapEnabled { get; set; } = true;
     public double SnapGridSize { get; set; } = 8;
@@ -143,6 +152,13 @@ public void RefreshAfterKeyboardEdit()
         {
             if (!e.Handled && e.KeyModifiers.HasFlag(KeyModifiers.Control)) PreviewPointerPressed(this, e);
         };
+
+        // Marquee selection handlers on the preview and interaction overlays.
+        PreviewSelectionOverlay.PointerMoved += OnMarqueePointerMoved;
+        PreviewSelectionOverlay.PointerReleased += OnMarqueePointerReleased;
+        PreviewSelectionOverlay.PointerCaptureLost += OnMarqueePointerCaptureLost;
+        SplitResizeOverlay.KeyDown += OnMarqueeKeyDown;
+
         this.Loaded += DocumentView_Loaded;
         _previewTimer.Tick += (_, _) => { _previewTimer.Stop(); Document?.RefreshPreview(); };
         AttachedToVisualTree += (_, _) => Subscribe();
@@ -212,17 +228,22 @@ public void RefreshAfterKeyboardEdit()
         if (e.PropertyName == nameof(Document.Mode))
         {
             _previewTimer.Stop();
+            EndMarquee();
             UpdateLayoutMode();
         }
         else if (e.PropertyName == nameof(Document.Text) && Document?.IsSplitMode == true)
         {
             _previewTimer.Stop();
+            EndMarquee();
             _previewTimer.Start();
         }
     }
 
     private void PreviewPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        OnMarqueePointerPressed(sender, e);
+        if (e.Handled) return;
+
         e.Handled = true;
         if (Document?.IsPreviewSelectable != true || !e.GetCurrentPoint(PreviewSelectionOverlay).Properties.IsLeftButtonPressed)
             return;
@@ -255,6 +276,207 @@ public void RefreshAfterKeyboardEdit()
             ? Array.Empty<DesignItem>() : new[] { selected }, selectionType);
         if (alreadySelected) NavigateToPreviewSelection();
         if (selected != null) SplitResizeOverlay.Focus();
+    }
+
+    private void OnMarqueePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (Document?.IsPreviewSelectable != true
+            || !e.GetCurrentPoint(PreviewSelectionOverlay).Properties.IsLeftButtonPressed
+            || _isMarqueeing)
+            return;
+
+        var context = Document.DesignContext;
+        var root = context.RootItem?.View;
+        if (root == null) return;
+
+        // Check if click is on empty space (no control hit)
+        var hitPosition = e.GetPosition(root);
+        var hitControl = false;
+        foreach (var hit in root.GetVisualsAt(hitPosition))
+        {
+            for (Visual? visual = hit; visual != null; visual = visual.GetVisualParent())
+            {
+                var model = context.Services.View.GetModel(visual);
+                if (model != null
+                    && model.Component is Control and not (Canvas or Grid)
+                    && !ReferenceEquals(model, context.RootItem))
+                {
+                    hitControl = true;
+                    break;
+                }
+                if (visual == root) break;
+            }
+            if (hitControl) break;
+        }
+
+        if (hitControl) return; // Let normal click handling take over
+
+        _isMarqueePending = true;
+        _marqueePointer = e.Pointer;
+        _marqueeStart = e.GetPosition(PreviewSelectionOverlay);
+        _marqueeInitialSelection = Document.SelectionService?.SelectedItems.ToArray()
+            ?? Array.Empty<DesignItem>();
+        _marqueeInitialPrimary = Document.SelectionService?.PrimarySelection;
+    }
+
+    private void OnMarqueePointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_isMarqueePending && !_isMarqueeing && ReferenceEquals(e.Pointer, _marqueePointer))
+        {
+            var position = e.GetPosition(PreviewSelectionOverlay);
+            if (Math.Abs(position.X - _marqueeStart.X) < 3
+                && Math.Abs(position.Y - _marqueeStart.Y) < 3)
+                return;
+
+            if (Document?.SelectionService is { } selection)
+            {
+                selection.SetSelectedComponents(_marqueeInitialSelection, SelectionTypes.Replace);
+                if (_marqueeInitialPrimary != null)
+                    selection.SetSelectedComponents(new[] { _marqueeInitialPrimary },
+                        SelectionTypes.Primary | SelectionTypes.Add);
+            }
+
+            _isMarqueeing = true;
+            _marqueeRect = new Border
+            {
+                Name = "SplitMarqueeSelection",
+                BorderBrush = Brushes.DodgerBlue,
+                BorderThickness = new Thickness(1),
+                Background = new SolidColorBrush(Color.FromArgb(30, 30, 144, 255)),
+                IsHitTestVisible = false
+            };
+            SplitResizeOverlay.Children.Add(_marqueeRect);
+            e.Pointer.Capture(PreviewSelectionOverlay);
+            SplitResizeOverlay.Focus();
+        }
+
+        if (!_isMarqueeing || _marqueeRect == null) return;
+
+        var current = e.GetPosition(PreviewSelectionOverlay);
+        var x = Math.Min(_marqueeStart.X, current.X);
+        var y = Math.Min(_marqueeStart.Y, current.Y);
+        var width = Math.Abs(current.X - _marqueeStart.X);
+        var height = Math.Abs(current.Y - _marqueeStart.Y);
+
+        Canvas.SetLeft(_marqueeRect, x);
+        Canvas.SetTop(_marqueeRect, y);
+        _marqueeRect.Width = width;
+        _marqueeRect.Height = height;
+
+        e.Handled = true;
+    }
+
+    private void OnMarqueePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (!_isMarqueeing || _marqueeRect == null)
+        {
+            if (_isMarqueePending) EndMarquee();
+            return;
+        }
+
+        var context = Document?.DesignContext;
+        var root = context?.RootItem?.View;
+        var selection = Document?.SelectionService;
+
+        if (context != null && root != null && selection != null)
+        {
+            // Convert marquee rect to design surface coordinates
+            var marqueeRect = new Rect(
+                Canvas.GetLeft(_marqueeRect),
+                Canvas.GetTop(_marqueeRect),
+                _marqueeRect.Width,
+                _marqueeRect.Height);
+
+            // Transform to root coordinates
+            var transform = PreviewSelectionOverlay.TransformToVisual(root);
+            if (transform.HasValue)
+            {
+                var rootRect = marqueeRect.TransformToAABB(transform.Value);
+
+                var allControls = new List<(DesignItem Item, Rect Bounds)>();
+                CollectSelectableControls(context.RootItem, allControls);
+
+                var intersecting = allControls
+                    .Where(c => c.Bounds.Intersects(rootRect) && c.Item.Parent?.Component is Canvas or Grid)
+                    .Select(c => c.Item)
+                    .ToArray();
+
+                if (intersecting.Length > 0)
+                {
+                    var parent = intersecting[0].Parent;
+                    var sameParent = intersecting
+                        .Where(item => ReferenceEquals(item.Parent, parent))
+                        .ToArray();
+                    var canToggle = e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                        && (selection.SelectionCount == 0
+                            || selection.SelectedItems.All(item => ReferenceEquals(item.Parent, parent)));
+                    selection.SetSelectedComponents(sameParent,
+                        canToggle ? SelectionTypes.Toggle : SelectionTypes.Replace);
+                }
+                else if (!e.KeyModifiers.HasFlag(KeyModifiers.Control))
+                    selection.SetSelectedComponents(Array.Empty<DesignItem>(), SelectionTypes.Replace);
+            }
+        }
+
+        EndMarquee();
+        e.Handled = true;
+    }
+
+    private void OnMarqueePointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+    {
+        if (_isMarqueeing) EndMarquee();
+    }
+
+    private void OnMarqueeKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (_isMarqueeing && e.Key == Key.Escape)
+        {
+            EndMarquee();
+            e.Handled = true;
+        }
+    }
+
+    private void EndMarquee()
+    {
+        if (_marqueeRect != null)
+        {
+            SplitResizeOverlay.Children.Remove(_marqueeRect);
+            _marqueeRect = null;
+        }
+        _isMarqueeing = false;
+        _isMarqueePending = false;
+        _marqueePointer?.Capture(null);
+        _marqueePointer = null;
+        _marqueeInitialSelection = Array.Empty<DesignItem>();
+        _marqueeInitialPrimary = null;
+    }
+
+    private void CollectSelectableControls(DesignItem item, List<(DesignItem Item, Rect Bounds)> results)
+    {
+        if (item.View is Control control)
+        {
+            var parent = control.GetVisualParent();
+            if (parent is Canvas or Grid)
+            {
+                var transform = control.TransformToVisual(Document?.DesignContext?.RootItem?.View as Visual);
+                if (transform.HasValue)
+                {
+                    var bounds = new Rect(control.Bounds.Size).TransformToAABB(transform.Value);
+                    if (bounds.Width > 0 && bounds.Height > 0)
+                        results.Add((item, bounds));
+                }
+            }
+        }
+
+        if (item.ContentProperty?.IsCollection == true)
+        {
+            foreach (var child in item.ContentProperty.CollectionElements)
+                CollectSelectableControls(child, results);
+        }
+        else if (item.ContentProperty?.Value != null)
+        {
+            CollectSelectableControls(item.ContentProperty.Value, results);
+        }
     }
 
     private bool ApplySourceEdit(int start, int length, string replacement, int elementStart)
