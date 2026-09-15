@@ -172,6 +172,8 @@ namespace Scadix.AxamlDesign.PropertyGrid
 		/// </summary>
 		public string ValueString {
 			get {
+				if (IsAmbiguous) return "Multiple values";
+
 				if (ValueItem == null || ValueItem.Component is MarkupExtension || ValueItem.Component is BindingBase) {
 					if (DesignerValue == null) return null;
 					

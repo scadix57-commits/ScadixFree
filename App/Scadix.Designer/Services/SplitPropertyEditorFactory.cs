@@ -45,36 +45,125 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
     public Control CreateEditor(PropertyNode node)
     {
         var property = node.FirstProperty;
-        var target = FindTarget(property);
-        var initial = target?.Value ?? property.TextValue ?? Convert.ToString(property.ValueOnInstance, CultureInfo.InvariantCulture) ?? "";
-        if (initial.StartsWith("{}", StringComparison.Ordinal)) initial = initial[2..];
+        var isMultiSelect = node.Properties.Count > 1;
+        var isAmbiguous = node.IsAmbiguous;
+        var multiItems = isMultiSelect
+            ? node.Properties.Select(candidate => candidate.DesignItem).ToArray()
+            : Array.Empty<DesignItem>();
+
+        Target? target = null;
+        string initial = "";
+        bool canEdit = true;
+        string readOnlyReason = "";
+
+        if (isMultiSelect)
+        {
+            // For multi-select, check all items support this property with literal values
+            var targets = new List<Target?>();
+            foreach (var prop in node.Properties)
+            {
+                var t = FindTarget(prop);
+                if (t == null)
+                {
+                    canEdit = false;
+                    readOnlyReason = "Read-only: binding, resource, complex value or unsupported property on one or more items. Edit in XAML.";
+                    break;
+                }
+                // Check if any item has a binding/resource (target.Value starts with { but not {})
+                if (t.Value != null && t.Value.TrimStart().StartsWith('{') && !t.Value.StartsWith("{}", StringComparison.Ordinal))
+                {
+                    canEdit = false;
+                    readOnlyReason = "Read-only: binding or resource on one or more items. Edit in XAML.";
+                    break;
+                }
+                targets.Add(t);
+            }
+
+            if (canEdit && targets.Count > 0)
+            {
+                // Use first item's value as initial display
+                var firstTarget = targets[0]!;
+                initial = isAmbiguous ? "" : firstTarget.Value ?? node.FirstProperty.TextValue
+                    ?? Convert.ToString(node.FirstProperty.ValueOnInstance, CultureInfo.InvariantCulture) ?? "";
+                if (initial.StartsWith("{}", StringComparison.Ordinal)) initial = initial[2..];
+                target = firstTarget; // Use first target for quote/element info
+            }
+        }
+        else
+        {
+            // Single select - existing logic
+            target = FindTarget(property);
+            initial = target?.Value ?? property.TextValue ?? Convert.ToString(property.ValueOnInstance, CultureInfo.InvariantCulture) ?? "";
+            if (initial.StartsWith("{}", StringComparison.Ordinal)) initial = initial[2..];
+            if (target == null)
+            {
+                canEdit = false;
+                readOnlyReason = "Read-only: binding, resource, complex value or unsupported property. Edit in XAML.";
+            }
+        }
+
         var field = new TextBox
         {
             Text = initial,
-            IsReadOnly = target == null || node.Properties.Count != 1,
+            Watermark = isAmbiguous ? "Multiple values" : null,
+            IsReadOnly = !canEdit,
             BorderThickness = new Thickness(0),
             Background = Brushes.Transparent,
             MinWidth = 30
         };
+
         var hint = field.IsReadOnly
-            ? "Read-only: binding, resource, complex value or unsupported property. Edit in XAML."
-            : "Enter or leave the field to apply. Escape to cancel.";
+            ? readOnlyReason
+            : "Enter or leave the field to apply to all selected items. Escape to cancel.";
         ToolTip.SetTip(field, hint);
+
+        // Store the multi-select targets for commit
+        var multiTargets = isMultiSelect ? ResolveMultiEditTargets(node) : null;
+
         void Commit()
         {
             if (field.IsReadOnly || field.Text == initial) return;
             // Never apply an editor from an old preview or from a different selection.
-            if (_document.Text != _source || !_document.IsPreviewSelectable ||
-                !ReferenceEquals(_document.SelectionService?.PrimarySelection, property.DesignItem)) return;
+            if (_document.Text != _source || !_document.IsPreviewSelectable) return;
+
+            // For multi-select, verify primary selection is still in the group
+            if (isMultiSelect)
+            {
+                var selection = _document.SelectionService;
+                if (selection == null
+                    || selection.SelectionCount != multiItems.Length
+                    || !selection.SelectedItems.All(selected => multiItems.Contains(selected))
+                    || selection.PrimarySelection == null
+                    || !multiItems.Contains(selection.PrimarySelection)) return;
+            }
+            // For single select, verify primary selection matches
+            else if (!isMultiSelect && !ReferenceEquals(_document.SelectionService?.PrimarySelection, property.DesignItem)) return;
+
             try
             {
                 var value = field.Text ?? "";
                 Validate(property.Name, value);
-                var literal = value.StartsWith('{') ? "{}" + value : value;
-                var escaped = Escape(literal, target!.Quote);
-                var replacement = target.IsNew ? $" {property.Name}=\"{escaped}\"" : escaped;
-                if (_document.ApplySourceEdit?.Invoke(target.Start, target.Length, replacement, target.ElementStart) == true)
-                    initial = value;
+
+                if (isMultiSelect && multiTargets != null)
+                {
+                    // Multi-select: apply to all items in one transaction
+                    if (ApplyMultiEdit(multiTargets, property.Name, value))
+                    {
+                        initial = value;
+                        field.Watermark = null;
+                    }
+                }
+                else
+                {
+                    // Single select: existing logic
+                    var literal = value.StartsWith('{') ? "{}" + value : value;
+                    var escaped = Escape(literal, target!.Quote);
+                    var replacement = target.IsNew ? $" {property.Name}=\"{escaped}\"" : escaped;
+                    if (_document.ApplySourceEdit?.Invoke(target.Start, target.Length, replacement, target.ElementStart) == true)
+                    {
+                        initial = value;
+                    }
+                }
                 field.ClearValue(TextBox.BorderBrushProperty);
                 field.BorderThickness = new Thickness(0);
                 ToolTip.SetTip(field, hint);
@@ -86,6 +175,7 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
                 ToolTip.SetTip(field, ex.Message);
             }
         }
+
         // Run before TextBox consumes Ctrl+Z for its own uncommitted text buffer.
         field.AddHandler(InputElement.KeyDownEvent, (_, e) =>
         {
@@ -107,6 +197,38 @@ internal sealed class SplitPropertyEditorFactory : IPropertyEditorFactory
         field.LostFocus += (_, _) => Commit();
         return field;
     }
+
+    private IReadOnlyList<MultiTarget>? ResolveMultiEditTargets(PropertyNode node)
+    {
+        var targets = new List<MultiTarget>();
+        foreach (var prop in node.Properties)
+        {
+            var target = FindTarget(prop);
+            if (target == null) return null;
+            // Skip if binding/resource
+            if (target.Value != null && target.Value.TrimStart().StartsWith('{') && !target.Value.StartsWith("{}", StringComparison.Ordinal))
+                return null;
+            targets.Add(new MultiTarget(prop.DesignItem, target));
+        }
+        return targets;
+    }
+
+    private bool ApplyMultiEdit(IReadOnlyList<MultiTarget> targets, string propertyName, string value)
+    {
+        var edits = new List<(Target Target, string Text)>();
+        var literal = value.StartsWith('{') ? "{}" + value : value;
+
+        foreach (var mt in targets)
+        {
+            var escaped = Escape(literal, mt.Target.Quote);
+            var replacement = mt.Target.IsNew ? $" {propertyName}=\"{escaped}\"" : escaped;
+            edits.Add((mt.Target, replacement));
+        }
+
+        return ApplyEdits(edits, targets[0].Target.ElementStart);
+    }
+
+    private sealed record MultiTarget(DesignItem DesignItem, Target Target);
 
     public Func<double?, double?, double?, double?, bool>? CreateResizeCommit(DesignItem item)
     {

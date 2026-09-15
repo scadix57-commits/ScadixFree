@@ -51,6 +51,11 @@ internal static class Program
                     await SplitMarqueeChecks.Run(doc, view);
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--multi-property-only"))
+                {
+                    await SplitMultiPropertyChecks.Run(doc, view);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--snap-only"))
                 {
                     await SplitSnapChecks.Run(doc, view);
