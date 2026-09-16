@@ -61,6 +61,11 @@ internal static class Program
                     await SplitClipboardChecks.Run(doc, view);
                     return;
                 }
+                if (Environment.GetCommandLineArgs().Contains("--inline-edit-only"))
+                {
+                    await SplitInlineEditChecks.Run(doc, view);
+                    return;
+                }
                 if (Environment.GetCommandLineArgs().Contains("--snap-only"))
                 {
                     await SplitSnapChecks.Run(doc, view);

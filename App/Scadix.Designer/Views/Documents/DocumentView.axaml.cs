@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -26,6 +27,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using Avalonia.Interactivity;
+using Avalonia.Controls.Metadata;
 
 namespace Scadix.Designer;
 
@@ -43,9 +45,25 @@ public partial class DocumentView : UserControl, ISplitResizeOverlayService, ISp
     private readonly List<(int Start, int End, DesignItem Item)> _sourceControls = new();
     private (int[] Items, int Primary, string Source)? _pendingGroupSelection;
     private (int[] Starts, string Source)? _pendingClipboardSelection;
-    private string? _splitClipboardText;
+private string? _splitClipboardText;
     private string[]? _splitClipboardPasteFragments;
     private int? _splitClipboardParentStart;
+
+    // Inline text editing
+    private Canvas? _inlineEditOverlay;
+    private TextBox? _inlineEditTextBox;
+    private DesignItem? _inlineEditItem;
+    private DesignItemProperty? _inlineEditProperty;
+    private DispatcherTimer? _inlineEditCommitTimer;
+
+    // Quick actions panel
+    private Border? _quickActionsPanel;
+    private StackPanel? _quickActionsContent;
+    private readonly string[] _quickActionPropertyNames = new[]
+    {
+        "HorizontalAlignment", "VerticalAlignment", "Margin", "Width", "Height",
+        "Background", "Foreground", "BorderBrush", "BorderThickness"
+    };
 
     // Marquee selection
     private Border? _marqueeRect;
@@ -155,7 +173,7 @@ public void RefreshAfterKeyboardEdit()
         if (AlignmentGuidesOverlay != null) AlignmentGuidesOverlay.Children.Clear();
     }
 
-    public DocumentView()
+public DocumentView()
     {
         InitializeComponent();
         SplitResizeOverlay.PointerPressed += (_, e) =>
@@ -167,7 +185,13 @@ public void RefreshAfterKeyboardEdit()
         PreviewSelectionOverlay.PointerMoved += OnMarqueePointerMoved;
         PreviewSelectionOverlay.PointerReleased += OnMarqueePointerReleased;
         PreviewSelectionOverlay.PointerCaptureLost += OnMarqueePointerCaptureLost;
+        PreviewSelectionOverlay.DoubleTapped += OnPreviewDoubleTapped;
         SplitResizeOverlay.KeyDown += OnMarqueeKeyDown;
+
+        // Quick actions panel - find the named controls
+        _quickActionsPanel = this.FindControl<Border>("QuickActionsPanel");
+        _quickActionsContent = this.FindControl<StackPanel>("QuickActionsContent");
+        _inlineEditOverlay = this.FindControl<Canvas>("InlineEditOverlay");
 
         this.Loaded += DocumentView_Loaded;
         _previewTimer.Tick += (_, _) => { _previewTimer.Stop(); Document?.RefreshPreview(); };
@@ -200,7 +224,7 @@ public void RefreshAfterKeyboardEdit()
 
         uxXamlEditor.AttachDocument(Document);
 
-        // Non-XAML files → editor only; XAML/AXAML → Design mode
+        // Non-XAML files â†’ editor only; XAML/AXAML â†’ Design mode
         Document.Mode = Document.IsXamlFile
             ? DocumentMode.Design
             : DocumentMode.Xaml;
@@ -897,7 +921,574 @@ public void RefreshAfterKeyboardEdit()
     private void PreviewSelectionChanged(object? sender, DesignItemCollectionEventArgs e)
     {
         UpdateGroupCommandBar();
+        UpdateQuickActionsPanel();
         NavigateToPreviewSelection();
+    }
+
+    private void UpdateQuickActionsPanel()
+    {
+        if (_quickActionsPanel == null || _quickActionsContent == null) return;
+
+        var isSplit = Document?.IsSplitMode == true;
+        var isPreviewSelectable = Document?.IsPreviewSelectable == true;
+        var hasSelection = _selection?.SelectionCount > 0;
+
+        _quickActionsPanel.IsVisible = isSplit && isPreviewSelectable && hasSelection;
+
+        if (!_quickActionsPanel.IsVisible) return;
+
+        _quickActionsContent.Children.Clear();
+
+        if (_selection == null || _selection.SelectionCount == 0) return;
+
+        var selectedItems = _selection.SelectedItems.ToArray();
+        var commonProperties = GetCommonProperties(selectedItems);
+
+        foreach (var propName in _quickActionPropertyNames)
+        {
+            if (!commonProperties.TryGetValue(propName, out var prop)) continue;
+
+            var control = CreatePropertyEditor(propName, prop, selectedItems);
+            if (control != null)
+                _quickActionsContent.Children.Add(control);
+        }
+    }
+
+    private Dictionary<string, DesignItemProperty> GetCommonProperties(IReadOnlyList<DesignItem> items)
+    {
+        var result = new Dictionary<string, DesignItemProperty>();
+
+        if (items.Count == 1)
+        {
+            foreach (var propName in _quickActionPropertyNames)
+            {
+                var prop = TryGetProperty(items[0], propName);
+                if (prop != null) result[propName] = prop;
+            }
+        }
+        else
+        {
+            // Get common properties across all selected items
+            foreach (var propName in _quickActionPropertyNames)
+            {
+                DesignItemProperty? firstProp = null;
+                bool allMatch = true;
+                foreach (var item in items)
+                {
+                    var prop = TryGetProperty(item, propName);
+                    if (prop == null) { allMatch = false; break; }
+                    if (firstProp == null) firstProp = prop;
+                    else if (!PropertiesEqual(firstProp, prop)) { allMatch = false; break; }
+                }
+                if (allMatch && firstProp != null) result[propName] = firstProp;
+            }
+        }
+
+        return result;
+    }
+
+    private bool PropertiesEqual(DesignItemProperty a, DesignItemProperty b)
+    {
+        try
+        {
+            var va = a.ValueOnInstance;
+            var vb = b.ValueOnInstance;
+            if (va == null && vb == null) return true;
+            if (va == null || vb == null) return false;
+            return va.Equals(vb);
+        }
+        catch { return false; }
+    }
+
+    private static DesignItemProperty? TryGetProperty(DesignItem item, string propertyName)
+    {
+        try
+        {
+            return item.Properties.GetProperty(propertyName);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    private Control? CreatePropertyEditor(string propName, DesignItemProperty prop, IReadOnlyList<DesignItem> items)
+    {
+        return propName switch
+        {
+            "HorizontalAlignment" => CreateEnumComboBox(prop, items, typeof(HorizontalAlignment)),
+            "VerticalAlignment" => CreateEnumComboBox(prop, items, typeof(VerticalAlignment)),
+            "Margin" => CreateThicknessEditor(prop, items),
+            "Width" => CreateDoubleEditor(prop, items, "Width"),
+            "Height" => CreateDoubleEditor(prop, items, "Height"),
+            "Background" => CreateBrushEditor(prop, items, "Background"),
+            "Foreground" => CreateBrushEditor(prop, items, "Foreground"),
+            "BorderBrush" => CreateBrushEditor(prop, items, "BorderBrush"),
+            "BorderThickness" => CreateThicknessEditor(prop, items),
+            _ => null
+        };
+    }
+
+    private Control? CreateEnumComboBox(DesignItemProperty prop, IReadOnlyList<DesignItem> items, Type enumType)
+    {
+        var comboBox = new ComboBox
+        {
+            Margin = new Thickness(4),
+            MinWidth = 100,
+            Tag = prop
+        };
+
+        foreach (var value in Enum.GetValues(enumType))
+        {
+            comboBox.Items.Add(value);
+        }
+
+        comboBox.SelectedItem = prop.ValueOnInstance ?? Enum.GetValues(enumType).GetValue(0);
+        comboBox.SelectionChanged += (_, _) => SetPropertyValue(prop, items, comboBox.SelectedItem);
+
+        var label = new TextBlock { Text = prop.Name + ":", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        panel.Children.Add(label);
+        panel.Children.Add(comboBox);
+        return panel;
+    }
+
+    private Control? CreateDoubleEditor(DesignItemProperty prop, IReadOnlyList<DesignItem> items, string labelText)
+    {
+        var textBox = new TextBox
+        {
+            Margin = new Thickness(4),
+            MinWidth = 60,
+            Text = prop.ValueOnInstance?.ToString() ?? "",
+            Tag = prop
+        };
+
+        textBox.LostFocus += (_, _) =>
+        {
+            if (double.TryParse(textBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+                SetPropertyValue(prop, items, value);
+            else
+                textBox.Text = prop.ValueOnInstance?.ToString() ?? "";
+        };
+        textBox.KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (double.TryParse(textBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+                    SetPropertyValue(prop, items, value);
+                else
+                    textBox.Text = prop.ValueOnInstance?.ToString() ?? "";
+                ((Control)e.Source).Focus(); // Move focus away
+            }
+        };
+
+        var label = new TextBlock { Text = labelText + ":", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        panel.Children.Add(label);
+        panel.Children.Add(textBox);
+        return panel;
+    }
+
+    private Control? CreateThicknessEditor(DesignItemProperty prop, IReadOnlyList<DesignItem> items)
+    {
+        var textBox = new TextBox
+        {
+            Margin = new Thickness(4),
+            MinWidth = 120,
+            Text = prop.ValueOnInstance?.ToString() ?? "",
+            Tag = prop
+        };
+
+        textBox.LostFocus += (_, _) =>
+        {
+            if (TryParseThickness(textBox.Text, out var thickness))
+                SetPropertyValue(prop, items, thickness);
+            else
+                textBox.Text = prop.ValueOnInstance?.ToString() ?? "";
+        };
+        textBox.KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (TryParseThickness(textBox.Text, out var thickness))
+                    SetPropertyValue(prop, items, thickness);
+                else
+                    textBox.Text = prop.ValueOnInstance?.ToString() ?? "";
+                ((Control)e.Source).Focus();
+            }
+        };
+
+        var label = new TextBlock { Text = "Margin:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        panel.Children.Add(label);
+        panel.Children.Add(textBox);
+        return panel;
+    }
+
+    private bool TryParseThickness(string text, out Thickness thickness)
+    {
+        thickness = default;
+        var parts = text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 1 && double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var uniform))
+        {
+            thickness = new Thickness(uniform);
+            return true;
+        }
+        if (parts.Length == 2 && double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var h) &&
+            double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var v))
+        {
+            thickness = new Thickness(h, v, h, v);
+            return true;
+        }
+        if (parts.Length == 4 &&
+            double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var l) &&
+            double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var t) &&
+            double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var r) &&
+            double.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out var b))
+        {
+            thickness = new Thickness(l, t, r, b);
+            return true;
+        }
+        return false;
+    }
+
+    private Control? CreateBrushEditor(DesignItemProperty prop, IReadOnlyList<DesignItem> items, string labelText)
+    {
+        var textBox = new TextBox
+        {
+            Margin = new Thickness(4),
+            MinWidth = 100,
+            Text = prop.ValueOnInstance?.ToString() ?? "",
+            Tag = prop
+        };
+
+        textBox.LostFocus += (_, _) =>
+        {
+            if (TryParseBrush(textBox.Text, out var brush))
+                SetPropertyValue(prop, items, brush);
+            else
+                textBox.Text = prop.ValueOnInstance?.ToString() ?? "";
+        };
+        textBox.KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (TryParseBrush(textBox.Text, out var brush))
+                    SetPropertyValue(prop, items, brush);
+                else
+                    textBox.Text = prop.ValueOnInstance?.ToString() ?? "";
+                ((Control)e.Source).Focus();
+            }
+        };
+
+        var label = new TextBlock { Text = labelText + ":", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        panel.Children.Add(label);
+        panel.Children.Add(textBox);
+        return panel;
+    }
+
+    private bool TryParseBrush(string text, out IBrush? brush)
+    {
+        brush = null;
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        try
+        {
+            // Try to parse as color (e.g., "Red", "#FF0000", "rgb(255,0,0)")
+            var color = Color.Parse(text);
+            brush = new SolidColorBrush(color);
+            return true;
+        }
+        catch
+        {
+            // Could also support {DynamicResource ...} and {StaticResource ...} strings
+            // For now, just return false for complex brushes
+            return false;
+        }
+    }
+
+    private void SetPropertyValue(DesignItemProperty prop, IReadOnlyList<DesignItem> items, object value)
+    {
+        if (prop == null || items.Count == 0 || uxXamlEditor.Editor is not { } editor) return;
+        var formatted = FormatPropertyValue(value);
+        var replacements = new List<(int Start, int Length, string Text)>();
+        foreach (var item in items)
+        {
+            var entry = _sourceControls.FirstOrDefault(candidate => ReferenceEquals(candidate.Item, item));
+            if (entry.Item == null || TryGetProperty(item, prop.Name) == null
+                || IsProtectedSourceExpression(item, prop.Name)) return;
+            var openingEnd = TagEnd(editor.Text, entry.Start);
+            var opening = editor.Text.Substring(entry.Start, openingEnd - entry.Start);
+            var replacement = SetRootAttribute(opening, prop.Name, formatted);
+            if (replacement != opening)
+                replacements.Add((entry.Start, opening.Length, replacement));
+        }
+        if (replacements.Count == 0) return;
+
+        var source = editor.Text;
+        foreach (var change in replacements.OrderByDescending(change => change.Start))
+            source = source.Remove(change.Start, change.Length).Insert(change.Start, change.Text);
+        CapturePendingSelection(source);
+        _syncingSelection = true;
+        try
+        {
+            using (editor.Document.RunUpdate())
+            {
+                foreach (var change in replacements.OrderByDescending(change => change.Start))
+                    editor.Document.Replace(change.Start, change.Length, change.Text);
+            }
+            editor.Select(replacements.Min(change => change.Start), 0);
+        }
+        finally { _syncingSelection = false; }
+        RefreshAfterKeyboardEdit();
+    }
+
+    private void CapturePendingSelection(string source)
+    {
+        if (_selection is not { SelectionCount: > 0 }) return;
+        var controls = _sourceControls.OrderBy(entry => entry.Start).Select(entry => entry.Item).ToList();
+        var selected = _selection.SelectedItems.Select(item => controls.IndexOf(item)).ToArray();
+        var primary = controls.IndexOf(_selection.PrimarySelection);
+        if (primary >= 0 && selected.All(index => index >= 0))
+            _pendingGroupSelection = (selected, primary, source);
+    }
+
+    private static string FormatPropertyValue(object value) => value switch
+    {
+        double number => number.ToString("0.###", CultureInfo.InvariantCulture),
+        Thickness thickness => FormattableString.Invariant(
+            $"{thickness.Left:0.###},{thickness.Top:0.###},{thickness.Right:0.###},{thickness.Bottom:0.###}"),
+        SolidColorBrush brush => brush.Color.ToString(),
+        _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty
+    };
+
+    private void OnPreviewDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (Document?.IsPreviewSelectable != true || _selection?.PrimarySelection == null) return;
+
+        var primary = _selection.PrimarySelection;
+        if (primary.View is not Control control) return;
+
+        // Find Text or Content property
+        var textProp = TryGetProperty(primary, "Text");
+        var contentProp = TryGetProperty(primary, "Content");
+
+        DesignItemProperty? editProp = null;
+        if (textProp != null && textProp.IsSet && !IsProtectedSourceExpression(primary, "Text")) editProp = textProp;
+        else if (contentProp != null && contentProp.IsSet && !IsProtectedSourceExpression(primary, "Content")) editProp = contentProp;
+
+        if (editProp == null)
+        {
+            // Show warning for bindings or resource references
+            if ((textProp != null && textProp.IsSet && IsProtectedSourceExpression(primary, "Text"))
+                || (contentProp != null && contentProp.IsSet && IsProtectedSourceExpression(primary, "Content")))
+            {
+                ShowExpressionWarning();
+            }
+            return;
+        }
+
+        StartInlineEdit(primary, editProp, control);
+        e.Handled = true;
+    }
+
+    private void ShowExpressionWarning()
+    {
+        // Show a simple toast/warning - could be enhanced to open expression editor later
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+
+        // For now, just log to debug output - could show a notification/toast in future
+        System.Diagnostics.Debug.WriteLine("Cannot edit binding or resource reference directly. Use Property Grid or XAML editor.");
+    }
+
+    private bool IsBinding(DesignItemProperty prop)
+    {
+        try
+        {
+            var textValue = prop.TextValue;
+            return !string.IsNullOrEmpty(textValue) && textValue.TrimStart().StartsWith('{') && !textValue.StartsWith("{}", StringComparison.Ordinal);
+        }
+        catch { return false; }
+    }
+
+    private bool IsResourceReference(DesignItemProperty prop)
+    {
+        try
+        {
+            var textValue = prop.TextValue;
+            if (string.IsNullOrEmpty(textValue)) return false;
+            var trimmed = textValue.TrimStart();
+            return trimmed.StartsWith("{StaticResource", StringComparison.OrdinalIgnoreCase)
+                || trimmed.StartsWith("{DynamicResource", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { return false; }
+    }
+
+    private bool IsProtectedSourceExpression(DesignItem item, string propertyName)
+    {
+        if (!TryGetSourceAttribute(item, propertyName, out _, out _, out var value, out _)) return false;
+        var trimmed = value.TrimStart();
+        return trimmed.StartsWith('{') && !trimmed.StartsWith("{}", StringComparison.Ordinal);
+    }
+
+    private bool TryGetSourceAttribute(DesignItem item, string propertyName, out int valueStart,
+        out int valueLength, out string value, out char quote)
+    {
+        valueStart = valueLength = 0;
+        value = string.Empty;
+        quote = '\0';
+        if (uxXamlEditor.Editor is not { } editor) return false;
+        var entry = _sourceControls.FirstOrDefault(candidate => ReferenceEquals(candidate.Item, item));
+        if (entry.Item == null) return false;
+        var openingEnd = TagEnd(editor.Text, entry.Start);
+        if (openingEnd <= entry.Start) return false;
+        var opening = editor.Text.Substring(entry.Start, openingEnd - entry.Start);
+        var pattern = $"(?<prefix>\\b{Regex.Escape(propertyName)}\\s*=\\s*(?<quote>['\"]))(?<value>.*?)(?<suffix>\\k<quote>)";
+        var match = Regex.Match(opening, pattern, RegexOptions.Singleline);
+        if (!match.Success) return false;
+        var group = match.Groups["value"];
+        valueStart = entry.Start + group.Index;
+        valueLength = group.Length;
+        value = group.Value;
+        quote = match.Groups["quote"].Value[0];
+        return true;
+    }
+
+    private void StartInlineEdit(DesignItem item, DesignItemProperty prop, Control control)
+    {
+        if (_inlineEditOverlay == null) return;
+
+        _inlineEditItem = item;
+        _inlineEditProperty = prop;
+
+        // Create TextBox overlay
+        _inlineEditTextBox = new TextBox
+        {
+            Text = prop.ValueOnInstance?.ToString() ?? "",
+            FontSize = GetFontSize(control),
+            FontFamily = GetFontFamily(control),
+            Foreground = GetForeground(control),
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(1),
+            BorderBrush = this.FindResource("SystemAccentColor") is Color accent
+                ? new SolidColorBrush(accent)
+                : Brushes.DodgerBlue,
+            Padding = new Thickness(2),
+            AcceptsReturn = false
+        };
+
+        // Position overlay over the control
+        var bounds = control.Bounds;
+        var transform = control.TransformToVisual(_inlineEditOverlay);
+        if (transform.HasValue)
+        {
+            var topLeft = transform.Value.Transform(new Point(0, 0));
+            Canvas.SetLeft(_inlineEditTextBox, topLeft.X);
+            Canvas.SetTop(_inlineEditTextBox, topLeft.Y);
+            _inlineEditTextBox.Width = bounds.Width;
+            _inlineEditTextBox.Height = bounds.Height;
+        }
+
+        _inlineEditOverlay.Children.Clear();
+        _inlineEditOverlay.Children.Add(_inlineEditTextBox);
+        _inlineEditOverlay.IsVisible = true;
+
+        _inlineEditTextBox.Focus();
+        _inlineEditTextBox.SelectAll();
+
+        _inlineEditTextBox.LostFocus += OnInlineEditLostFocus;
+        _inlineEditTextBox.KeyDown += OnInlineEditKeyDown;
+
+        _inlineEditCommitTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        _inlineEditCommitTimer.Tick += (_, _) =>
+        {
+            _inlineEditCommitTimer?.Stop();
+            CommitInlineEdit();
+        };
+    }
+
+    private void OnInlineEditKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            CommitInlineEdit();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            CancelInlineEdit();
+            e.Handled = true;
+        }
+    }
+
+    private void OnInlineEditLostFocus(object? sender, RoutedEventArgs e)
+    {
+        // Delay commit to allow clicking away
+        _inlineEditCommitTimer?.Start();
+    }
+
+    private void CommitInlineEdit()
+    {
+        if (_inlineEditTextBox == null || _inlineEditItem == null || _inlineEditProperty == null) return;
+
+        var editedItem = _inlineEditItem;
+        var propertyName = _inlineEditProperty.Name;
+        var committed = TryGetSourceAttribute(editedItem, propertyName, out var start, out var length,
+            out var oldValue, out var quote);
+        if (committed)
+        {
+            var newValue = EscapeAttributeValue(_inlineEditTextBox.Text ?? string.Empty, quote);
+            committed = newValue == oldValue || ApplySourceEdit(start, length, newValue,
+                _sourceControls.First(entry => ReferenceEquals(entry.Item, editedItem)).Start);
+        }
+
+        CancelInlineEdit();
+        if (committed) RefreshAfterKeyboardEdit();
+    }
+
+    private static string EscapeAttributeValue(string value, char quote)
+    {
+        var escaped = value.Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal);
+        return quote == '\''
+            ? escaped.Replace("'", "&apos;", StringComparison.Ordinal)
+            : escaped.Replace("\"", "&quot;", StringComparison.Ordinal);
+    }
+
+    private void CancelInlineEdit()
+    {
+        if (_inlineEditOverlay != null)
+        {
+            _inlineEditOverlay.Children.Clear();
+            _inlineEditOverlay.IsVisible = false;
+        }
+        if (_inlineEditTextBox != null)
+        {
+            _inlineEditTextBox.LostFocus -= OnInlineEditLostFocus;
+            _inlineEditTextBox.KeyDown -= OnInlineEditKeyDown;
+            _inlineEditTextBox = null;
+        }
+        _inlineEditItem = null;
+        _inlineEditProperty = null;
+        _inlineEditCommitTimer?.Stop();
+        _inlineEditCommitTimer = null;
+    }
+
+    private double GetFontSize(Control control)
+    {
+        return control.GetValue(TextBlock.FontSizeProperty);
+    }
+
+    private FontFamily GetFontFamily(Control control)
+    {
+        return control.GetValue(TextBlock.FontFamilyProperty);
+    }
+
+    private IBrush GetForeground(Control control)
+    {
+        return control.GetValue(TextBlock.ForegroundProperty);
     }
 
     private void UpdateGroupCommandBar()

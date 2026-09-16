@@ -68,7 +68,8 @@
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{Binding PreviewError}" TextWrapping="Wrap"
                            IsVisible="{Binding HasPreviewError}" Margin="8" Foreground="DarkOrange" />
-<Grid>
+
+                <Grid>
                   <ContentPresenter Content="{Binding DesignSurface}"
                                     IsHitTestVisible="{Binding IsDesignerInteractive}"
                                     IsEnabled="{Binding IsDesignerInteractive}" />
@@ -86,6 +87,27 @@
                           <TextBlock x:Name="SnapReadoutText" Foreground="White" FontSize="11" FontFamily="Consolas,Monospace" />
                       </Border>
                   </Canvas>
+
+                  <!-- Inline Text Edit Overlay -->
+                  <Canvas x:Name="InlineEditOverlay" IsVisible="False"
+                          IsHitTestVisible="True" />
+
+                  <!-- Quick Actions Property Panel overlays the preview without
+                       changing the design surface's coordinate system. -->
+                  <Border x:Name="QuickActionsPanel" IsVisible="False"
+                          HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                          Margin="8" MaxHeight="360"
+                          Background="{DynamicResource ThemeControlMidBrush}"
+                          CornerRadius="4" Padding="4">
+                      <StackPanel Orientation="Vertical" Spacing="4">
+                          <ToggleButton x:Name="QuickActionsToggle" Content="Quick Actions"
+                                        FontWeight="Bold" FontSize="12" Padding="6,2" />
+                          <ScrollViewer IsVisible="{Binding IsChecked, ElementName=QuickActionsToggle}"
+                                        VerticalScrollBarVisibility="Auto">
+                              <StackPanel x:Name="QuickActionsContent" Orientation="Vertical" Spacing="4" />
+                          </ScrollViewer>
+                      </StackPanel>
+                  </Border>
                 </Grid>
             </DockPanel>
 
